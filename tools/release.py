@@ -34,11 +34,17 @@ readme = open(os.path.join(ROOT, 'README.md'), encoding='utf-8').read()
 miss = [k for k in main if k not in readme]
 if miss: sys.exit('release stopped: the README does not name the test browsers that ran: %s (edit its "Test browsers" line)' % ', '.join(miss))
 tested = '- **Tested in:** ' + ', '.join(b['label'] for b in rec['main']) + ' (one at a time)' + ('; the shipped minified page: ' + ', '.join(b['label'] for b in rec['main-min']) if ship else '; the shipped minified page: not run') + '.\n'
-cl = os.path.join(ROOT, 'CHANGELOG.md'); t = open(cl, encoding='utf-8').read()
-m = re.search(r'^## @VER@\n(.*?)(?=^## |\Z)', t, re.S | re.M)
-if m:
-    body = re.sub(r'^- \*\*Tested in[^\n]*\n', '', m.group(1), flags=re.M).rstrip('\n') + '\n' + tested + '\n'
-    open(cl, 'w', encoding='utf-8').write(t[:m.start(1)] + body + t[m.end(1):])
+# two changelogs (owner rule 2026-10-18): the repo one is short and plain; the full developer one lives in the shared folder (backed up to the private knowledge-base)
+full_cl = os.environ.get('PD_FULL_CHANGELOG', '/mnt/project-files/changelogs-full/pineapple-defense/CHANGELOG-full.md')
+for cl in [os.path.join(ROOT, 'CHANGELOG.md')] + ([full_cl] if os.path.exists(full_cl) else []):
+    t = open(cl, encoding='utf-8').read()
+    m = re.search(r'^## @VER@\n(.*?)(?=^## |\Z)', t, re.S | re.M)
+    if m:
+        body = re.sub(r'^- \*\*Tested in[^\n]*\n', '', m.group(1), flags=re.M).rstrip('\n') + '\n' + tested + '\n'
+        t = t[:m.start(1)] + body + t[m.end(1):]
+    if cl == full_cl: t = t.replace('@VER@', vers[-1])   # the repo copy is stamped below with the docs
+    open(cl, 'w', encoding='utf-8').write(t)
+if not os.path.exists(full_cl): print('note: the full changelog was not found at', full_cl, '- write this release\'s full entry there by hand')
 for d in ['CHANGELOG.md', 'README.md'] + sorted(glob.glob(os.path.join(ROOT, 'docs/*.md'))):   # the changelog heading "## @VER@" becomes this release's stamp
     p = d if os.path.isabs(d) else os.path.join(ROOT, d); t = open(p, encoding='utf-8').read()
     if '@VER@' in t: open(p, 'w', encoding='utf-8').write(t.replace('@VER@', vers[-1]))
