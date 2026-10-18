@@ -13,9 +13,17 @@
 <img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
 </p>
 
-A silly, glossy toy-box game for kids of all ages. The penguins are jealous of your tropical fruit and march down the ice toward your stand. Flick a pineapple to bonk them, chain combos, collect trophies, and beat a different Champion at the end of every stage. It works on phones, tablets and computers, in any modern browser.
+## What it is and how it works
+
+A silly, glossy toy-box game for kids of all ages. The penguins are jealous of your tropical fruit and march down the ice toward your stand. You flick a pineapple from the bottom of the screen: the direction of the flick picks the target area, its speed sets the power, and a gentle snap pulls the shot toward the nearest penguin. Bonk them, chain combos, collect trophies, and beat a different Champion at the end of every stage. It works on phones, tablets and computers, in any modern browser.
+
+It is one self-contained HTML file with no runtime dependencies and no network calls. The glossy toy look is drawn on a 2D canvas from sprites scaled by depth, progress is saved in your browser, and players get a smaller self-unpacking copy of the same page.
 
 > **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
+
+## Why it exists
+
+LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set: made for kids first, with silly fun and no cruelty, so there are no ads, purchases, accounts, streaks, timers, prize boxes or leaderboards, and losing is gentle. It is also a working test of the shared [JS-modules](https://github.com/lfcfoundry/JS-modules) pieces in a real game.
 
 ## How to play
 
