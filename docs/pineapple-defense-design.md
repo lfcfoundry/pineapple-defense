@@ -3,6 +3,10 @@
 Copyright © 2026 LFC Foundry. MIT License (see LICENSE).
 Brief date: 2026.10.12 (version stamps use year.month.day.HHMM, US Eastern)
 
+**What it is and how it works.** The design record for Pineapple Defense: every decision, round by round, covering the aim and flick controls, the pineapple roster, penguins and Champions, stages, shop, trophies and settings. Each section ends with its later rounds.
+
+**Why it exists.** One place to see what was chosen, what was declined and why, so later work follows the same intent: a kids-first game that is silly, never cruel, and fast on weak devices.
+
 ## Status
 Built and playable (see the changelog for the current version). This file is the design record; later rounds are at the end of each section.
 

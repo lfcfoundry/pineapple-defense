@@ -4,6 +4,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Written 2026-10-13 fo
 
 **Purpose.** A foundation for a new session or a new game. Read this first, then `docs/pineapple-defense-design.md` (every decision, round by round), `docs/qa-process.md` (how to test cheaply) and `CHANGELOG.md` (what shipped when). Everything here is about *how to work* and *what was figured out*; nothing secret is recorded (the secret content lives in `private/`, which is not public and is not described here).
 
+**What it is and how it works.** A hand-off note for a new session or a new game: what the project is, how the owner likes to work, how the code is laid out and built, and what was figured out along the way, section by section.
+
+**Why it exists.** Anyone starting cold should not have to rediscover decisions, traps or inventions. Words like "new here" and the other claims below say what was reviewed and cite where it came from.
+
 Words like "new here" mean "not in the Apple Press, Fancy the Banana or JS-modules code that was read while building this". It is a claim about what was reviewed, not a guarantee. Check before promoting any of it into JS-modules.
 
 ---

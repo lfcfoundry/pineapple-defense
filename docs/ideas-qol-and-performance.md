@@ -2,6 +2,10 @@
 
 Pineapple Defense. Written 2026-10-12. Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE).
 
+**What it is and how it works.** The list of 10 player comfort ideas and 10 performance ideas for Pineapple Defense, each with a status line, plus the audit that decided which were worth building. Canvas ideas follow the MDN "Optimizing canvas" guidance cited below.
+
+**Why it exists.** The game is for kids and runs on weak phones, so comfort and speed come first. This page keeps the reasoning, including the ideas that were judged not worth it, so they are not re-argued.
+
 Status (see the changelog for versions): every item below is done except haptics (excluded on request) and the two atlas ideas (judged not worth it, see the audit at the end). Reference for the canvas ideas: MDN, "Optimizing canvas" (cache repeated drawing in offscreen canvases, batch calls, avoid per-frame state changes, avoid fractional coordinates where it matters, scale with CSS or the backing store on purpose).
 
 ## 10 quality-of-life ideas for the player

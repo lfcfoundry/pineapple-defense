@@ -2,6 +2,10 @@
 
 Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE).
 
+**What it is and how it works.** The commands and rules for building Pineapple Defense and checking it: `build.py` makes the single page from `src/`, `tools/qa.py` runs the in-page suite in the test browsers, and `tools/release.py` packs the files players get and stamps the version.
+
+**Why it exists.** Checks cost real time and compute, so this page records the cheapest way to get a trustworthy answer and the traps that made earlier runs slow or wrong. The rest follows below.
+
 ## One command
 - `python3 -I tools/qa.py` builds, syntax-checks every inline script, then runs the in-page suite in Chromium (about 10 seconds).
 - `--ff` also runs it in Firefox 158 (the stress test, about 25 seconds). `--lab` tests the tester build. `--min` tests the esbuild-minified page (`build.py --min`), which is the page that gets packed. `release.py` also opens both packed files (the regular one in all four test browsers, the tester one in Chromium) before it stamps anything. `--fuzz N` fuzzes N game seconds per stage (default 60). `--force` ignores the cache. `--shots DIR` saves screenshots.
