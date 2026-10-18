@@ -11,10 +11,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - Keep checks cheap: `--smart` (or `--quick`) while iterating, `--only REGEX` while writing a check; the full three-browser run only for a release. `QA_TIMES=1` shows where the time goes. Tick loops in the suite use `tk()` (no unneeded frame draws), and timers the game owns are jumped with `fakeClock()`, never slept through; see `docs/qa-process.md`.
 - **Faster, trustworthy testing:** follow the universal QA and browser-testing guide at `build-notes/qa/QA-AND-BROWSER-TESTING-UNIVERSAL-GUIDE.md` in the private knowledge-base repo (print the real browser version on line 1 of every run; targeted checks while working; full run once when the design is final).
 
-## Changelog
+## Changelog (two of them, owner rule 2026-10-18)
 
-- Every entry says, in plain words, how much each change helps (how much faster, how many KB smaller, how many px bigger) or what each new feature does.
-- The entry for the next release sits under `## @VER@`; `tools/release.py` turns that into the version stamp.
+- `CHANGELOG.md` in this repo is short and for players: one plain line per change saying what a player will notice, no tables or jargon. Developer-only changes are left out. The entry for the next release sits under `## @VER@`; `tools/release.py` turns that into the version stamp and adds the "Tested in" line.
+- The full developer changelog (every measurement, tool change and test run, each entry quantified in plain words) is `/mnt/project-files/changelogs-full/pineapple-defense/CHANGELOG-full.md`, backed up to the private lfcfoundry/knowledge-base. Write the full entry there first for every release, under the unreleased heading; `release.py` stamps it too (set `PD_FULL_CHANGELOG` to use another path).
 
 ## Shared files and private notes
 
