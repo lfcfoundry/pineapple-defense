@@ -83,7 +83,7 @@ src = open(page, encoding='utf-8').read()
 node = shutil.which('node')
 if node and not PACKED:
     import re
-    for i, m in enumerate(re.finditer(r'<script(?![^>]*src)[^>]*>(.*?)</script>', src, re.S)):
+    for i, m in enumerate(re.finditer(r'<script(?![^>]*(?:src|application/json))[^>]*>(.*?)</script>', src, re.S)):
         tmp = os.path.join(ROOT, '.qa-syntax.js'); open(tmp, 'w', encoding='utf-8').write(m.group(1))
         r = run([node, '--check', tmp]); os.remove(tmp)
         if r.returncode: print('SYNTAX ERROR in inline script %d:\n%s' % (i, r.stderr[:800])); sys.exit(3)

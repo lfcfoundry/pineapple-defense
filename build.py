@@ -28,6 +28,11 @@ def font_face(fam, fname, weight):
 LAB = "--lab" in sys.argv
 MIN = "--min" in sys.argv
 
+def baked_json():
+    """The baked sprites as JSON text for the data block at the end of the page; made by tools/bake_sprites.py. Without them (or with PD_NO_BAKED) the game draws its sprites from the SVG as before."""
+    baked = S / "baked-sprites.json"
+    return baked.read_text(encoding="utf-8").strip() if baked.exists() and not os.environ.get("PD_NO_BAKED") else "null"
+
 def game_js():
     g = (S / "game.js").read_text(encoding="utf-8")
     if LAB:
@@ -37,8 +42,7 @@ def game_js():
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{EXTRAS_JS}}*/", (S / "extras.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
-    baked = S / "baked-sprites.json"      # made by tools/bake_sprites.py; without it the game draws its sprites from the SVG as before
-    return g.replace("/*{{BAKED}}*/null", baked.read_text(encoding="utf-8").strip() if baked.exists() and not os.environ.get("PD_NO_BAKED") else "null")
+    return g
 
 def minify(t):
     """Shrink every inline script and style with esbuild (optional tool). Returns None when esbuild is missing."""
@@ -49,7 +53,7 @@ def minify(t):
         r = subprocess.run([exe, "--minify", "--loader=" + loader, "--target=es2017"], input=code, capture_output=True, text=True)
         if r.returncode: raise SystemExit("minify failed: " + r.stderr[:400])
         return r.stdout.rstrip("\n")
-    def js(m): return m.group(1) + (run(m.group(2), "js") if m.group(2).strip() else "") + m.group(3)
+    def js(m): return m.group(1) + (run(m.group(2), "js") if m.group(2).strip() and "application/json" not in m.group(1) else m.group(2)) + m.group(3)
     def css(m): return m.group(1) + run(m.group(2), "css") + m.group(3)
     # scripts and styles in document order, each closed by its own tag, so a "</style>" string inside a script is left alone
     return re.sub(r"(<script(?![^>]*src)[^>]*>)(.*?)(</script>)|(<style[^>]*>)(.*?)(</style>)",
@@ -78,6 +82,7 @@ def main():
         "/*{{WAKEKEEPER}}*/": (S / "vendor/wake-keeper/wake-keeper.js").read_text(),
         "/*{{TABGUARD}}*/": (S / "vendor/tab-guard/tab-guard.js").read_text(),
         "/*{{SAVEKIT}}*/": (S / "vendor/save-kit/save-kit.js").read_text(),
+        "/*{{BAKED}}*/null": baked_json(),
         "/*{{GAME_JS}}*/": game_js(),
         "<!--{{adelie}}-->": (sp / "adelie.svg").read_text(),
         "<!--{{palm}}-->": (sp / "prop-palm.svg").read_text(),
