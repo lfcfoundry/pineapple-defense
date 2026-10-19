@@ -3,7 +3,9 @@
 'use strict';
 var $ = function (i) { return document.getElementById(i); };
 var root = document.documentElement;
-var titleEl = $('title'), gameEl = $('game'), cv = $('cv'), ctx = cv.getContext('2d', { alpha: false });   /* the picture always covers every pixel, so the page need not blend the canvas with what is behind it (Firefox draws about 1.25 to 1.4 times faster) */
+/*{{GL_JS}}*/
+var titleEl = $('title'), gameEl = $('game'), cv = $('cv'), ctx = cv.getContext('2d', { alpha: glWanted() });   /* the picture always covers every pixel, so the page need not blend the canvas with what is behind it (Firefox draws about 1.25 to 1.4 times faster) */
+glInit();
 
 /* ---------- settings ---------- */
 var NWAVES = 5, WAVE_N = [4, 5, 6, 7, 8], NSTAGES = 5;
@@ -40,7 +42,7 @@ var BAKED = /*{{BAKED}}*/null;
 function bakeKey(svg, size) { var h = 2166136261, i; for (i = 0; i < svg.length; i++) { h ^= svg.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + '.' + svg.length + '.' + size.w + 'x' + size.h; }
 /* measured in the four test browsers and on a Pixel 7 Pro: Chromium decodes off the screen thread with createImageBitmap (decode() keeps it busy), WebKit and Firefox do with Image.decode() (createImageBitmap keeps WebKit busy) */
 var BAKE_BITMAP = typeof createImageBitmap === 'function' && /\bChrome\//.test(navigator.userAgent);
-function bakedPaint(src, size) { var c = document.createElement('canvas'); c.width = size.w; c.height = size.h; c.getContext('2d').drawImage(src, 0, 0, size.w, size.h); return c; }
+function bakedPaint(src, size) { var c = document.createElement('canvas'); c.width = size.w; c.height = size.h; c.getContext('2d').drawImage(src, 0, 0, size.w, size.h); c._gl = 1; return c; }
 function bakedImage(b64, size) {
   if (BAKE_BITMAP) {
     var s = atob(b64), n = s.length, u = new Uint8Array(n), i;
@@ -60,7 +62,7 @@ function svgImage(svg, size) {
     im.onload = function () {
       var c = document.createElement('canvas');
       c.width = size.w; c.height = size.h;
-      c.getContext('2d').drawImage(im, 0, 0, size.w, size.h);
+      c.getContext('2d').drawImage(im, 0, 0, size.w, size.h); c._gl = 1;
       res(c);
     };
     im.onerror = function () { res(null); };
@@ -205,7 +207,7 @@ function stamp(key, x, y, w, h, ox, oy, fn) {
     c = document.createElement('canvas'); c.width = Math.ceil(w * DPR); c.height = Math.ceil(h * DPR);
     g = c.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0);
     c0 = ctx; ctx = g; fn(ox, oy); ctx = c0;
-    e = SPR[key] = c;
+    c._gl = 1; e = SPR[key] = c;
   }
   ctx.drawImage(e, x - ox, y - oy, w, h);
 }
@@ -215,7 +217,7 @@ function resize(noBg) {   /* noBg: the caller starts a stage right after, and st
   W = Math.max(200, r.width); H = Math.max(200, r.height);
   var cap = DPR_STEPS[dprStep];
   DPR = Math.min(window.devicePixelRatio || 1, cap);
-  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); glSize();
   hy = H * 0.47; gy = H * 0.93; FW = W * 0.5;
   size0 = Math.min(W * 0.30, H * 0.30);
   if (K) { buildSkeeBg(); sealBg(); } else if (!noBg) buildBg();
@@ -230,7 +232,7 @@ function peaks(g, base, ph, arr, color) {
   g.lineTo(W, base); g.closePath(); g.fillStyle = color; g.fill();
 }
 /* the opaque canvas needs the background to cover every pixel: where two bands meet on a fractional pixel a hairline stayed half see-through, so paint a sand color behind everything the background drew */
-function sealBg() { if (!bg) return; var q = bg.getContext('2d'); q.save(); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'destination-over'; q.fillStyle = '#e8dcb8'; q.fillRect(0, 0, bg.width, bg.height); q.restore(); }
+function sealBg() { if (!bg) return; bg._gl = 1; var q = bg.getContext('2d'); q.save(); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'destination-over'; q.fillStyle = '#e8dcb8'; q.fillRect(0, 0, bg.width, bg.height); q.restore(); }
 function buildBg() { buildBg0(); sealBg(); }
 function buildBg0() {
   if (stageNo() > 1) { buildStageBg(); return; }
@@ -962,7 +964,7 @@ var SHAD = (function () {
   var g = c.getContext('2d'), gr = g.createRadialGradient(64, 32, 0, 64, 32, 62);
   gr.addColorStop(0, 'rgba(42,18,13,.55)'); gr.addColorStop(0.45, 'rgba(42,18,13,.34)'); gr.addColorStop(1, 'rgba(42,18,13,0)');
   g.save(); g.translate(0, 32); g.scale(1, 0.5); g.translate(0, -32); g.fillStyle = gr; g.fillRect(0, 0, 128, 64); g.restore();
-  return c;
+  c._gl = 1; return c;
 }());
 /* far-away and small things draw from a 96 or 192 pixel copy of the 384 pixel sprite: fewer pixels to sample, and smoother edges */
 function mip(im, sz) {
@@ -980,7 +982,7 @@ function warmAll() {
   warmQ.push(warmUmb);
   if (!warmOn) { warmOn = true; setTimeout(warmStep, 30); }
 }
-function halve(im, lv) { var c = document.createElement('canvas'), g = c.getContext('2d'); c.width = c.height = lv; g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, lv, lv); return c; }
+function halve(im, lv) { var c = document.createElement('canvas'), g = c.getContext('2d'); c.width = c.height = lv; g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, lv, lv); c._gl = 1; return c; }
 function drawShadow(x, y, w, a) {
   var pa = ctx.globalAlpha; ctx.globalAlpha = a;
   ctx.drawImage(SHAD, x - w * 1.3, y - w * 0.34, w * 2.6, w * 0.68);
@@ -1186,7 +1188,7 @@ function glowFor(key) {
   if (!glowFor.c[key]) {
     var c = document.createElement('canvas'); c.width = c.height = 96; var g = c.getContext('2d'), gr = g.createRadialGradient(48, 48, 0, 48, 48, 48);
     gr.addColorStop(0, 'rgba(' + key + ',.75)'); gr.addColorStop(0.55, 'rgba(' + key + ',.3)'); gr.addColorStop(1, 'rgba(' + key + ',0)');
-    g.fillStyle = gr; g.fillRect(0, 0, 96, 96); glowFor.c[key] = c;
+    g.fillStyle = gr; g.fillRect(0, 0, 96, 96); c._gl = 1; glowFor.c[key] = c;
   }
   return glowFor.c[key];
 }
@@ -1389,6 +1391,7 @@ function drawCall() {
 var TXT_FONT = '800 24px "Bricolage Grotesque",sans-serif';
 var DL = [];
 function draw() {
+  glBegin();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (S.shk > 0 && !calm && sv.sk) {
     if (sv.sk === 3) { var tr = S.shk * S.shk, tn = S.t * 31; ctx.translate(W / 2, H / 2); ctx.rotate(Math.sin(tn * 1.3) * 0.012 * tr); ctx.translate(-W / 2 + Math.sin(tn) * 14 * tr, -H / 2 + Math.sin(tn * 1.7 + 2) * 14 * tr); }   /* Strong: shake is trauma squared, smooth, with a tiny turn */
@@ -1416,6 +1419,7 @@ function draw() {
   drawFx(drawParticles()); drawGulls(); drawRaid(); drawCall();
   if (S.gl > 0) { ctx.fillStyle = 'rgba(255,226,120,' + (S.gl * 0.22) + ')'; ctx.fillRect(0, 0, W, H); }
   drawResume();
+  glEnd();
 }
 
 /* ---------- bonus game: a long lane, a hop, and a small 35 degree board of raised rings ---------- */
@@ -2535,7 +2539,7 @@ $('bShop').addEventListener('click', fillShop);
 /* test hook, only with #qa in the address */
 var qa = null;
 if (location.hash === '#qa') {
-  qa = window.__pd = { lose: function () { S.cheer = 0; endStage(false); }, twinTest: function (on) { twin = !!on; if (on) twinCard(); }, get twin() { return twin; }, ctxLost: ctxLost, ctxCardOpen: function () { return ctxCard; }, wake: function () { return { sup: !!(wk && wk.supported), held: !!(wk && wk.held), want: wakeOn(), idle: !!(wk && wk.idle), refusals: wk ? wk.refusals : 0 }; }, tour: tourStart, choice: throwChoice, pouch: function () { return pouchPos(); }, snap: function () { return { sl: sv.sl, sg: sv.sg, sc: sv.sc }; }, cont: function () { titleEl.hidden = true; gameEl.hidden = false; startStage(sv); run(); }, pause: function () { pause(); }, backArmed: function () { return !$('bcGuard').hidden; }, backOk: BackClose.supported, rsg: function () { return rsg(); }, rollGear: function () { return rollGear(); }, stap: function (x, y) { return sceneTap({ x: x, y: y }); }, get sc() { return S.sc; }, zone: function (i) { var z = ZONES[stageNo()][i]; return zoneHit({ x: z.x * W, y: z.y * H }); }, fish: function () { return tryDrop(); }, go: function (st, w, idle) { titleEl.hidden = true; gameEl.hidden = false; return loadAssets().then(function () { resize(true); startStage({ stage: st, wave: w, golden: 0, cheer: 100 }); if (!idle) run(); }); }, bgAlpha: function () { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, m = 255, i; for (i = 3; i < d.length; i += 4) if (d[i] < m) m = d[i]; return m; }, idleLoop: function () { if (raf) cancelAnimationFrame(raf); raf = 0; running = false; }, bot: false, sv: function () { return sv; }, scale: function (v) { timeScale = v; }, center: function (pg) { return penCenter(pg); }, hp: function (x, y, id) { return penAt({ x: x, y: y }); }, holdOn: function () { return !!hold; }, fpsTxt: function () { return elFps ? elFps.textContent : ''; }, get S() { return S; }, get penguins() { return penguins; },
+  qa = window.__pd = { shot: glShot, glInfo: function () { return { on: GLX.on, why: GLX.err, frame: GLX.frame, tex: GLX.texs.length, err: GLX.gl ? GLX.gl.getError() : -1 }; }, lose: function () { S.cheer = 0; endStage(false); }, twinTest: function (on) { twin = !!on; if (on) twinCard(); }, get twin() { return twin; }, ctxLost: ctxLost, ctxCardOpen: function () { return ctxCard; }, wake: function () { return { sup: !!(wk && wk.supported), held: !!(wk && wk.held), want: wakeOn(), idle: !!(wk && wk.idle), refusals: wk ? wk.refusals : 0 }; }, tour: tourStart, choice: throwChoice, pouch: function () { return pouchPos(); }, snap: function () { return { sl: sv.sl, sg: sv.sg, sc: sv.sc }; }, cont: function () { titleEl.hidden = true; gameEl.hidden = false; startStage(sv); run(); }, pause: function () { pause(); }, backArmed: function () { return !$('bcGuard').hidden; }, backOk: BackClose.supported, rsg: function () { return rsg(); }, rollGear: function () { return rollGear(); }, stap: function (x, y) { return sceneTap({ x: x, y: y }); }, get sc() { return S.sc; }, zone: function (i) { var z = ZONES[stageNo()][i]; return zoneHit({ x: z.x * W, y: z.y * H }); }, fish: function () { return tryDrop(); }, go: function (st, w, idle) { titleEl.hidden = true; gameEl.hidden = false; return loadAssets().then(function () { resize(true); startStage({ stage: st, wave: w, golden: 0, cheer: 100 }); if (!idle) run(); }); }, bgAlpha: function () { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, m = 255, i; for (i = 3; i < d.length; i += 4) if (d[i] < m) m = d[i]; return m; }, idleLoop: function () { if (raf) cancelAnimationFrame(raf); raf = 0; running = false; }, bot: false, sv: function () { return sv; }, scale: function (v) { timeScale = v; }, center: function (pg) { return penCenter(pg); }, hp: function (x, y, id) { return penAt({ x: x, y: y }); }, holdOn: function () { return !!hold; }, fpsTxt: function () { return elFps ? elFps.textContent : ''; }, get S() { return S; }, get penguins() { return penguins; },
     /* fast-forward without waiting for frames: sec game seconds in steps of dt, drawing every `every` steps (0 = never, one final draw) */
     step: function (sec, dt, every, lazy) { var n = Math.round(sec / (dt || 0.033)), i, d = dt || 0.033; calm = root.getAttribute('data-calm') === '1';   /* the page's own frame reads Calm like this; stepping by hand does too, so a check never sees a stale value */ for (i = 0; i < n; i++) { if (hold) holdTick(); if (K) updateSkee(d); else update(d); if (every && i % every === 0) { if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } } } if (lazy) return; if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } }, get timeScale() { return timeScale; }, get bits() { return bits.length; }, get shots() { return shots.length; }, get rings() { return rings.length; }, pause: pause, resume: function () { hideCard(); resume(); }, runK: runK, key: function (k) { document.dispatchEvent(new KeyboardEvent('keydown', { key: k })); },
     win: function () { endStage(true); }, flick: function (dx, dy, spd) { var o = pouchPos(); throwAt(o.x, o.y, dx, dy, spd); }, get sh() { return shots; }, demo: startDemo, replay: startReplay, get dm() { return demo; }, tick: function () { return demo; }, goal: updateGoal, undoShop: function () { var u = document.querySelector('#shUndo'); if (u) u.click(); }, fillShop: fillShop, raid: callRaid, st: function (k, v) { sv[k] = v; S.umL = sv.um; S.raL = RAID_N[sv.ra] || 0; }, gull: function () { S.fish = []; var ok = tryDrop(); return ok; }, endSk: function (v) { K.lastV = v; K.balls = 0; endSkee(); }, cmb: function (n, src) { var i; curSrc = src === 3 ? 2 : (src || 2); for (i = 0; i < n; i++) cmbHit(W * 0.5, H * 0.5); curSrc = 1; if (src === 3) cmbHit(W * .5, H * .5); }, give: function (k) { spawnPU(k); }, award: award, collect: function () { collectPU(); collectTro(false); }, skee: startSkee, get K() { return K; }, roll: skeeRoll, plan: function (dx, dy, spd) { return skLaunch({ dx: dx, dy: dy, spd: spd }); }, sim: function (dx, dy, spd, dA, dF) { var h = skSim(skLaunch({ dx: dx, dy: dy, spd: spd }, dA, dF)); return h ? h.v : 0; }, get H() { return SK_HOLES; }, tap: function (x, y) { var o = pouchPos(); throwAt(o.x, o.y, x - o.x, y - o.y, 1.5, { x: x, y: y }); } };

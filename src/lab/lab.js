@@ -118,7 +118,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     }
     lines = ['Pineapple Defense Device check', 'Version: ' + (ver ? ver[1] : '?') + ' (tester build)', 'Result: ' + word + '. ' + why];
     if (word !== 'Could not check') lines.push('Frames a second: ' + r1(n * 1000 / sum) + (med > floor ? ' (much slower than a normal screen; typical spacing ' + r1(med) + ' ms)' : ' (the screen seems to run at about ' + hz + ' Hz)'), 'Frame time: typical ' + r1(med) + ' ms, slowest 5 percent over ' + r1(pct(sg, 0.95)) + ' ms, slowest 1 percent over ' + r1(pct(sg, 0.99)) + ' ms, worst ' + r1(sg[n - 1]) + ' ms', 'Frames more than twice the typical time: ' + slow + ' of ' + n, 'Hitches: ' + dm.verdict(), 'The game\'s own work per frame: average ' + r1(ws / n) + ' ms, slowest 5 percent over ' + r1(pct(sw, 0.95)) + ' ms', 'Picture quality: ' + (qmax === 0 ? 'stayed at full' : 'dropped to level ' + qmax + ' of 2 (canvas step ' + dmax + ' of 4)'));
-    lines.push('Run: Stage 2 wave 3 played by the throwing helper, ' + r1(run / 1000) + ' s measured after a ' + r1(warm / 1000) + ' s warm-up' + (ended ? ' (' + ended + ')' : ''), 'Start: the game finished starting after ' + BOOT_MS + ' ms');
+    lines.push('Run: Stage 2 wave 3 played by the throwing helper, ' + r1(run / 1000) + ' s measured after a ' + r1(warm / 1000) + ' s warm-up' + (ended ? ' (' + ended + ')' : ''), 'Start: the game finished starting after ' + BOOT_MS + ' ms', 'Graphics: ' + (GLX.on ? 'WebGL layer (background and sprites)' : 'canvas 2D only'));
     return lines.concat(devInfo()).join('\n');
   }
   function deviceCheck(opts, done) {
