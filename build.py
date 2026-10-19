@@ -36,7 +36,9 @@ def game_js():
     g = g.replace("/*{{EVOLVE_JS}}*/", (S / "evolve.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{EXTRAS_JS}}*/", (S / "extras.js").read_text(encoding="utf-8"))
-    return g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
+    g = g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
+    baked = S / "baked-sprites.json"      # made by tools/bake_sprites.py; without it the game draws its sprites from the SVG as before
+    return g.replace("/*{{BAKED}}*/null", baked.read_text(encoding="utf-8").strip() if baked.exists() and not os.environ.get("PD_NO_BAKED") else "null")
 
 def minify(t):
     """Shrink every inline script and style with esbuild (optional tool). Returns None when esbuild is missing."""
