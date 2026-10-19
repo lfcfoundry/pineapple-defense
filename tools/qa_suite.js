@@ -60,14 +60,20 @@ await T('load', async () => { if (!P) throw new Error('no __pd'); const sv = P.s
 
 for (let st = 1; st <= 5; st++) await T('stage ' + st + ' runs', async () => { await go(st, 0); if (P.bgAlpha() !== 255) throw new Error('the stage background has a see-through pixel (lowest alpha ' + P.bgAlpha() + '); the opaque canvas would show it as a dark line'); P.bot = true; P.step(25, 0.033, 40); inv('stage' + st); P.bot = false; });
 
-await T('page policy: WebAssembly may run (wasm-unsafe-eval), nothing else loosened', async () => {
-  /* owner's rule 2026-10-17: 'wasm-unsafe-eval' on every page. The policy text must be exactly this; an empty module (\0asm, version 1) must compile where the browser enforces the policy for page scripts (WebKitGTK does; Playwright and Selenium script injection in Chromium and Firefox is exempt, so there the text check is the real one). */
+await T('page policy: WebAssembly and blob workers may run, nothing else loosened', async () => {
+  /* owner's rules 2026-10-17 and 2026-10-19: 'wasm-unsafe-eval' and worker-src blob: on every page. The policy text must be exactly this; an empty module (\0asm, version 1) must compile where the browser enforces the policy for page scripts (WebKitGTK does; Playwright and Selenium script injection in Chromium and Firefox is exempt, so there the text check is the real one), and a worker started from a blob must answer. */
   const meta = document.querySelector('meta[http-equiv="Content-Security-Policy"]').content;
-  if (!/script-src 'unsafe-inline' 'wasm-unsafe-eval';/.test(meta)) throw new Error('script-src is not exactly inline plus wasm-unsafe-eval: ' + meta);
+  if (!/script-src 'unsafe-inline' 'wasm-unsafe-eval'; worker-src blob:;/.test(meta)) throw new Error('script-src / worker-src are not exactly inline plus wasm-unsafe-eval, and blob workers: ' + meta);
   let wasm = false;
   try { new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0])); wasm = true; } catch (e) { /* blocked */ }
   if (!wasm) throw new Error('a WebAssembly module did not compile under the page policy');
-  return 'script-src is inline + wasm-unsafe-eval; an empty wasm module compiles';
+  const url = URL.createObjectURL(new Blob(['onmessage=function(e){postMessage(e.data+1)}'], { type: 'text/javascript' }));
+  let w;
+  try {
+    const got = await new Promise((ok, no) => { w = new Worker(url); w.onmessage = e => ok(e.data); w.onerror = () => no(new Error('the blob worker failed to start')); setTimeout(() => no(new Error('the blob worker did not answer in 3 s')), 3000); w.postMessage(41); });
+    if (got !== 42) throw new Error('the blob worker answered ' + got + ', not 42');
+  } finally { if (w) w.terminate(); URL.revokeObjectURL(url); }
+  return 'script-src is inline + wasm-unsafe-eval, worker-src is blob:; an empty wasm module compiles and a blob worker answers';
 });
 
 await T('combo calls', async () => {

@@ -13,7 +13,7 @@ src = pg.read_bytes()
 src = re.sub(rb'<meta http-equiv="Content-Security-Policy"[^>]*>\n?', b'', src)  # the wrapper carries the same policy
 ver = re.search(rb'Alpha ([0-9.]+)', src)
 ver = ver.group(1).decode() if ver else 'dev'
-csp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; img-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'"
+csp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; worker-src blob:; img-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'"
 hdr = (root / 'src' / 'header.txt').read_text(encoding='utf-8').rstrip('\n')
 head = f'<meta http-equiv="Content-Security-Policy" content="{csp}">\n<!-- Pineapple Defense {ver}, LZMA self-extracting (lzma-pack and lzma-decode from JS-modules, MIT).\n{hdr}\n-->'
 out = pathlib.Path(args[0]) if args else root / 'dist' / (f'pineapple-defense-tester-{ver}.html' if lab else f'pineapple-defense-{ver}.html')
