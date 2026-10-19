@@ -38,7 +38,8 @@ var MOOD = {
 /* Baked pictures: tools/bake_sprites.py draws every sprite once and keeps it as a WebP in src/baked-sprites.json. At run time a baked picture is decoded off the screen
    thread (createImageBitmap), where drawing the SVG costs the screen thread about 8 ms per sprite on a phone. A sprite with no baked copy, or a browser that cannot decode
    it, takes the SVG path exactly as before. */
-var BAKED = /*{{BAKED}}*/null;
+var BAKED;   /* the baked pictures sit in a data block at the very end of the page (type application/json, so the browser neither compiles nor runs them, and the first screen is not held up behind them) and are parsed on first use, which is always after the page has loaded (a stage starts on a tap); a call before then simply draws from the SVG */
+function bakedMap() { if (BAKED === undefined) { var e = document.getElementById('baked'); if (!e) return document.readyState === 'loading' ? null : (BAKED = null); try { BAKED = e ? JSON.parse(e.textContent) : null; } catch (x) { BAKED = null; } if (e) e.textContent = ''; } return BAKED; }
 function bakeKey(svg, size) { var h = 2166136261, i; for (i = 0; i < svg.length; i++) { h ^= svg.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + '.' + svg.length + '.' + size.w + 'x' + size.h; }
 /* measured in the four test browsers and on a Pixel 7 Pro: Chromium decodes off the screen thread with createImageBitmap (decode() keeps it busy), WebKit and Firefox do with Image.decode() (createImageBitmap keeps WebKit busy) */
 var BAKE_BITMAP = typeof createImageBitmap === 'function' && /\bChrome\//.test(navigator.userAgent);
@@ -53,7 +54,7 @@ function bakedImage(b64, size) {
   return im.decode().then(function () { return bakedPaint(im, size); }, function () { return null; });
 }
 function toImage(svg, size) {
-  var b = BAKED && BAKED[bakeKey(svg, size)];
+  var m = bakedMap(), b = m && m[bakeKey(svg, size)];
   return b ? bakedImage(b, size).then(function (c) { return c || svgImage(svg, size); }) : svgImage(svg, size);
 }
 function svgImage(svg, size) {
@@ -1412,7 +1413,7 @@ function draw() {
   list.length = n;
   for (i = 1; i < n; i++) { v = list[i]; for (j = i - 1; j >= 0 && list[j].p > v.p; j--) list[j + 1] = list[j]; list[j + 1] = v; }
   for (i = 0; i < list.length; i++) { if (list[i].isFish) { drawFish(list[i]); continue; } if (list[i] === S.boss) { if (!champHidden(list[i])) drawPenguin(list[i]); drawShield(list[i]); drawChampArt(list[i]); } else drawPenguin(list[i]); }
-  drawAutoMark(); drawDangerEdge();
+  glSolo(); drawAutoMark(); drawDangerEdge();
   drawStand(); drawTable(); drawUmbrellas();
   for (i = 0; i < shots.length; i++) drawShot(shots[i]);
   drawMissiles(); drawAtmosTop(S.t); drawAimArc();
