@@ -21,6 +21,11 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
 
+## WebGL drawing layer (experimental, off by default)
+
+- `src/gl.js` (injected into `game.js` at build time) draws cached sprites with WebGL. Turn it on with `gl=1` or `gl=2` in the address, `window.__PD_GL`, or a build with `PD_GL=1|2`; `gl=0` always turns it off. Layout 2 is the exact-order one. Keep these true when editing `draw()` or `drawPenguin()`: vectors that sat under a penguin sprite go through `glUnder()`/`glOver()`; anything that lights or tints other penguins (evolve glow, ice aura) must make the frame fall back (see `glPhase2`); glows drawn after the penguins go to the add-blend overlay.
+- Any change to it must pass the near-match gate in all four test browsers (99.5% of pixels within 3/255 per color, first frame, +1 s and +9 s, five stages) before it merges. `tools/make_gl_test.py` (in the shared files) builds the one-file phone test.
+
 ## Shared files and private notes
 
 - Hard-to-reach downloads and private build notes (secret features, upgrades, stages) go in the private lfcfoundry/knowledge-base repo, on a new branch when needed, not in this public repo.

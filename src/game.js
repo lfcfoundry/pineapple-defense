@@ -1013,11 +1013,11 @@ function drawDangerEdge() {
 }
 function drawPenguin(pg) {
   var s = psz(pg.p) * (pg.big || 1), x = px(pg.xn, pg.p), y = py(pg.p);
-  if (sv.dg && pg.st === 'walk' && pg.p >= DANGER_P && pg !== S.boss) drawDanger(x, y - s * 0.3, s, pg.p);
+  if (sv.dg && pg.st === 'walk' && pg.p >= DANGER_P && pg !== S.boss) { glUnder(); drawDanger(x, y - s * 0.3, s, pg.p); glOver(); }
   if (pg.fz > 0) x += Math.sin(S.t * 140) * s * 0.03 * (pg.fz / (pg.fz0 || pg.fz));   /* a frozen hit trembles, less and less */
   ctx.save(); ctx.globalAlpha = pg.a;
   var rot = 0, hop = 0, sx = 1, sy = 1, tt = calm ? 0 : S.t;
-  if (pg.ice) drawIceAura(x, y, s);
+  if (pg.ice) { glUnder(); drawIceAura(x, y, s); glOver(); }
   if (pg.st === 'walk' || pg.st === 'hold' || (pg.st === 'bump' && pg.t > 0.9)) { if (!calm) { rot = Math.sin(pg.ph) * 0.1; hop = Math.abs(Math.sin(pg.ph)) * s * 0.03; } }
   else if (pg.st === 'hit') { rot = calm ? 0 : Math.sin(pg.t * 30) * 0.05; if (!calm) { var sq = Math.max(0, 1 - pg.t * 5); sx = 1 + 0.2 * sq; sy = 1 - 0.18 * sq; } }   /* a quick squash when a pineapple lands */
   else if (pg.st === 'slide') { sx = 1.15; sy = 0.62; rot = 0.1; }
@@ -1029,11 +1029,11 @@ function drawPenguin(pg) {
   var lift = hop / (s * 0.03 || 1);
   drawShadow(x + s * 0.05, y - s * 0.015, s * 0.34 * sx * (1 - 0.16 * lift), 1 - 0.25 * lift);
   if (pg.st !== 'slide' && pg.st !== 'dash') {
-    ctx.fillStyle = 'rgba(42,18,13,' + (0.28 - 0.14 * lift) + ')';
-    ctx.beginPath(); ctx.ellipse(x - s * 0.17, y - s * 0.01, s * 0.1, s * 0.025, 0, 0, 6.3); ctx.ellipse(x + s * 0.17, y - s * 0.01, s * 0.1, s * 0.025, 0, 0, 6.3); ctx.fill();
+    glUnder(); ctx.fillStyle = 'rgba(42,18,13,' + (0.28 - 0.14 * lift) + ')';
+    ctx.beginPath(); ctx.ellipse(x - s * 0.17, y - s * 0.01, s * 0.1, s * 0.025, 0, 0, 6.3); ctx.ellipse(x + s * 0.17, y - s * 0.01, s * 0.1, s * 0.025, 0, 0, 6.3); ctx.fill(); glOver();
   }
   var el = evolveLook(pg); sx *= el.sx; sy *= el.sy; rot += el.rot;
-  drawEvolveGlow(pg, x, y - hop, s);
+  glUnder(); drawEvolveGlow(pg, x, y - hop, s); glOver();
   ctx.translate(x, y - hop - fh); ctx.rotate(rot); ctx.scale(sx, sy);
   var im = IMG[pg.kind][pg.mood];
   if (im) ctx.drawImage(mip(im, s * Math.max(sx, sy)), -s / 2, -s * 0.965, s, s);
@@ -1398,6 +1398,7 @@ function draw() {
     if (sv.sk === 3) { var tr = S.shk * S.shk, tn = S.t * 31; ctx.translate(W / 2, H / 2); ctx.rotate(Math.sin(tn * 1.3) * 0.012 * tr); ctx.translate(-W / 2 + Math.sin(tn) * 14 * tr, -H / 2 + Math.sin(tn * 1.7 + 2) * 14 * tr); }   /* Strong: shake is trauma squared, smooth, with a tiny turn */
     else { var sf = sv.sk === 1 ? 0.5 : 1; ctx.translate((Math.random() - .5) * 9 * S.shk * sf, (Math.random() - .5) * 9 * S.shk * sf); }
   }
+  glPhase1();
   ctx.drawImage(bg, 0, 0, W, H);
   var drift = calm ? 0 : (S.t * 6) % (W * 1.4);
   var cl = Math.min(W, H) * 0.12;
@@ -1412,6 +1413,7 @@ function draw() {
   for (i = 0; i < S.clones.length; i++) list[n++] = S.clones[i];
   list.length = n;
   for (i = 1; i < n; i++) { v = list[i]; for (j = i - 1; j >= 0 && list[j].p > v.p; j--) list[j + 1] = list[j]; list[j + 1] = v; }
+  glPhase2(list);
   for (i = 0; i < list.length; i++) { if (list[i].isFish) { drawFish(list[i]); continue; } if (list[i] === S.boss) { if (!champHidden(list[i])) drawPenguin(list[i]); drawShield(list[i]); drawChampArt(list[i]); } else drawPenguin(list[i]); }
   glSolo(); drawAutoMark(); drawDangerEdge();
   drawStand(); drawTable(); drawUmbrellas();
