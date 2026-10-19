@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- Starting a stage is about twice as quick (the background was being drawn twice), so there is less of a hitch when a stage begins. The picture is exactly the same.
 - The page now allows background workers started from inside the file, ready for heavier work to move off the screen's thread. Nothing you see changes.
 - The game opens a little sooner, because the single file now unpacks faster.
 - Smoother in Firefox, with no change to how the game looks.
