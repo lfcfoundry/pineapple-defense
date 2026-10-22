@@ -21,6 +21,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
 
+## Hidden speed check and error note
+
+- `src/speedcheck.js` (injected into `game.js`) holds the Device check and the hidden panel (7 taps on the credit line on the title screen, within 4 seconds). The error note is JS-modules `slow-note` (vendored in `src/vendor/slow-note/`). Nothing in it may use the network. The Test Lab's "Device check" button and `window.__deviceCheck` use the same code.
+
 ## Shared files and private notes
 
 - Hard-to-reach downloads and private build notes (secret features, upgrades, stages) go in the private lfcfoundry/knowledge-base repo, on a new branch when needed, not in this public repo.

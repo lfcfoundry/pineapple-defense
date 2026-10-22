@@ -76,6 +76,19 @@ await T('page policy: WebAssembly and blob workers may run, nothing else loosene
   return 'script-src is inline + wasm-unsafe-eval, worker-src is blob:; an empty wasm module compiles and a blob worker answers';
 });
 
+await T('hidden speed check and error note: 7 taps on the credit line, title screen only', async () => {
+  const legal = document.querySelector('.legal'), t = document.getElementById('title'), was = t.hidden, tap = n => { for (let i = 0; i < n; i++) legal.dispatchEvent(new MouseEvent('click', { bubbles: true })); };
+  try {
+    t.hidden = true; tap(7); if (document.getElementById('devDlg')) throw new Error('the panel opened away from the title screen');
+    t.hidden = false; tap(6); if (document.getElementById('devDlg')) throw new Error('the panel opened after 6 taps');
+    tap(1); const d = document.getElementById('devDlg'); if (!d || !/Speed and error note/.test(d.textContent)) throw new Error('7 taps did not open the panel');
+    const names = [...d.querySelectorAll('button')].map(b => b.textContent).join(' / '); if (names !== 'Speed check / Error note / Close') throw new Error('buttons: ' + names);
+    d.querySelectorAll('button')[1].click(); const n = document.getElementById('devDlg'); if (!n || !/Pineapple Defense/.test(n.textContent) || !/Start-up/.test(n.textContent)) throw new Error('the error note has no header or start-up line');
+    n.querySelector('button:last-child').click(); if (document.getElementById('devDlg')) throw new Error('Close did not close the panel');
+  } finally { t.hidden = was; const d = document.getElementById('devDlg'); if (d) d.remove(); }
+  return 'not on the game screen, not after 6 taps; 7 taps open a card with Speed check, Error note and Close; the note shows its header and start-up line';
+});
+
 await T('combo calls', async () => {
   await go(1, 1); const S = P.S;
   P.cmb(2, 2); P.step(0.1, 0.033); if (!S.call || S.call.txt !== 'Double!') throw new Error('double: ' + JSON.stringify(S.call));
