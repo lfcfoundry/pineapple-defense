@@ -77,7 +77,7 @@ def main():
         "/*{{STICKER_CSS}}*/": (S / "vendor/sticker-text/sticker-text.css").read_text(),
         "/*{{STICKER_JS}}*/": (S / "vendor/sticker-text/sticker-text.js").read_text(),
         "/*{{EVEN_DT}}*/": (S / "vendor/frame-kit/even-dt.js").read_text(),
-        "/*{{QGOV}}*/": (S / "vendor/frame-kit/quality-governor.js").read_text(),
+        "/*{{QGOV}}*/": (S / "vendor/fx-governor/fx-governor.js").read_text(),
         "/*{{FRAMEMETER}}*/": (S / "vendor/frame-kit/frame-meter.js").read_text(),
         "/*{{BACKCLOSE}}*/": (S / "vendor/back-close/back-close.js").read_text(),
         "/*{{WAKEKEEPER}}*/": (S / "vendor/wake-keeper/wake-keeper.js").read_text(),
