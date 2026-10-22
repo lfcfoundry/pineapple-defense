@@ -621,15 +621,18 @@ function sceneTap(p) {
   if (S.over || S.paused || S.rc > 0 || p.y > hy + H * 0.2) return false;
   var k = stageNo(); return k === 4 ? stormTap(p) : k === 5 ? fortTap(p) : false;
 }
+var AUR_T = new Float32Array(11), AUR_B = new Float32Array(11);
 function animFort(t) {
   var i, wh = H * 0.15, wy = hy + 2;
   /* aurora ribbons ripple over the cool side */
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (i = 0; i < 3; i++) {
     var ay = hy * (0.2 + i * 0.12), gr = gk('aur' + i, function () { var g = ctx.createLinearGradient(0, ay - H * 0.07, 0, ay + H * 0.1); g.addColorStop(0, 'rgba(90,255,200,0)'); g.addColorStop(0.5, i === 1 ? 'rgba(140,120,255,.28)' : 'rgba(90,255,200,.3)'); g.addColorStop(1, 'rgba(90,255,200,0)'); return g; });
+    for (var k = 0; k <= 10; k++) { AUR_T[k] = ay + Math.sin(t * 0.9 + k * 0.7 + i * 1.7) * H * 0.035; AUR_B[k] = ay + H * 0.07 + Math.sin(t * 0.9 + k * 0.7 + i * 1.7 + 0.6) * H * 0.03; }
+    if (GLX.rib) { glRibbon(i === 1 ? 1 : 0, ay - H * 0.07, H * 0.17, W * 0.35, W * 0.065, AUR_T, AUR_B, 11); continue; }
     ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(W * 0.35, ay);
-    for (var k = 0; k <= 10; k++) ctx.lineTo(W * (0.35 + k * 0.065), ay + Math.sin(t * 0.9 + k * 0.7 + i * 1.7) * H * 0.035);
-    for (k = 10; k >= 0; k--) ctx.lineTo(W * (0.35 + k * 0.065), ay + H * 0.07 + Math.sin(t * 0.9 + k * 0.7 + i * 1.7 + 0.6) * H * 0.03);
+    for (k = 0; k <= 10; k++) ctx.lineTo(W * (0.35 + k * 0.065), AUR_T[k]);
+    for (k = 10; k >= 0; k--) ctx.lineTo(W * (0.35 + k * 0.065), AUR_B[k]);
     ctx.closePath(); ctx.fill();
   }
   ctx.restore();

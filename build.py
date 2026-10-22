@@ -29,7 +29,7 @@ LAB = "--lab" in sys.argv
 MIN = "--min" in sys.argv
 
 def baked_json():
-    """The baked sprites as JSON text for the data block at the end of the page; made by tools/bake_sprites.py. Without them (or with PD_NO_BAKED) the game draws its sprites from the SVG as before."""
+    """The baked sprites as JSON text for the data block ahead of the game script; made by tools/bake_sprites.py. Without them (or with PD_NO_BAKED) the game draws its sprites from the SVG as before."""
     baked = S / "baked-sprites.json"
     return baked.read_text(encoding="utf-8").strip() if baked.exists() and not os.environ.get("PD_NO_BAKED") else "null"
 
@@ -40,6 +40,7 @@ def game_js():
     g = g.replace("/*{{STAGES_JS}}*/", (S / "stages.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{EVOLVE_JS}}*/", (S / "evolve.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
+    g = g.replace("/*{{GL_JS}}*/", (S / "gl.js").read_text(encoding="utf-8").replace("/*{{GL_DEFAULT}}*/0", os.environ.get("PD_GL") if os.environ.get("PD_GL") in ("1", "2") else "0"))
     g = g.replace("/*{{EXTRAS_JS}}*/", (S / "extras.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{SPEEDCHECK_JS}}*/", (S / "speedcheck.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
