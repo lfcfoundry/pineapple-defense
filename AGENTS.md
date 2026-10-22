@@ -21,6 +21,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
 
+## Speed guard tool
+
+- `tools/speed_guard.js` is the merge-card speed table: two pages, one browser at a time, taking turns, warm-up dropped, with the owner's 5% verdict. It uses the shared test runner vendored in `tools/vendor/tools/test-runner/` (copied unchanged from JS-modules; update by copying again) and reads `window.__pd.boot` (the `#qa` hook). Run it once per browser (`chromium`, `firefox`, `webkit`, `epiphany`) with `CHROMIUM=$PD_CHROME FIREFOX=$PD_FF`. Speed only from the four test browsers; this tool is Node only to drive them.
+
 ## Minified page
 
 - `build.py` writes the esbuild-minified page as `index.html` (and `dist/lab/index.html`); the readable copy is `dist/readable/index.html` (`PD_READABLE=1` writes the readable page as `index.html`). Measured with esbuild 0.28.2 (desktop speed, readable to minified): the game finishes starting 12 to 25% sooner in the four test browsers; at 6x slower CPU in Chromium, 1570 to 1260 ms. Read `dist/readable/` when debugging; error notes from the hidden panel carry minified names.
