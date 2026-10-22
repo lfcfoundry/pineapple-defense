@@ -26,6 +26,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - `src/gl.js` (injected into `game.js` at build time) draws cached sprites with WebGL. Turn it on with `gl=1` or `gl=2` in the address, `window.__PD_GL`, or a build with `PD_GL=1|2`; `gl=0` always turns it off. Layout 2 is the exact-order one. Keep these true when editing `draw()` or `drawPenguin()`: vectors that sat under a penguin sprite go through `glUnder()`/`glOver()`; anything that lights or tints other penguins (evolve glow, ice aura) must make the frame fall back (see `glPhase2`); glows drawn after the penguins go to the add-blend overlay.
 - Any change to it must pass the near-match gate in all four test browsers (99.5% of pixels within 3/255 per color, first frame, +1 s and +9 s, five stages) before it merges. `tools/make_gl_test.py` (in the shared files) builds the one-file phone test.
 
+## Hidden speed check and error note
+
+- `src/speedcheck.js` (injected into `game.js`) holds the Device check and the hidden panel (7 taps on the credit line on the title screen, within 4 seconds). The error note is JS-modules `slow-note` (vendored in `src/vendor/slow-note/`). Nothing in it may use the network. The Test Lab's "Device check" button and `window.__deviceCheck` use the same code.
+
 ## Shared files and private notes
 
 - Hard-to-reach downloads and private build notes (secret features, upgrades, stages) go in the private lfcfoundry/knowledge-base repo, on a new branch when needed, not in this public repo.
