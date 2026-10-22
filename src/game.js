@@ -44,9 +44,10 @@ var BAKE_BITMAP = typeof createImageBitmap === 'function' && /\bChrome\//.test(n
 function bakedPaint(src, size) { var c = document.createElement('canvas'); c.width = size.w; c.height = size.h; c.getContext('2d').drawImage(src, 0, 0, size.w, size.h); return c; }
 function bakedImage(b64, size) {
   if (BAKE_BITMAP) {
-    var s = atob(b64), n = s.length, u = new Uint8Array(n), i;
-    for (i = 0; i < n; i++) u[i] = s.charCodeAt(i);
-    return createImageBitmap(new Blob([u], { type: 'image/webp' })).then(function (b) { var c = bakedPaint(b, size); if (b.close) b.close(); return c; }, function () { return null; });
+    var u, s, n, i;
+    if (Uint8Array.fromBase64) u = Uint8Array.fromBase64(b64);
+    else { s = atob(b64); n = s.length; u = new Uint8Array(n); for (i = 0; i < n; i++) u[i] = s.charCodeAt(i); }
+    return createImageBitmap(new Blob([u], { type: 'image/webp' })).then(function (b) { return b; }, function () { return null; });   /* the decoded bitmap itself is the sprite: copying it into a canvas first cost about 70 ms on the first stage start for nothing */
   }
   var im = new Image(); im.src = 'data:image/webp;base64,' + b64;
   return im.decode().then(function () { return bakedPaint(im, size); }, function () { return null; });
