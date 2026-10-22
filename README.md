@@ -102,7 +102,7 @@ Trophies pay Golden Pineapples. They show as a gold icon when you have them and 
 Everything is one self-contained HTML file built from `src/`. There are no runtime dependencies, no network calls and a strict content security policy.
 
 - Design brief: [docs/pineapple-defense-design.md](docs/pineapple-defense-design.md) · QA and build process: [docs/qa-process.md](docs/qa-process.md) · ideas and performance audits: [docs/ideas-qol-and-performance.md](docs/ideas-qol-and-performance.md) · [changelog](CHANGELOG.md)
-- Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`). Do not edit `index.html` by hand.
+- Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `index.html` by hand.
 - Packed single file: `python3 tools/pack.py` makes one smaller, self-unpacking `.html` in `dist/`; add `--min` to pack the minified page (`python3 build.py --min` first, needs `esbuild`).
 - Icons: `python3 -I tools/make_icons.py` regenerates `src/sprites/icons.svg` and the standalone files in `docs/icons/`.
 - Checks: `python3 -I tools/qa.py` (add `--ff` for Firefox). Release: `python3 -I tools/release.py`.

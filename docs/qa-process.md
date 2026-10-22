@@ -48,7 +48,7 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE).
 Opening a save from an older build keeps all fields and fills the new ones with zeros (checked by loading an older build's save into the current one).
 
 ## Minified build
-`python3 build.py --min` (and `--lab --min`) writes `dist/min/index.html` and `dist/lab-min/index.html` with every inline script and style run through esbuild (`npm i --no-save esbuild`, or set `PD_ESBUILD`). `release.py` tests that page with the same suite and packs it; if esbuild is missing it says so and packs the readable page. Scripts and styles are minified in one pass, each closed by its own tag, because the game script contains the text `</style>` inside a string.
+`python3 build.py` now writes the minified page as `index.html` (and `dist/lab/index.html` for `--lab`), with every inline script and style run through esbuild (`npm i --no-save esbuild`, or set `PD_ESBUILD`); the readable copy goes to `dist/readable/index.html` (`dist/lab-readable/` for the tester). Set `PD_READABLE=1` to write the readable page as `index.html` instead. `--min` still writes `dist/min/index.html` and `dist/lab-min/index.html`, now the same page. `release.py` tests that page with the same suite and packs it; if esbuild is missing it says so and packs the readable page. Scripts and styles are minified in one pass, each closed by its own tag, because the game script contains the text `</style>` inside a string.
 
 ## Habit
 Design iteration: do not run QA until the design is settled. Before a release: `release.py --ff` once.

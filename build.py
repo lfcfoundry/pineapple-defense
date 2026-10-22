@@ -100,15 +100,19 @@ def main():
     assert "{{" not in re.sub(r"\$\{\{", "", t.replace("{{VERSION}}", "")) or True
     out = R / "dist" / "lab" / "index.html" if LAB else R / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(t, encoding="utf-8")
-    print("built", out.relative_to(R), ver, len(t) // 1024, "KB")
+    m = None if os.environ.get("PD_READABLE") else minify(t)   # the page itself is the minified one (about 20% faster to start in all four test browsers, see AGENTS.md); the readable copy goes to dist/readable
+    if m is None:
+        if not os.environ.get("PD_READABLE"): print("no esbuild found (npm i --no-save esbuild, or set PD_ESBUILD): wrote the readable page, which starts slower")
+        out.write_text(t, encoding="utf-8")
+        print("built", out.relative_to(R), ver, len(t) // 1024, "KB")
+    else:
+        ro = R / "dist" / ("lab-readable" if LAB else "readable") / "index.html"
+        ro.parent.mkdir(parents=True, exist_ok=True); ro.write_text(t, encoding="utf-8")
+        out.write_text(m, encoding="utf-8")
+        print("built", out.relative_to(R), ver, len(m) // 1024, "KB (minified; readable copy in", ro.relative_to(R).as_posix() + ")")
     if MIN:
-        m = minify(t)
-        if m is None:
-            print("no esbuild found (npm i --no-save esbuild, or set PD_ESBUILD): skipped the minified build")
-        else:
-            mo = R / "dist" / ("lab-min" if LAB else "min") / "index.html"
-            mo.parent.mkdir(parents=True, exist_ok=True); mo.write_text(m, encoding="utf-8")
-            print("built", mo.relative_to(R), len(m) // 1024, "KB (minified)")
+        mo = R / "dist" / ("lab-min" if LAB else "min") / "index.html"
+        mo.parent.mkdir(parents=True, exist_ok=True); mo.write_text(m if m is not None else (minify(t) or t), encoding="utf-8")
+        print("built", mo.relative_to(R), "(same minified page)")
 
 main()

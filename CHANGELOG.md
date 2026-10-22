@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The game opens sooner on every browser: the page itself is now the compact version of the file (about a fifth quicker to start, and more on a slow phone). Nothing you see changes.
 - A hidden helper for "it felt slow": tapping the small credit line on the title screen 7 times opens a card with a 25 second Speed check (it plays a busy stage by itself and tells you in plain words how smooth it was) and an Error note (the last slow or broken moments this device saw). Both can be copied and pasted into a message; nothing is ever sent anywhere.
 - Starting a stage is about twice as quick (the background was being drawn twice), so there is less of a hitch when a stage begins. The picture is exactly the same.
 - The page now allows background workers started from inside the file, ready for heavier work to move off the screen's thread. Nothing you see changes.
