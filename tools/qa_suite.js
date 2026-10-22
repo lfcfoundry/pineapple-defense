@@ -89,6 +89,16 @@ await T('hidden speed check and error note: 7 taps on the credit line, title scr
   return 'not on the game screen, not after 6 taps; 7 taps open a card with Speed check, Error note and Close; the note shows its header and start-up line';
 });
 
+await T('a card open on the title screen holds the title animations still, closing lets them go on', async () => {
+  const t = document.getElementById('title'), was = t.hidden, root = document.documentElement, run = () => document.getAnimations().filter(a => a.playState === 'running' && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.title')).length;
+  try {
+    t.hidden = false; await wait(120); const before = run(); if (before < 5) throw new Error('only ' + before + ' title animations are running, expected the scene to be moving');
+    root.setAttribute('data-dlg', '1'); await Promise.resolve(); const during = run(); if (during) throw new Error(during + ' title animations still run with a card open');
+    root.removeAttribute('data-dlg'); await Promise.resolve(); const after = run(); if (after < before) throw new Error('after closing, ' + after + ' of ' + before + ' title animations run again');
+    return before + ' title animations run, 0 while a card is open, ' + after + ' again after it closes';
+  } finally { root.removeAttribute('data-dlg'); t.hidden = was; }
+});
+
 await T('combo calls', async () => {
   await go(1, 1); const S = P.S;
   P.cmb(2, 2); P.step(0.1, 0.033); if (!S.call || S.call.txt !== 'Double!') throw new Error('double: ' + JSON.stringify(S.call));
