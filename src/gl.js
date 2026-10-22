@@ -2,7 +2,7 @@
    What it is: the background and every cached sprite (penguins, shots, glows, shadows) are drawn by WebGL on a canvas under the game canvas; the canvas on top keeps drawing the vector parts (shapes, gradients, text) exactly as before and starts each frame empty.
    How it works: while one frame is being drawn, ctx.drawImage is swapped for a recorder. A call whose picture is a cache canvas (made once and never redrawn), with no clip and normal or additive blending, is turned into a textured quad with the transform and alpha the 2D canvas had at that moment; everything else is passed to the real drawImage. At the end of the frame all quads are drawn in a few batches.
    Why it exists: on a Pixel 7 Pro the same busy frame drew 4.55 times faster this way than all in canvas 2D (phone tester, 2026-10-19). Order is the one visible difference: sprites now sit under the vectors of the same frame, which the near-match picture gate measures. Without WebGL, or after a lost context, the game draws everything in canvas 2D as before. */
-var GLX = { mode: 0, ctxT: null, ctxB: null, cvb: null, rib: false, on: false, act: false, cvs: null, gl: null, prog: null, buf: null, loc: null, data: null, n: 0, bt: [], ba: [], bn: [], nb: 0, texs: [], frame: 0, clipped: 0, stack: [], real: null, err: '', solo: 0, grad: [] };
+var GLX = { mode: 0, ctxT: null, ctxB: null, cvb: null, rib: false, on: false, act: false, cvs: null, gl: null, prog: null, buf: null, loc: null, data: null, n: 0, bt: [], ba: [], bn: [], nb: 0, texs: [], frame: 0, clipped: 0, stack: [], real: null, err: '', solo: 0, grad: [], stB: 0, stQ: 0, stF: 0 };
 var GL_MAXQ = 768;
 var GL_DEFAULT = /*{{GL_DEFAULT}}*/0;   /* 1 only in test builds made with PD_GL=1 (a phone cannot add ?gl=1 to a saved file); gl=0 in the address always turns it off */
 /* which layout: 0 off, 1 = background and every cached sprite in WebGL under the vector canvas, 2 = three layers that keep the drawing order exact (an opaque canvas for everything before the penguins, WebGL for the penguins, the vector canvas on top) */
@@ -138,7 +138,7 @@ function glFlush() {
     if (X.ba[i] !== add) { add = X.ba[i]; gl.blendFunc(gl.ONE, add ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA); }
     gl.bindTexture(gl.TEXTURE_2D, X.bt[i]); gl.drawArrays(gl.TRIANGLES, first * 6, X.bn[i] * 6); first += X.bn[i];
   }
-  X.n = 0; X.nb = 0;
+  X.stB += X.nb; X.stQ += X.n; X.stF++; X.n = 0; X.nb = 0;
 }
 function glSave() { GLX.stack.push(GLX.clipped); GLX.real_save.call(this); }
 function glRestore() { if (GLX.stack.length) GLX.clipped = GLX.stack.pop(); GLX.real_restore.call(this); }
