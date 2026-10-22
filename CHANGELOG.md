@@ -8,9 +8,10 @@ The detailed developer changelog (measurements, tools, test runs) is kept separa
 - Starting a stage is about twice as quick (the background was being drawn twice), so there is less of a hitch when a stage begins. The picture is exactly the same.
 - The page now allows background workers started from inside the file, ready for heavier work to move off the screen's thread. Nothing you see changes.
 - The game opens a little sooner, because the single file now unpacks faster.
+- The game's pictures (fruit, plants, gear) now come pre-drawn inside the file, so the first screens show up sooner and the page stays more responsive while they load, most of all in Chromium and Firefox. The file is about 1.6 MB bigger. They look the same to the eye.
 - Smoother in Firefox, with no change to how the game looks.
 - Frame rate is written as FPS everywhere, and the speed badge reads "60 FPS".
-- **Tested in:** ungoogled Chromium 155.0.8059.39, Firefox 158.0, WebKitGTK 2.52.6 (quick check, one at a time); ungoogled Chromium 155.0.8059.39 (full check, 51.5 seconds). Not a release yet: the stamp comes with the next release.
+- **Tested in:** ungoogled Chromium 155.0.8059.39, Firefox 158.0, WebKitGTK 2.52.6, GNOME Web 46.5 (quick check, one at a time, passed in 83.6 seconds); picture match against the old drawing at least 99.55% in all four. Not a release yet: the stamp comes with the next release.
 
 ## 2026.10.17.0716
 - New Device check in the tester build: one button plays 20 seconds of the game and says in plain words whether your device runs it Smooth, Mostly smooth, Choppy or Slow.

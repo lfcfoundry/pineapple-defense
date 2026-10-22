@@ -16,6 +16,11 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - `CHANGELOG.md` in this repo is short and for players: one plain line per change saying what a player will notice, no tables or jargon. Developer-only changes are left out. The entry for the next release sits under `## @VER@`; `tools/release.py` turns that into the version stamp and adds the "Tested in" line.
 - The full developer changelog (every measurement, tool change and test run, each entry quantified in plain words) is `/mnt/project-files/changelogs-full/pineapple-defense/CHANGELOG-full.md`, backed up to the private lfcfoundry/knowledge-base. Write the full entry there first for every release, under the unreleased heading; `release.py` stamps it too (set `PD_FULL_CHANGELOG` to use another path).
 
+## Baked pictures
+
+- The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
+- After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
+
 ## Shared files and private notes
 
 - Hard-to-reach downloads and private build notes (secret features, upgrades, stages) go in the private lfcfoundry/knowledge-base repo, on a new branch when needed, not in this public repo.
