@@ -105,6 +105,7 @@ Everything is one self-contained HTML file built from `src/`. There are no runti
 - Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `index.html` by hand.
 - Packed single file: `python3 tools/pack.py` makes one smaller, self-unpacking `.html` in `dist/`; add `--min` to pack the minified page (`python3 build.py --min` first, needs `esbuild`).
 - Icons: `python3 -I tools/make_icons.py` regenerates `src/sprites/icons.svg` and the standalone files in `docs/icons/`.
+- Speed guard: `node tools/speed_guard.js <chromium|firefox|webkit|epiphany> before.html after.html` takes turns between two builds in one test browser and prints start-up times with the 5% verdict (needs `npm i --no-save puppeteer-core`; see the file header).
 - Checks: `python3 -I tools/qa.py` (add `--ff` for Firefox). Release: `python3 -I tools/release.py`.
 - Test browsers: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 / GNOME Web 46.5, one at a time. WebKitGTK was added to the rule on 2026-10-17; release 2026.10.17.0716 is the first one tested in it. The changelog lists what each release was tested in, and says "not recorded" where that was not noted. Targets: Android Chrome, Firefox and Chromium-based desktop browsers.
 
