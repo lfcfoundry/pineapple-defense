@@ -21,6 +21,12 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
 
+## Minified page
+
+- `build.py` writes the esbuild-minified page as `index.html` (and `dist/lab/index.html`); the readable copy is `dist/readable/index.html` (`PD_READABLE=1` writes the readable page as `index.html`). Measured with esbuild 0.28.2 (desktop speed, readable to minified): the game finishes starting 12 to 25% sooner in the four test browsers; at 6x slower CPU in Chromium, 1570 to 1260 ms. Read `dist/readable/` when debugging; error notes from the hidden panel carry minified names.
+- Without esbuild the build writes the readable page and says so, so commit `index.html` only from a machine that has it.
+- Wrapping the baked-pictures block differently (comment, hidden text box) did not make it cheaper to start; only fewer bytes would.
+
 ## Hidden speed check and error note
 
 - `src/speedcheck.js` (injected into `game.js`) holds the Device check and the hidden panel (7 taps on the credit line on the title screen, within 4 seconds). The error note is JS-modules `slow-note` (vendored in `src/vendor/slow-note/`). Nothing in it may use the network. The Test Lab's "Device check" button and `window.__deviceCheck` use the same code.
