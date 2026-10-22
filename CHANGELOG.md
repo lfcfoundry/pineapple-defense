@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The first stage you start in Chrome and other Chromium browsers begins about a third quicker, because the pre-drawn pictures are used as they come instead of being copied once more. The picture is exactly the same.
 - Opening and closing a card on the title screen (How to play, Settings, the Welcome tour) no longer makes a small hitch: it is about ten times quicker, so the tour and the cards appear without a stall on a phone.
 - The game opens sooner on every browser: the page itself is now the compact version of the file (about a fifth quicker to start, and more on a slow phone). Nothing you see changes.
 - A hidden helper for "it felt slow": tapping the small credit line on the title screen 7 times opens a card with a 25 second Speed check (it plays a busy stage by itself and tells you in plain words how smooth it was) and an Error note (the last slow or broken moments this device saw). Both can be copied and pasted into a message; nothing is ever sent anywhere.
