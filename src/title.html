@@ -234,7 +234,6 @@ html[data-calm="1"] .th,html[data-calm="1"] .tf,html[data-calm="1"] .tb,html[dat
 .ti[data-got="0"] svg{filter:grayscale(1);opacity:.45}.ti.sh svg{width:2.2rem;height:2.2rem;filter:none!important;opacity:1!important}.ti[data-got="0"] b{color:#7b6a55}
 .ti.sh[data-got="0"] b{color:#4a2b0f}.sh{gap:.6em}.sh>span{flex:1}.card .sb{margin:0;flex:none;font-size:.85rem;min-height:max(48px,2.7rem);padding:.4em .9em .48em}
 .card .note{margin:.2rem 0 .3rem;font:700 .9rem/1.2 var(--body)}
-html[data-dlg] .title *,html[data-dlg] .title *::before,html[data-dlg] .title *::after{animation-play-state:paused!important}
 .sun::before{content:"";position:absolute;inset:-85%;border-radius:50%;background:repeating-conic-gradient(rgba(255,238,170,.42) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 66%);mask:radial-gradient(circle,#000 28%,transparent 66%);animation:spin 46s linear infinite;z-index:-1}
 .gull{position:absolute;left:-14cqw;width:11cqw;z-index:1;pointer-events:none;animation:glide 30s linear infinite}.gull svg{width:100%;display:block;overflow:visible}.gull path{fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;animation:flapw .55s ease-in-out infinite alternate}
 .g1{top:11cqh}.g2{top:17cqh;width:8cqw;animation-duration:42s;animation-delay:-16s}.g2 path{animation-duration:.7s}.g3{top:8cqh;width:7cqw;animation-duration:55s;animation-delay:-38s}
@@ -539,6 +538,10 @@ chars.forEach(function(c){
 });
 
 var cw=$('cw'),opener=null;
+/* A card open on the title screen holds the title scene's animations still. That used to be a CSS rule on the page's data-dlg attribute, which made the browser re-style every element of the scene on each open and close (about 175 ms at phone speed); pausing the running animations directly only touches the animations. */
+var dlgHeld=[];
+function dlgAnim(on){var i,a,t;if(on){a=document.getAnimations();for(i=0;i<a.length;i++){t=a[i].effect&&a[i].effect.target;if(a[i].playState==='running'&&t&&t.closest&&t.closest('.title')){a[i].pause();dlgHeld.push(a[i])}}}else{for(i=0;i<dlgHeld.length;i++)if(dlgHeld[i].playState==='paused')dlgHeld[i].play();dlgHeld=[]}}
+new MutationObserver(function(){dlgAnim(root.hasAttribute('data-dlg'))}).observe(root,{attributes:true,attributeFilter:['data-dlg']});
 function openCard(tid,t,from){$('cardBody').replaceChildren($(tid).content.cloneNode(true));$('cardTitle').textContent=t;cw.hidden=false;root.setAttribute('data-dlg','1');opener=from;$('cardOk').focus()}
 function closeCard(){cw.hidden=true;root.removeAttribute('data-dlg');if(opener)opener.focus()}
 $('bHow').addEventListener('click',function(){openCard('t-how','How to play',this)});
