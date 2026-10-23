@@ -5,7 +5,7 @@ Builds the game without baked pictures (PD_NO_BAKED=1), loads it in the standing
 into a picture, and writes src/baked-sprites.json: {key: base64 WebP}. The key is a hash of the SVG text and size, so a changed sprite simply stops matching and is
 drawn from its SVG until the next bake. Run it after any change to src/sprites/ or to the code that makes sprite SVG text, then build again.
 Copyright (c) 2026 LFC Foundry. MIT License. Forged by LFC Foundry."""
-import os, sys, json, subprocess, base64
+import os, sys, json, subprocess, base64, struct
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 R = Path(__file__).resolve().parent.parent
@@ -29,7 +29,18 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     got = pg.evaluate("window.__bk")
     br.close()
-baked = {k: v.split(",", 1)[1] for k, v in got.items() if v.startswith("data:image/webp")}
+def strip_icc(b):
+    """Drop the color profile chunk Chrome writes into every WebP (about 450 bytes each as text, 35 KB for the set) and clear its flag; the pixels do not change (checked in the picture gate)."""
+    out, p = [], 12
+    while p < len(b):
+        n, l = b[p:p + 4], struct.unpack("<I", b[p + 4:p + 8])[0]; body, pad = b[p + 8:p + 8 + l], b[p + 8 + l:p + 8 + l + (l & 1)]
+        p += 8 + l + (l & 1)
+        if n == b"ICCP": continue
+        if n == b"VP8X": body = bytes([body[0] & ~0x20]) + body[1:]
+        out.append(n + struct.pack("<I", l) + body + pad)
+    data = b"WEBP" + b"".join(out)
+    return b"RIFF" + struct.pack("<I", len(data)) + data
+baked = {k: base64.b64encode(strip_icc(base64.b64decode(v.split(",", 1)[1]))).decode() for k, v in got.items() if v.startswith("data:image/webp")}
 (R / "src" / "baked-sprites.json").write_text(json.dumps(baked, separators=(",", ":")) + "\n")
 tot = sum(len(base64.b64decode(v)) for v in baked.values())
 print("baked %d sprites, %d KB of WebP (quality %d), written to src/baked-sprites.json" % (len(baked), tot // 1024, round(Q * 100)))
