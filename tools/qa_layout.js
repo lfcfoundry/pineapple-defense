@@ -19,7 +19,7 @@ for (const id of ['bShop', 'bTro', 'bHow', 'bSet']) {
 }
 /* game HUD: maxed shop so the raid button shows */
 const sv = P.sv(); sv.ra = 2; sv.um = 3; sv.gu = 3; sv.au = 1;
-P.go(2, 2); for (let i = 0; i < 80 && !(P.S && P.S.stage === 2 && !$('bRaid').hidden); i++) await wait(8); await fr();
+P.go(2, 2); for (let i = 0; i < 500 && !(P.S && P.S.stage === 2 && !$('bRaid').hidden); i++) await wait(8); await fr();
 sweep('game');
 const ids = ['waveBox', 'leftPill', 'comboPill', 'bPause', 'bankTxt', 'cupsTxt'];
 const els = ids.map(i => $(i)).filter(Boolean).map(e => e.closest('.pill') || e);
@@ -44,6 +44,6 @@ for (const v of [{ lh: 1, lt: 0, hc: 0, bb: 0 }, { lh: 1, lt: 1, hc: 1, bb: 0 },
 }
 Object.assign(sv, { lh: 0, lt: 0, hc: 0, bb: 0 }); ['lh', 'lt', 'hc', 'big'].forEach(k => document.documentElement.setAttribute('data-' + k, '0'));
 /* run end card with the longest text */
-P.go(5, 0); for (let i = 0; i < 80 && !(P.S && P.S.stage === 5); i++) await wait(8); await fr(); P.sv().run = 6; P.win(); await fr();
+P.go(5, 0); for (let i = 0; i < 500 && !(P.S && P.S.stage === 5); i++) await wait(8); await fr(); P.sv().run = 6; P.win(); await fr();
 sweep('run end card'); const gc = document.querySelector('#gcw .card'), gr = R(gc); if (gr.l < -1 || gr.r > vw + 1 || gr.t < -1 || gr.b > vh + 1) bad.push('run end card outside screen ' + JSON.stringify(gr));
 return { vw, vh, bad };

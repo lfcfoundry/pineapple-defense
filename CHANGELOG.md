@@ -5,6 +5,8 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- In Chrome and other Chromium browsers the first stage no longer freezes the screen while the pre-drawn pictures are prepared: that work now runs in background helpers. On a phone-speed test the longest freeze at the first stage start dropped from about 290 to about 110 ms, and on a normal computer from about 70 ms to none long enough to notice. The picture is exactly the same.
+- The hidden report panel now shows the right game version (shared field-report 1.0.2).
 - Fixed: if the browser refuses full screen from the Settings card, no hidden error is raised any more.
 - Fixed: tapping the stage, the pause button or a number key in the split second after pressing Play (before the stage had appeared) raised a hidden error. Those taps are now ignored until the stage is ready.
 - Fixed: closing the Settings card within a third of a second of switching full screen raised a hidden error.
