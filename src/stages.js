@@ -171,15 +171,34 @@ var STAGES = [null,
     sky: ['#ff8f78', '#1f8f9e', '#ffd5a4', '#8fd6e8'], gnd: ['#ffe5d4', '#cdeff6', '#f5c9b0', '#9fd4e6'],
     draw: function (g) { sceneFort(g); }, anim: function (t) { animFort(t); } }
 ];
-function stageNo() { return (S && S.stage) || 1; }
+var bgForce = 0;   /* the stage whose background is being built ahead (stageNo() answers for it while that runs) */
+function stageNo() { return bgForce || (S && S.stage) || 1; }
+function bgVignette(g) { var vg = g.createRadialGradient(W / 2, H * 0.55, Math.min(W, H) * 0.45, W / 2, H * 0.55, Math.max(W, H) * 0.75); vg.addColorStop(0, 'rgba(42,18,13,0)'); vg.addColorStop(1, 'rgba(42,18,13,.2)'); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
 function buildStageBg() {
-  var d = STAGES[stageNo()], g;
+  var n = stageNo(), d = STAGES[n], g;
+  if (bgNext && bgNext.key === bgKey(n)) { bg = bgNext.c; bgNext = null; return; }   /* drawn ahead while the clear card was open */
   bg = document.createElement('canvas'); bg.width = cv.width; bg.height = cv.height;
   g = bg.getContext('2d'); g.scale(DPR, DPR);
   hband(g, 0, hy + 2, d.sky[0], d.sky[1], d.sky[2], d.sky[3]);
   d.draw(g);
-  var vg = g.createRadialGradient(W / 2, H * 0.55, Math.min(W, H) * 0.45, W / 2, H * 0.55, Math.max(W, H) * 0.75);
-  vg.addColorStop(0, 'rgba(42,18,13,0)'); vg.addColorStop(1, 'rgba(42,18,13,.2)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  bgVignette(g);
+}
+/* The next stage's background is drawn in three small tasks (sky, scenery, vignette and seal) while the "Stage clear" card is open, so pressing Next stage only swaps it in. A resize, a quit or a newer request cancels it; a stale one is never used (the key holds the stage, canvas size and layout size). */
+var bgNext = null, bgJob = 0;
+function bgKey(n) { return n + '|' + cv.width + 'x' + cv.height + '|' + W + 'x' + H; }
+function prebuildBg(n) {
+  if (K || n < 2 || n > NSTAGES || (bgNext && bgNext.key === bgKey(n))) return;
+  var key = bgKey(n), job = ++bgJob, c = document.createElement('canvas'), g, d = STAGES[n];
+  c.width = cv.width; c.height = cv.height; g = c.getContext('2d'); g.scale(DPR, DPR);
+  function later(fn) { setTimeout(function () { if (job === bgJob && bgKey(n) === key) fn(); }, 0); }
+  function withStage(fn) { bgForce = n; try { fn(); } finally { bgForce = 0; } }
+  later(function () {
+    withStage(function () { hband(g, 0, hy + 2, d.sky[0], d.sky[1], d.sky[2], d.sky[3]); });
+    later(function () {
+      withStage(function () { d.draw(g); });
+      later(function () { bgVignette(g); sealCanvas(c); bgNext = { key: key, c: c }; });
+    });
+  });
 }
 function groundBand(g, y0) { var d = STAGES[stageNo()]; hband(g, y0, H, d.gnd[0], d.gnd[1], d.gnd[2], d.gnd[3]); }
 
