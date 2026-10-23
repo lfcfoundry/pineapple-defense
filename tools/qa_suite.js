@@ -736,6 +736,17 @@ await T('run end card: save, reset, confirm', async () => {
   if (sv.bank !== 0 || sv.gu || sv.ra || sv.um || sv.au || sv.ar || sv.ap || sv.run) throw new Error('reset left data: ' + JSON.stringify(sv)); if ((sv.ach & ach0 & 5) !== 5 && (ach0 & 5) === 5 && (sv.ach & 5) !== 5) throw new Error('trophies lost');
 });
 
+await T('next stage background is drawn ahead while the clear card is open, and gives the same picture', async () => {
+  await go(2, 0, true); const fresh = P.bgHash;
+  await go(1, 0, true); P.win(); for (let i = 0; i < 60 && !P.bgAhead; i++) await wait(10);
+  if (!P.bgAhead) throw new Error('no background was drawn ahead');
+  await go(2, 0, true); const ahead = P.bgHash; if (P.bgAhead) throw new Error('the drawn-ahead background was not used up');
+  if (ahead !== fresh) throw new Error('drawn-ahead background differs from a fresh one');
+  await go(1, 0, true); P.win(); for (let i = 0; i < 60 && !P.bgAhead; i++) await wait(10); window.dispatchEvent(new Event('resize')); await wait(50);
+  if (P.bgAhead) throw new Error('a resize did not throw the drawn-ahead background away');
+  return 'drawn ahead after a win, identical pixels to a fresh build, used up on the next start, dropped on resize';
+});
+
 await T('pause keys', async () => {
   await go(1, 2, true); const S = P.S; P.key('p'); if (!S.paused || !cardUp()) throw new Error('p did not pause'); P.key('p'); if (S.paused || cardUp()) throw new Error('p did not resume');
   P.key('Escape'); if (!S.paused) throw new Error('escape did not pause'); P.resume();
