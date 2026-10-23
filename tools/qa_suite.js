@@ -76,17 +76,17 @@ await T('page policy: WebAssembly and blob workers may run, nothing else loosene
   return 'script-src is inline + wasm-unsafe-eval, worker-src is blob:; an empty wasm module compiles and a blob worker answers';
 });
 
-await T('hidden speed check and error note: 7 taps on the credit line, title screen only', async () => {
-  const legal = document.querySelector('.legal'), t = document.getElementById('title'), was = t.hidden, tap = n => { for (let i = 0; i < n; i++) legal.dispatchEvent(new MouseEvent('click', { bubbles: true })); };
+await T('hidden report panel (field-report): 5 taps in the top-left corner open Save speed report and Save error log', async () => {
+  const down = (x, y) => window.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, bubbles: true })), panel = () => document.querySelector('[data-field-report=panel]');
   try {
-    t.hidden = true; tap(7); if (document.getElementById('devDlg')) throw new Error('the panel opened away from the title screen');
-    t.hidden = false; tap(6); if (document.getElementById('devDlg')) throw new Error('the panel opened after 6 taps');
-    tap(1); const d = document.getElementById('devDlg'); if (!d || !/Speed and error note/.test(d.textContent)) throw new Error('7 taps did not open the panel');
-    const names = [...d.querySelectorAll('button')].map(b => b.textContent).join(' / '); if (names !== 'Speed check / Error note / Close') throw new Error('buttons: ' + names);
-    d.querySelectorAll('button')[1].click(); const n = document.getElementById('devDlg'); if (!n || !/Pineapple Defense/.test(n.textContent) || !/Start-up/.test(n.textContent)) throw new Error('the error note has no header or start-up line');
-    n.querySelector('button:last-child').click(); if (document.getElementById('devDlg')) throw new Error('Close did not close the panel');
-  } finally { t.hidden = was; const d = document.getElementById('devDlg'); if (d) d.remove(); }
-  return 'not on the game screen, not after 6 taps; 7 taps open a card with Speed check, Error note and Close; the note shows its header and start-up line';
+    for (let i = 0; i < 4; i++) down(10, 10); if (panel()) throw new Error('the panel opened after 4 taps');
+    for (let i = 0; i < 4; i++) down(300, 400); down(10, 10); if (panel()) throw new Error('taps away from the corner counted');
+    for (let i = 0; i < 4; i++) down(10, 10); if (!panel()) throw new Error('5 taps did not open the panel');
+    const names = [...panel().querySelectorAll('button')].map(b => b.textContent).join(' / '); if (names !== 'Save speed report / Save error log / Close') throw new Error('buttons: ' + names);
+    const sp = FR.speedText(), er = FR.errorsText(); if (!/Start-up/i.test(sp) || !/frames/i.test(sp)) throw new Error('the speed report has no start-up or frames part'); if (!er) throw new Error('no error log text');
+    panel().querySelector('[data-field-report=close]').click(); if (panel()) throw new Error('Close did not close the panel');
+  } finally { FR.close(); }
+  return '4 taps and taps away from the corner do nothing; 5 taps open the panel with Save speed report, Save error log and Close; the speed report has its start-up and frames parts';
 });
 
 await T('a card open on the title screen holds the title animations still, closing lets them go on', async () => {
