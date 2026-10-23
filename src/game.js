@@ -42,12 +42,37 @@ function bakeKey(svg, size) { var h = 2166136261, i; for (i = 0; i < svg.length;
 /* measured in the four test browsers and on a Pixel 7 Pro: Chromium decodes off the screen thread with createImageBitmap (decode() keeps it busy), WebKit and Firefox do with Image.decode() (createImageBitmap keeps WebKit busy) */
 var BAKE_BITMAP = typeof createImageBitmap === 'function' && /\bChrome\//.test(navigator.userAgent);
 function bakedPaint(src, size) { var c = document.createElement('canvas'); c.width = size.w; c.height = size.h; c.getContext('2d').drawImage(src, 0, 0, size.w, size.h); return c; }
+/* Chromium: the base64 text is turned into bytes and decoded to a bitmap in a background worker (worker-src blob:), so the page's main thread only hands the text over and receives the finished bitmap. If the worker cannot start or answers badly, that one sprite is decoded on the main thread as before. */
+var bakePool = null, bakeJobs = {}, bakeN = 0, BAKE_WK_SRC = 'onmessage=function(e){var d=e.data;try{var b=d.s,u,t,n,i;if(Uint8Array.fromBase64)u=Uint8Array.fromBase64(b);else{t=atob(b);n=t.length;u=new Uint8Array(n);for(i=0;i<n;i++)u[i]=t.charCodeAt(i)}createImageBitmap(new Blob([u],{type:"image/webp"})).then(function(m){postMessage({i:d.i,m:m},[m])},function(){postMessage({i:d.i,m:null})})}catch(x){postMessage({i:d.i,m:null})}};';
+function bakeWorkers() {
+  if (bakePool !== null) return bakePool;
+  bakePool = false;
+  try {
+    if (typeof Worker !== 'function' || typeof URL !== 'function' || !URL.createObjectURL) return bakePool;
+    var url = URL.createObjectURL(new Blob([BAKE_WK_SRC], { type: 'text/javascript' })), n = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1)), pool = [], w, k;
+    function lost() { var all = bakeJobs; bakeJobs = {}; bakePool = false; for (k in all) all[k](null); }
+    while (n--) { w = new Worker(url); w.onmessage = function (e) { var j = bakeJobs[e.data.i]; if (j) { delete bakeJobs[e.data.i]; j(e.data.m); } }; w.onerror = lost; pool.push(w); }
+    setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+    bakePool = pool;
+  } catch (x) { bakePool = false; }
+  return bakePool;
+}
+function bakedBitmapMain(b64) {
+  var u, s, n, i;
+  if (Uint8Array.fromBase64) u = Uint8Array.fromBase64(b64);
+  else { s = atob(b64); n = s.length; u = new Uint8Array(n); for (i = 0; i < n; i++) u[i] = s.charCodeAt(i); }
+  return createImageBitmap(new Blob([u], { type: 'image/webp' })).then(function (b) { return b; }, function () { return null; });   /* the decoded bitmap itself is the sprite: copying it into a canvas first cost about 70 ms on the first stage start for nothing */
+}
 function bakedImage(b64, size) {
   if (BAKE_BITMAP) {
-    var u, s, n, i;
-    if (Uint8Array.fromBase64) u = Uint8Array.fromBase64(b64);
-    else { s = atob(b64); n = s.length; u = new Uint8Array(n); for (i = 0; i < n; i++) u[i] = s.charCodeAt(i); }
-    return createImageBitmap(new Blob([u], { type: 'image/webp' })).then(function (b) { return b; }, function () { return null; });   /* the decoded bitmap itself is the sprite: copying it into a canvas first cost about 70 ms on the first stage start for nothing */
+    var pool = bakeWorkers();
+    if (!pool) return bakedBitmapMain(b64);
+    return new Promise(function (res) {
+      var id = ++bakeN;
+      var tm = setTimeout(function () { if (bakeJobs[id]) { delete bakeJobs[id]; res(bakedBitmapMain(b64)); } }, 5000);   /* a worker that never answers must not hold the stage back */
+      bakeJobs[id] = function (m) { clearTimeout(tm); if (m) res(m); else res(bakedBitmapMain(b64)); };
+      try { pool[id % pool.length].postMessage({ i: id, s: b64 }); } catch (x) { delete bakeJobs[id]; res(bakedBitmapMain(b64)); }
+    });
   }
   var im = new Image(); im.src = 'data:image/webp;base64,' + b64;
   return im.decode().then(function () { return bakedPaint(im, size); }, function () { return null; });
