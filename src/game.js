@@ -116,7 +116,7 @@ function loadAssets() {
      decoded in the background right after, one at a time, so the first frame is not held up and nothing janks.
      Every draw path already skips a sprite that is not there yet. */
   var CORE = { pa: 1, rh: 1, ad: 1, pl: 1 }, jobs = [], late = [];
-  function job(k, m) { return function () { return toImage(spriteSvg(src[k], m, TINT[k]), { w: SZ, h: SZ }).then(function (c) { IMG[k][m] = c; }); }; }
+  function job(k, m) { var f = function () { return toImage(spriteSvg(src[k], m, TINT[k]), { w: SZ, h: SZ }).then(function (c) { IMG[k][m] = c; }); }; REDO[k + '.' + m] = f; return f; }
   Object.keys(src).forEach(function (k) {
     (MOODS_FOR[k] || Object.keys(MOOD).filter(function (m) { return m !== 'back' || k === 'pa' || k === 'pl'; })).forEach(function (m) {
       if (CORE[k] || location.hash === '#qa') jobs.push(job(k, m)()); else late.push(job(k, m));
@@ -250,6 +250,7 @@ function resize(noBg) {   /* noBg: the caller starts a stage right after, and st
   var cap = DPR_STEPS[dprStep];
   DPR = Math.min(window.devicePixelRatio || 1, cap);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  restoreBig();
   hy = H * 0.47; gy = H * 0.93; FW = W * 0.5;
   size0 = Math.min(W * 0.30, H * 0.30);
   if (K) { buildSkeeBg(); sealBg(); } else if (!noBg) buildBg();
@@ -1006,12 +1007,24 @@ function mip(im, sz) {
   var m = im._m192 || (im._m192 = halve(im, 192));
   return need > 125 ? m : (im._m96 || (im._m96 = halve(m, 96)));
 }
+/* On a phone-sized screen no sprite is ever drawn bigger than about a quarter of the canvas width (214 device pixels measured on a Pixel-sized screen), so once the 192 and 96 pixel copies exist the 384 pixel one (590 KB each, about 31 MB for the 52 in use) is let go. The 192 copy takes its place. If the window grows past the limit the full-size pictures are decoded again. */
+var REDO = {}, TRIM_W = 835;
+function trimBig(k, m) {
+  var im = IMG[k][m], c, c96;
+  if (!im || im._rel || !im._m192 || !im._m96 || cv.width > TRIM_W) return;
+  c = im._m192; c96 = im._m96; c._m192 = c; c._m96 = c96; c._rel = true; IMG[k][m] = c;
+  if (im.close) try { im.close(); } catch (x) { /* already gone */ }
+}
+function restoreBig() {
+  if (cv.width <= TRIM_W) return;
+  Object.keys(IMG).forEach(function (k) { Object.keys(IMG[k]).forEach(function (m) { if (IMG[k][m] && IMG[k][m]._rel && REDO[k + '.' + m]) REDO[k + '.' + m]().then(warmAll); }); });
+}
 /* build every sprite's small copies (and the umbrella canopies) a little at a time in the background, so no frame has to pay for them the first time a mood or color shows up */
 var warmQ = [], warmOn = false;
 function warmStep() { var f = warmQ.shift(); if (!f) { warmOn = false; return; } f(); setTimeout(warmStep, 6); }
 function warmAll() {
   Object.keys(IMG).forEach(function (k) { Object.keys(IMG[k]).forEach(function (m) {
-    var im = IMG[k][m]; if (im && !im._m96) warmQ.push(function () { var c = im._m192 || (im._m192 = halve(im, 192)); if (!im._m96) im._m96 = halve(c, 96); });
+    var im = IMG[k][m]; if (im && (!im._m96 || !im._rel)) warmQ.push(function () { var c = im._m192 || (im._m192 = halve(im, 192)); if (!im._m96) im._m96 = halve(c, 96); trimBig(k, m); });
   }); });
   warmQ.push(warmUmb);
   if (!warmOn) { warmOn = true; setTimeout(warmStep, 30); }
@@ -2576,7 +2589,7 @@ $('bShop').addEventListener('click', fillShop);
 /* test hook, only with #qa in the address */
 var qa = null;
 if (location.hash === '#qa') {
-  qa = window.__pd = { get boot() { return BOOT_MS; }, get bgAhead() { return !!bgNext; }, get bgHash() { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, h = 0, i; for (i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1] * 3 + d[i + 2] * 7) >>> 0; return h; }, lose: function () { S.cheer = 0; endStage(false); }, twinTest: function (on) { twin = !!on; if (on) twinCard(); }, get twin() { return twin; }, ctxLost: ctxLost, ctxCardOpen: function () { return ctxCard; }, wake: function () { return { sup: !!(wk && wk.supported), held: !!(wk && wk.held), want: wakeOn(), idle: !!(wk && wk.idle), refusals: wk ? wk.refusals : 0 }; }, tour: tourStart, choice: throwChoice, pouch: function () { return pouchPos(); }, snap: function () { return { sl: sv.sl, sg: sv.sg, sc: sv.sc }; }, cont: function () { titleEl.hidden = true; gameEl.hidden = false; startStage(sv); run(); }, pause: function () { pause(); }, backArmed: function () { return !$('bcGuard').hidden; }, backOk: BackClose.supported, rsg: function () { return rsg(); }, rollGear: function () { return rollGear(); }, stap: function (x, y) { return sceneTap({ x: x, y: y }); }, get sc() { return S.sc; }, zone: function (i) { var z = ZONES[stageNo()][i]; return zoneHit({ x: z.x * W, y: z.y * H }); }, fish: function () { return tryDrop(); }, go: function (st, w, idle) { titleEl.hidden = true; gameEl.hidden = false; return loadAssets().then(function () { resize(true); startStage({ stage: st, wave: w, golden: 0, cheer: 100 }); if (!idle) run(); }); }, bgAlpha: function () { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, m = 255, i; for (i = 3; i < d.length; i += 4) if (d[i] < m) m = d[i]; return m; }, idleLoop: function () { if (raf) cancelAnimationFrame(raf); raf = 0; running = false; }, bot: false, sv: function () { return sv; }, scale: function (v) { timeScale = v; }, center: function (pg) { return penCenter(pg); }, hp: function (x, y, id) { return penAt({ x: x, y: y }); }, holdOn: function () { return !!hold; }, fpsTxt: function () { return elFps ? elFps.textContent : ''; }, get S() { return S; }, get penguins() { return penguins; },
+  qa = window.__pd = { get boot() { return BOOT_MS; }, set trimW(v) { TRIM_W = v; }, get bigKept() { var n = 0, r = 0; Object.keys(IMG).forEach(function (k) { Object.keys(IMG[k]).forEach(function (m) { var im = IMG[k][m]; if (im) { if (im._rel) r++; else n++; } }); }); return { kept: n, released: r, w: cv.width }; }, get bgAhead() { return !!bgNext; }, get bgHash() { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, h = 0, i; for (i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1] * 3 + d[i + 2] * 7) >>> 0; return h; }, lose: function () { S.cheer = 0; endStage(false); }, twinTest: function (on) { twin = !!on; if (on) twinCard(); }, get twin() { return twin; }, ctxLost: ctxLost, ctxCardOpen: function () { return ctxCard; }, wake: function () { return { sup: !!(wk && wk.supported), held: !!(wk && wk.held), want: wakeOn(), idle: !!(wk && wk.idle), refusals: wk ? wk.refusals : 0 }; }, tour: tourStart, choice: throwChoice, pouch: function () { return pouchPos(); }, snap: function () { return { sl: sv.sl, sg: sv.sg, sc: sv.sc }; }, cont: function () { titleEl.hidden = true; gameEl.hidden = false; startStage(sv); run(); }, pause: function () { pause(); }, backArmed: function () { return !$('bcGuard').hidden; }, backOk: BackClose.supported, rsg: function () { return rsg(); }, rollGear: function () { return rollGear(); }, stap: function (x, y) { return sceneTap({ x: x, y: y }); }, get sc() { return S.sc; }, zone: function (i) { var z = ZONES[stageNo()][i]; return zoneHit({ x: z.x * W, y: z.y * H }); }, fish: function () { return tryDrop(); }, go: function (st, w, idle) { titleEl.hidden = true; gameEl.hidden = false; return loadAssets().then(function () { resize(true); startStage({ stage: st, wave: w, golden: 0, cheer: 100 }); if (!idle) run(); }); }, bgAlpha: function () { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, m = 255, i; for (i = 3; i < d.length; i += 4) if (d[i] < m) m = d[i]; return m; }, idleLoop: function () { if (raf) cancelAnimationFrame(raf); raf = 0; running = false; }, bot: false, sv: function () { return sv; }, scale: function (v) { timeScale = v; }, center: function (pg) { return penCenter(pg); }, hp: function (x, y, id) { return penAt({ x: x, y: y }); }, holdOn: function () { return !!hold; }, fpsTxt: function () { return elFps ? elFps.textContent : ''; }, get S() { return S; }, get penguins() { return penguins; },
     /* fast-forward without waiting for frames: sec game seconds in steps of dt, drawing every `every` steps (0 = never, one final draw) */
     step: function (sec, dt, every, lazy) { var n = Math.round(sec / (dt || 0.033)), i, d = dt || 0.033; calm = root.getAttribute('data-calm') === '1';   /* the page's own frame reads Calm like this; stepping by hand does too, so a check never sees a stale value */ for (i = 0; i < n; i++) { if (hold) holdTick(); if (K) updateSkee(d); else update(d); if (every && i % every === 0) { if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } } } if (lazy) return; if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } }, get timeScale() { return timeScale; }, get bits() { return bits.length; }, get shots() { return shots.length; }, get rings() { return rings.length; }, pause: pause, resume: function () { hideCard(); resume(); }, runK: runK, key: function (k) { document.dispatchEvent(new KeyboardEvent('keydown', { key: k })); },
     win: function () { endStage(true); }, flick: function (dx, dy, spd) { var o = pouchPos(); throwAt(o.x, o.y, dx, dy, spd); }, get sh() { return shots; }, demo: startDemo, replay: startReplay, get dm() { return demo; }, tick: function () { return demo; }, goal: updateGoal, undoShop: function () { var u = document.querySelector('#shUndo'); if (u) u.click(); }, fillShop: fillShop, raid: callRaid, st: function (k, v) { sv[k] = v; S.umL = sv.um; S.raL = RAID_N[sv.ra] || 0; }, gull: function () { S.fish = []; var ok = tryDrop(); return ok; }, endSk: function (v) { K.lastV = v; K.balls = 0; endSkee(); }, cmb: function (n, src) { var i; curSrc = src === 3 ? 2 : (src || 2); for (i = 0; i < n; i++) cmbHit(W * 0.5, H * 0.5); curSrc = 1; if (src === 3) cmbHit(W * .5, H * .5); }, give: function (k) { spawnPU(k); }, award: award, collect: function () { collectPU(); collectTro(false); }, skee: startSkee, get K() { return K; }, roll: skeeRoll, plan: function (dx, dy, spd) { return skLaunch({ dx: dx, dy: dy, spd: spd }); }, sim: function (dx, dy, spd, dA, dF) { var h = skSim(skLaunch({ dx: dx, dy: dy, spd: spd }, dA, dF)); return h ? h.v : 0; }, get H() { return SK_HOLES; }, tap: function (x, y) { var o = pouchPos(); throwAt(o.x, o.y, x - o.x, y - o.y, 1.5, { x: x, y: y }); } };

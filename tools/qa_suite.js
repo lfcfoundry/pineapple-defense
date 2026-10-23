@@ -747,6 +747,17 @@ await T('next stage background is drawn ahead while the clear card is open, and 
   return 'drawn ahead after a win, identical pixels to a fresh build, used up on the next start, dropped on resize';
 });
 
+await T('full-size pictures are let go on a phone-sized screen and come back if the screen is too big', async () => {
+  await go(1, 0, true); let k;
+  for (let i = 0; i < 600; i++) { k = P.bigKept; if (k.kept === 0 && k.released > 0) break; await wait(10); }
+  if (!(k.released > 0 && k.kept === 0)) throw new Error('full-size pictures were not let go: ' + JSON.stringify(k));
+  const rel = k.released; P.trimW = 100; window.dispatchEvent(new Event('resize'));
+  for (let i = 0; i < 600; i++) { k = P.bigKept; if (k.released === 0 && k.kept >= rel) break; await wait(10); }
+  P.trimW = 835;
+  if (k.released !== 0) throw new Error('pictures were not decoded again after the screen grew: ' + JSON.stringify(k));
+  return rel + ' full-size pictures let go at width ' + k.w + ', decoded again when the limit dropped';
+});
+
 await T('pause keys', async () => {
   await go(1, 2, true); const S = P.S; P.key('p'); if (!S.paused || !cardUp()) throw new Error('p did not pause'); P.key('p'); if (S.paused || cardUp()) throw new Error('p did not resume');
   P.key('Escape'); if (!S.paused) throw new Error('escape did not pause'); P.resume();
