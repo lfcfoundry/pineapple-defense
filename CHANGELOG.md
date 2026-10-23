@@ -6,6 +6,7 @@ The detailed developer changelog (measurements, tools, test runs) is kept separa
 
 ## @VER@
 - Fixed: tapping the stage, the pause button or a number key in the split second after pressing Play (before the stage had appeared) raised a hidden error. Those taps are now ignored until the stage is ready.
+- Fixed: closing the Settings card within a third of a second of switching full screen raised a hidden error.
 - If your device cannot keep up, the game now lowers the picture sharpness one step at a time using the shared FX governor, and it never raises it again on its own in the middle of a run. Starting or continuing a run begins at full sharpness again. Battery saver uses a lower speed line so it is not blamed for its slower pace.
 - The first stage you start in Chrome and other Chromium browsers begins about a third quicker, because the pre-drawn pictures are used as they come instead of being copied once more. The picture is exactly the same.
 - Opening and closing a card on the title screen (How to play, Settings, the Welcome tour) no longer makes a small hitch: it is about ten times quicker, so the tour and the cards appear without a stall on a phone.

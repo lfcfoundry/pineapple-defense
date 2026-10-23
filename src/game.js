@@ -2360,8 +2360,9 @@ function littleOn() { return !!(sv.hp && sv.bb && sv.lt && sv.ib && sv.aim === 0
 function applyLittle() { var k; littlePrev = {}; for (k in LITTLE) { littlePrev[k] = sv[k]; sv[k] = LITTLE[k]; } sv.tc = 1; applyPrefs(); kit.save(sv); toast('Little hands setup is on. You can undo it in Settings.', 3.2); }
 function wireComfort($b) {
   var AIM = ['Generous', 'Normal', 'Off'], ARC = ['First 5 throws', 'Always', 'Never'], fs = document.fullscreenEnabled && document.documentElement.requestFullscreen;
-  function row(id, text, on) { var b = $b(id); b.querySelector('.st').textContent = text; if (on !== undefined) b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+  function row(id, text, on) { var b = $b(id); if (!b) return; b.querySelector('.st').textContent = text; if (on !== undefined) b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
   function paint() {
+    if (!$b('cmCalm')) return;   /* the card was closed before the delayed repaint ran */
     row('cmSp', SPEEDS[sv.sp | 0] + '%'); row('cmLh', sv.lh ? 'On' : 'Off', sv.lh); row('cmAim', AIM[sv.aim]); row('cmArc', ARC[sv.arc]);
     row('cmHc', sv.hc ? 'On' : 'Off', sv.hc); row('cmLt', sv.lt ? 'On' : 'Off', sv.lt); row('cmRo', sv.ro ? 'On' : 'Off', sv.ro); row('cmBig', sv.bb ? 'On' : 'Off', sv.bb);
     var c = root.getAttribute('data-calm') === '1'; row('cmCalm', c ? 'On' : 'Off', c); row('cmSave', sv.bv ? 'On' : 'Off', sv.bv); row('cmHold', sv.hp ? 'On' : 'Off', sv.hp); row('cmBuf', sv.ib ? 'On' : 'Off', sv.ib); row('cmWake', sv.wl && !sv.bv ? 'On' : 'Off', sv.wl); row('cmLittle', littleOn() ? 'On' : 'Off', littleOn()); row('cmHs', sv.hs ? 'On' : 'Off', sv.hs); row('cmSk', SHAKE[sv.sk]); row('cmSa', sv.sa ? 'On' : 'Off', sv.sa); row('cmCp', sv.cp ? 'On' : 'Off', sv.cp); row('cmFps', sv.fp ? 'On' : 'Off', sv.fp); row('cmEf', sv.ef ? 'On' : 'Off', sv.ef); row('cmDg', sv.dg ? 'On' : 'Off', sv.dg);
