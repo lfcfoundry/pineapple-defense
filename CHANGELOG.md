@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The built-in pictures are 36 KB smaller: a colour profile that every one of the 77 pictures carried (and the game never used) was removed. The pictures look exactly the same (every pixel identical), and the page is about 228 KB smaller, so it is read a little sooner (Chromium start-up about 19% quicker).
 - Going to the next stage is quicker: while the "Stage clear" card is open the next stage's background is drawn in three small steps in the background, so pressing Next stage only swaps it in. The picture is exactly the same. Stage start work went from about 8 to 11 ms down to about 6 ms on a normal computer, and about 4 times that on a slow phone.
 - In Chrome and other Chromium browsers the first stage no longer freezes the screen while the pre-drawn pictures are prepared: that work now runs in background helpers. On a phone-speed test the longest freeze at the first stage start dropped from about 290 to about 110 ms, and on a normal computer from about 70 ms to none long enough to notice. The picture is exactly the same.
 - The hidden report panel now shows the right game version (shared field-report 1.0.2).
