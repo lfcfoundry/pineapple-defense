@@ -30,7 +30,7 @@ with sync_playwright() as p:
     got = pg.evaluate("window.__bk")
     br.close()
 def strip_icc(b):
-    """Drop the colour profile chunk Chrome writes into every WebP (about 450 bytes each as text, 35 KB for the set) and clear its flag; the pixels do not change (checked in the picture gate)."""
+    """Drop the color profile chunk Chrome writes into every WebP (about 450 bytes each as text, 35 KB for the set) and clear its flag; the pixels do not change (checked in the picture gate)."""
     out, p = [], 12
     while p < len(b):
         n, l = b[p:p + 4], struct.unpack("<I", b[p + 4:p + 8])[0]; body, pad = b[p + 8:p + 8 + l], b[p + 8 + l:p + 8 + l + (l & 1)]
