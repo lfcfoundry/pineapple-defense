@@ -2104,6 +2104,7 @@ function fpsTick(gap, now) { if (fm.frame(now, fmWork, gap)) elFps.textContent =
 var drag = null;
 function rel(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, t: e.timeStamp }; }
 cv.addEventListener('pointerdown', function (e) {
+  if (!S) return;   /* a tap in the moment between Play and the stage being ready */
   if (wk) wk.poke();
   if (sv.fp) fm.input(e.timeStamp);
   if (S.rc > 0 && !S.paused && !S.over) { S.rc = 0; e.preventDefault(); return; }   /* a tap skips the get-ready beat after Resume (the tap itself does not throw) */
@@ -2176,6 +2177,7 @@ function hoverFlick(e) {
   }
 }
 cv.addEventListener('pointermove', function (e) {
+  if (!S) return;
   if (!drag) { hoverFlick(e); return; }
   if (e.pointerId !== drag.id) return;
   if (sv.cp && e.getCoalescedEvents) { var ce = e.getCoalescedEvents(), cj; for (cj = 0; cj < ce.length; cj++) drag.pts.push(rel(ce[cj])); if (!ce.length) drag.pts.push(rel(e)); }   /* smoother flick speed: every sample the device reports */
@@ -2184,6 +2186,7 @@ cv.addEventListener('pointermove', function (e) {
 });
 cv.addEventListener('pointercancel', function () { drag = null; hold = null; });
 cv.addEventListener('pointerup', function (e) {
+  if (!S) return;
   if (hold && e.pointerId === hold.id) { hold = null; return; }
   if (!drag || e.pointerId !== drag.id) return;
   var d = drag; drag = null;
@@ -2203,9 +2206,9 @@ cv.addEventListener('pointerup', function (e) {
 cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 var picks = document.querySelectorAll('.pick');
-function setType(t) { if (t !== 'classic' && sv.bank < (COST[t] || 0) && S.fx.mega <= 0) { toast('Lobbers cost ' + COST[t] + ' Golden Pineapples.'); t = 'classic'; } curType = t; Array.prototype.forEach.call(picks, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-t') === t ? 'true' : 'false'); }); }
+function setType(t) { if (!S) return; if (t !== 'classic' && sv.bank < (COST[t] || 0) && S.fx.mega <= 0) { toast('Lobbers cost ' + COST[t] + ' Golden Pineapples.'); t = 'classic'; } curType = t; Array.prototype.forEach.call(picks, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-t') === t ? 'true' : 'false'); }); }
 Array.prototype.forEach.call(picks, function (b) { b.addEventListener('click', function () { setType(b.getAttribute('data-t')); }); });
-document.addEventListener('keydown', function (e) { if (gameEl.hidden) return; if (e.key === '1') setType('classic'); else if (e.key === '2') setType('lobber'); else if (e.key === '3') collectPU(); else if (e.key === '4') collectTro(false); });
+document.addEventListener('keydown', function (e) { if (gameEl.hidden || !S) return; if (e.key === '1') setType('classic'); else if (e.key === '2') setType('lobber'); else if (e.key === '3') collectPU(); else if (e.key === '4') collectTro(false); });
 
 /* ---------- context loss safety net ---------- */
 /* A graphics reset or low-memory event can blank the canvas and every baked sprite. Pause (which saves the wave), and offer a reload: Continue then picks the wave up. */
@@ -2235,6 +2238,7 @@ function showCard(title, body, btn1, fn1, btn2, fn2, btn3, fn3) {
 function hideCard() { gcw.hidden = true; }
 function startAgain() { startStage(); run(); }
 function pause() {
+  if (!S) return;
   if (S.paused || S.over || !running) return;
   S.paused = true; snapSave(); halt();
   showCard('Paused', 'Take your time. Press P to pause or resume.', 'Resume', resume);
@@ -2267,7 +2271,7 @@ window.addEventListener('orientationchange', function () { if (gameEl.hidden ===
 $('bPause').addEventListener('click', pause);
 document.addEventListener('keydown', function (e) {
   if (wk && gameEl.hidden === false) wk.poke();
-  if (gameEl.hidden !== false) return;
+  if (gameEl.hidden !== false || !S) return;
   if ((e.key === 'r' || e.key === 'R') && !e.repeat && !K) callRaid();
   if (e.key === 'Escape' && !S.paused) pause();
   else if ((e.key === 'p' || e.key === 'P') && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) { if (S.paused) { hideCard(); resume(); } else pause(); }
@@ -2356,8 +2360,9 @@ function littleOn() { return !!(sv.hp && sv.bb && sv.lt && sv.ib && sv.aim === 0
 function applyLittle() { var k; littlePrev = {}; for (k in LITTLE) { littlePrev[k] = sv[k]; sv[k] = LITTLE[k]; } sv.tc = 1; applyPrefs(); kit.save(sv); toast('Little hands setup is on. You can undo it in Settings.', 3.2); }
 function wireComfort($b) {
   var AIM = ['Generous', 'Normal', 'Off'], ARC = ['First 5 throws', 'Always', 'Never'], fs = document.fullscreenEnabled && document.documentElement.requestFullscreen;
-  function row(id, text, on) { var b = $b(id); b.querySelector('.st').textContent = text; if (on !== undefined) b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+  function row(id, text, on) { var b = $b(id); if (!b) return; b.querySelector('.st').textContent = text; if (on !== undefined) b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
   function paint() {
+    if (!$b('cmCalm')) return;   /* the card was closed before the delayed repaint ran */
     row('cmSp', SPEEDS[sv.sp | 0] + '%'); row('cmLh', sv.lh ? 'On' : 'Off', sv.lh); row('cmAim', AIM[sv.aim]); row('cmArc', ARC[sv.arc]);
     row('cmHc', sv.hc ? 'On' : 'Off', sv.hc); row('cmLt', sv.lt ? 'On' : 'Off', sv.lt); row('cmRo', sv.ro ? 'On' : 'Off', sv.ro); row('cmBig', sv.bb ? 'On' : 'Off', sv.bb);
     var c = root.getAttribute('data-calm') === '1'; row('cmCalm', c ? 'On' : 'Off', c); row('cmSave', sv.bv ? 'On' : 'Off', sv.bv); row('cmHold', sv.hp ? 'On' : 'Off', sv.hp); row('cmBuf', sv.ib ? 'On' : 'Off', sv.ib); row('cmWake', sv.wl && !sv.bv ? 'On' : 'Off', sv.wl); row('cmLittle', littleOn() ? 'On' : 'Off', littleOn()); row('cmHs', sv.hs ? 'On' : 'Off', sv.hs); row('cmSk', SHAKE[sv.sk]); row('cmSa', sv.sa ? 'On' : 'Off', sv.sa); row('cmCp', sv.cp ? 'On' : 'Off', sv.cp); row('cmFps', sv.fp ? 'On' : 'Off', sv.fp); row('cmEf', sv.ef ? 'On' : 'Off', sv.ef); row('cmDg', sv.dg ? 'On' : 'Off', sv.dg);
