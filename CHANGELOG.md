@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The built-in pictures are packed a little tighter (about 4% smaller, 65 KB) with the same quality setting, so the page is 86 KB smaller. The game looks the same (every picture check passes at 100%).
 - The game uses about 39 MB less memory on a phone: once the smaller copies of each picture are made, the big 384 pixel copy (never drawn that large on a phone-sized screen) is let go, and it is decoded again if the window is made large. The pictures are exactly the same.
 - New picture check tool, `tools/picture_gate.py`: compares two builds of the game in all four test browsers in about 80 seconds instead of the 3 minute full run, for changes that should not alter how anything looks.
 - The built-in pictures are 36 KB smaller: a color profile that every one of the 77 pictures carried (and the game never used) was removed. The pictures look exactly the same (every pixel identical), and the page is about 228 KB smaller, so it is read a little sooner (Chromium start-up about 19% quicker).
