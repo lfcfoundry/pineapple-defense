@@ -31,9 +31,10 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - Without esbuild the build writes the readable page and says so, so commit `index.html` only from a machine that has it.
 - Wrapping the baked-pictures block differently (comment, hidden text box) did not make it cheaper to start; only fewer bytes would.
 
-## Hidden speed check and error note
+## Hidden speed report and error log
 
-- `src/speedcheck.js` (injected into `game.js`) holds the Device check and the hidden panel (7 taps on the credit line on the title screen, within 4 seconds). The error note is JS-modules `slow-note` (vendored in `src/vendor/slow-note/`). Nothing in it may use the network. The Test Lab's "Device check" button and `window.__deviceCheck` use the same code.
+- The normal game uses JS-modules `field-report` (vendored in `src/vendor/field-report/`, started first in `src/title.html` as `FR`). 5 quick taps in the top-left corner open a panel with Save speed report and Save error log; each saves a small Markdown file. Nothing in it may use the network.
+- `src/speedcheck.js` (the 25 second Device check played by the throwing helper) is built into the Test Lab build only; the Test Lab's "Device check" button and `window.__deviceCheck` use it.
 
 ## Shared files and private notes
 

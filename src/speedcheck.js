@@ -1,5 +1,5 @@
-/* Hidden speed check and error note (shipped in the normal game, off the screen until asked). Nothing is sent anywhere.
-   Open it by tapping the small credit line on the title screen 7 times within 4 seconds: a card offers the 20 second Speed check (plays a busy stage by itself and ends with a plain verdict and a report to copy) and the Error note (the last slow or broken moments this device saw, kept only on this device, to copy). Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). */
+/* Device check (Test Lab build only): plays a busy stage with the throwing helper, measures the real frames and ends with a plain verdict and a report to copy. Nothing is sent anywhere.
+   The normal game uses the shared field-report module (5 taps in the top-left corner) instead. */
   /* Device check: plays a busy stage in real time with the throwing helper, measures the real frames, and ends with a plain-words verdict and a report to copy and paste back. */
   var devRun = null;
   function devClose() { if (!$('cw').hidden) { $('cw').hidden = true; root.removeAttribute('data-dlg'); } if (!$('gcw').hidden) hideCard(); if (!gameEl.hidden) toTitle(); }
@@ -68,48 +68,3 @@
   }
   function gBodyReset() { $('gBody').style.cssText = ''; }
   new MutationObserver(function () { if ($('gcw').hidden) gBodyReset(); }).observe($('gcw'), { attributes: true, attributeFilter: ['hidden'] });
-
-  var slowNote = null;
-  try {
-    slowNote = SlowNote.start({
-      key: 'pd-note', header: 'Pineapple Defense ' + (/Alpha ([\d.]+)/.exec(document.querySelector('.legal').textContent) || [0, '?'])[1],
-      context: function () { return typeof S === 'object' && S && !S.over && !gameEl.hidden ? ' [stage ' + S.stage + ', wave ' + S.wave + ']' : ' [title or menu]'; },
-      marks: function () { return { 'the game script finished starting': BOOT_MS }; }
-    });
-  } catch (e) { slowNote = null; }
-  /* a small card of its own: the game's cards live inside the game screen, which is hidden on the title */
-  function devDialog(title, body, btns, pre) {
-    var old = document.getElementById('devDlg'), w, c, h, p, row, i;
-    if (old) old.parentNode.removeChild(old);
-    w = document.createElement('div'); w.id = 'devDlg'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', title);
-    w.style.cssText = 'position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:rgba(60,35,10,.55);padding:12px';
-    c = document.createElement('div'); c.style.cssText = 'box-sizing:border-box;width:min(24rem,94vw);max-height:88vh;overflow:auto;background:#fff7e3;color:#4a2b0f;border-radius:18px;padding:1rem;text-align:left;box-shadow:0 4px 0 #b79a63;font:700 .92rem/1.3 var(--body)';
-    h = document.createElement('div'); h.textContent = title; h.style.cssText = 'font:800 1.15rem/1.1 var(--display);margin-bottom:.5rem';
-    p = document.createElement('div'); p.textContent = body; p.style.cssText = pre ? 'white-space:pre-wrap;font-size:.75rem;line-height:1.35;user-select:text;-webkit-user-select:text;word-break:break-word' : '';
-    row = document.createElement('div'); row.style.cssText = 'display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem';
-    btns.forEach(function (b) { var e = document.createElement('button'); e.type = 'button'; e.className = 'btn'; e.textContent = b[0]; e.onclick = function () { b[1](e); }; row.appendChild(e); });
-    c.appendChild(h); c.appendChild(p); c.appendChild(row); w.appendChild(c); document.body.appendChild(w);
-    w.addEventListener('keydown', function (e) { if (e.key === 'Escape') devDialogClose(); });
-    row.firstChild.focus();
-  }
-  function devDialogClose() { var d = document.getElementById('devDlg'); if (d) d.parentNode.removeChild(d); }
-  function openPanel() {
-    var n = slowNote ? slowNote.count() : 0;
-    devDialog('Speed and error note', 'Nothing here is sent anywhere. The Speed check plays a busy stage by itself for about 25 seconds (keep this tab in front and the screen on) and gives you a plain verdict to copy. The Error note lists the last slow or broken moments this device saw (' + n + ' so far).', [
-      ['Speed check', function () { devDialogClose(); deviceCheck(); }],
-      ['Error note', function () {
-        if (!slowNote) { devDialog('Error note', 'The error note is not available in this browser.', [['Close', devDialogClose]]); return; }
-        var txt = slowNote.text();
-        devDialog('Error note', txt, [['Copy note', function (b) { copyText(txt, function (ok) { b.textContent = ok ? 'Copied. Paste it in a message.' : 'Select the text above and copy it'; }); }], ['Clear note', function () { slowNote.clear(); devDialogClose(); }], ['Close', devDialogClose]], true);
-      }],
-      ['Close', devDialogClose]
-    ]);
-  }
-  /* the hidden way in: 7 taps on the credit line within 4 seconds, on the title screen only */
-  var legalEl = document.querySelector('.legal'), devTaps = [];
-  if (legalEl) legalEl.addEventListener('click', function () {
-    var t = performance.now();
-    if (titleEl.hidden) return;
-    devTaps.push(t); while (devTaps.length && t - devTaps[0] > 4000) devTaps.shift();
-    if (devTaps.length >= 7) { devTaps.length = 0; openPanel(); }
-  });

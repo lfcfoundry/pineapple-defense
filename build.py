@@ -41,7 +41,7 @@ def game_js():
     g = g.replace("/*{{EVOLVE_JS}}*/", (S / "evolve.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{EXTRAS_JS}}*/", (S / "extras.js").read_text(encoding="utf-8"))
-    g = g.replace("/*{{SPEEDCHECK_JS}}*/", (S / "speedcheck.js").read_text(encoding="utf-8"))
+    g = g.replace("/*{{SPEEDCHECK_JS}}*/", (S / "speedcheck.js").read_text(encoding="utf-8") if LAB else "")
     g = g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
     return g
 
@@ -83,7 +83,7 @@ def main():
         "/*{{WAKEKEEPER}}*/": (S / "vendor/wake-keeper/wake-keeper.js").read_text(),
         "/*{{TABGUARD}}*/": (S / "vendor/tab-guard/tab-guard.js").read_text(),
         "/*{{SAVEKIT}}*/": (S / "vendor/save-kit/save-kit.js").read_text(),
-        "/*{{SLOWNOTE}}*/": (S / "vendor/slow-note/slow-note.js").read_text(),
+        "/*{{FIELDREPORT}}*/": (S / "vendor/field-report/field-report.js").read_text().replace("</script>", "<\\/script>"),
         "/*{{BAKED}}*/null": baked_json(),
         "/*{{GAME_JS}}*/": game_js(),
         "<!--{{adelie}}-->": (sp / "adelie.svg").read_text(),
