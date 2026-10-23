@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- Fixed: if the browser refuses full screen from the Settings card, no hidden error is raised any more.
 - Fixed: tapping the stage, the pause button or a number key in the split second after pressing Play (before the stage had appeared) raised a hidden error. Those taps are now ignored until the stage is ready.
 - Fixed: closing the Settings card within a third of a second of switching full screen raised a hidden error.
 - If your device cannot keep up, the game now lowers the picture sharpness one step at a time using the shared FX governor, and it never raises it again on its own in the middle of a run. Starting or continuing a run begins at full sharpness again. Battery saver uses a lower speed line so it is not blamed for its slower pace.

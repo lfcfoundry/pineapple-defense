@@ -2376,7 +2376,7 @@ function wireComfort($b) {
   bind('cmHs', function () { sv.hs = sv.hs ? 0 : 1; }); bind('cmSk', function () { sv.sk = (sv.sk + 1) % 4; }); bind('cmSa', function () { sv.sa = sv.sa ? 0 : 1; }); bind('cmCp', function () { sv.cp = sv.cp ? 0 : 1; }); bind('cmEf', function () { sv.ef = sv.ef ? 0 : 1; }); bind('cmDg', function () { sv.dg = sv.dg ? 0 : 1; });
   $b('cmGrown').addEventListener('click', function () { $('cardBody').replaceChildren($('t-grown').content.cloneNode(true)); $('cardTitle').textContent = 'For grown-ups'; }); bind('cmFps', function () { sv.fp = sv.fp ? 0 : 1; });
   $b('cmCalm').addEventListener('click', function () { $('bCalm').click(); paint(); });
-  $b('cmFull').addEventListener('click', function () { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {} setTimeout(paint, 300); });
+  $b('cmFull').addEventListener('click', function () { try { var fp = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); if (fp && fp.catch) fp.catch(function () {}); } catch (e) {}   /* the browser may refuse (not a real tap, or a framed page): it answers with a rejected promise */ setTimeout(paint, 300); });
   var warn = $b('svWarn'); if (warn) warn.hidden = kit.save(sv) !== false;   /* the browser is not keeping the save (private window?) */
   paint();
 }
