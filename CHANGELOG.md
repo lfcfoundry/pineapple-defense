@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- If your device cannot keep up, the game now lowers the picture sharpness one step at a time using the shared FX governor, and it never raises it again on its own in the middle of a run. Starting or continuing a run begins at full sharpness again. Battery saver uses a lower speed line so it is not blamed for its slower pace.
 - The first stage you start in Chrome and other Chromium browsers begins about a third quicker, because the pre-drawn pictures are used as they come instead of being copied once more. The picture is exactly the same.
 - Opening and closing a card on the title screen (How to play, Settings, the Welcome tour) no longer makes a small hitch: it is about ten times quicker, so the tour and the cards appear without a stall on a phone.
 - The game opens sooner on every browser: the page itself is now the compact version of the file (about a fifth quicker to start, and more on a slow phone). Nothing you see changes.

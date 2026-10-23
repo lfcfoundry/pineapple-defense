@@ -144,7 +144,14 @@ var calm = false, running = false, raf = 0, last = 0, timeScale = 1, qLevel = 0;
 var even = new EvenDt();
 /* five governor steps: the canvas resolution walks down in small bites (2, 1.75, 1.5, 1.25, 1) and the heavier effects thin out on the 3-level scale qLevel */
 var DPR_STEPS = [2, 1.75, 1.5, 1.25, 1], Q_OF = [0, 0, 1, 1, 2], dprStep = 0;
-var gov = new QualityGovernor({ levels: 5, maxGap: 250, onChange: function (l) { dprStep = l; qLevel = Q_OF[l]; resize(); } });
+var LV = ['L0', 'L1', 'L2', 'L3', 'L4'], gov;
+/* FxGovernor (JS-modules): steps the picture quality DOWN when FPS stays low, never up by itself. A new run (start, continue) hands it back with release('L0'). Battery saver draws about 30 FPS on purpose, so its line is lower. */
+function mkGov(lvl) {
+  gov = FxGovernor.create({ levels: LV, start: LV[lvl || 0], maxAuto: 4, startAfterMs: 2000, minFps: sv.bv ? 18 : 36, gapMs: 250,
+    onChange: function (l) { dprStep = LV.indexOf(l); qLevel = Q_OF[dprStep]; resize(); } });
+}
+function govReset() { gov.release('L0'); dprStep = 0; qLevel = 0; }
+mkGov(0);
 
 function newState() {
   S = { wave: 0, spawned: 0, toSpawn: 0, spawnT: 0, mode: 'intro', modeT: 0, cheer: 100, golden: 0, bumps: 0,
@@ -748,7 +755,7 @@ function landTip() {
   if (sv.lp || !elLandTip || root.getAttribute('data-land') !== '1' || !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) return;
   sv.lp = 1; kit.save(sv); elLandTip.hidden = false; setTimeout(function () { elLandTip.hidden = true; }, 7000);
 }
-function continueGame() { titleEl.hidden = true; gameEl.hidden = false; loadAssets().then(function () { resize(true); startStage(sv); run(); }); }
+function continueGame() { govReset(); titleEl.hidden = true; gameEl.hidden = false; loadAssets().then(function () { resize(true); startStage(sv); run(); }); }
 function retryWave() { var w = S.inBoss ? NWAVES : S.wave - 1, g = S.golden; startStage({ stage: S.stage, wave: w, golden: g, cheer: 60, replay: S.replay }); run(); }
 /* after a finished run: keep everything and go again, or wipe the save (trophies stay) */
 var runEndText = '';
@@ -2078,7 +2085,7 @@ function frame(now) {
   var w0 = (sv.fp || labTick) ? performance.now() : 0;
   if (hold) holdTick();
   var dtMs = even.next(gap) || gap;
-  gov.frame(gap, now);
+  gov.frame(now);
   var dt = Math.min(dtMs, 50) / 1000 * timeScale * (K ? 1 : spdK());
   calm = root.getAttribute('data-calm') === '1';
   if (K) { updateSkee(dt); drawSkee(); hudSkee(); } else { update(dt); draw(); hud(); }
@@ -2271,7 +2278,7 @@ $('gBtn2').textContent = 'Title';
 window.addEventListener('resize', function () { if (gameEl.hidden === false) { resize(); if (!running) { draw(); } } });
 
 function start() {
-  sv.sl = 0;
+  sv.sl = 0; govReset();
   if (sv.stage > 1 || sv.wave > 0) { sv.run = 0; sv.cd = 0; sv.rl = 0; kit.save(sv); }
   titleEl.hidden = true; gameEl.hidden = false;
   loadAssets().then(function () { resize(true); startStage(); run(); });
@@ -2358,7 +2365,7 @@ function wireComfort($b) {
   }
   function bind(id, fn) { $b(id).addEventListener('click', function () { fn(); applyPrefs(); kit.save(sv); paint(); }); }
   bind('cmSp', function () { sv.sp = ((sv.sp | 0) + 1) % SPEEDS.length; }); bind('cmLh', function () { sv.lh = sv.lh ? 0 : 1; }); bind('cmAim', function () { sv.aim = (sv.aim + 1) % 3; }); bind('cmArc', function () { sv.arc = (sv.arc + 1) % 3; if (sv.arc === 0) sv.thr = 0; });
-  bind('cmHc', function () { sv.hc = sv.hc ? 0 : 1; }); bind('cmLt', function () { sv.lt = sv.lt ? 0 : 1; }); bind('cmRo', function () { sv.ro = sv.ro ? 0 : 1; }); bind('cmBig', function () { sv.bb = sv.bb ? 0 : 1; }); bind('cmSave', function () { sv.bv = sv.bv ? 0 : 1; }); bind('cmHold', function () { sv.hp = sv.hp ? 0 : 1; sv.tc = 1; }); bind('cmBuf', function () { sv.ib = sv.ib ? 0 : 1; });
+  bind('cmHc', function () { sv.hc = sv.hc ? 0 : 1; }); bind('cmLt', function () { sv.lt = sv.lt ? 0 : 1; }); bind('cmRo', function () { sv.ro = sv.ro ? 0 : 1; }); bind('cmBig', function () { sv.bb = sv.bb ? 0 : 1; }); bind('cmSave', function () { sv.bv = sv.bv ? 0 : 1; mkGov(dprStep); }); bind('cmHold', function () { sv.hp = sv.hp ? 0 : 1; sv.tc = 1; }); bind('cmBuf', function () { sv.ib = sv.ib ? 0 : 1; });
   bind('cmLittle', function () { var k; if (littleOn()) { var p = littlePrev || { hp: 0, bb: 0, lt: 0, ib: 0, aim: 1 }; for (k in LITTLE) sv[k] = p[k]; littlePrev = null; } else { littlePrev = {}; for (k in LITTLE) { littlePrev[k] = sv[k]; sv[k] = LITTLE[k]; } sv.tc = 1; } });   /* same values as applyLittle(), without the toast */
   bind('cmWake', function () { sv.wl = sv.wl ? 0 : 1; });
   bind('cmHs', function () { sv.hs = sv.hs ? 0 : 1; }); bind('cmSk', function () { sv.sk = (sv.sk + 1) % 4; }); bind('cmSa', function () { sv.sa = sv.sa ? 0 : 1; }); bind('cmCp', function () { sv.cp = sv.cp ? 0 : 1; }); bind('cmEf', function () { sv.ef = sv.ef ? 0 : 1; }); bind('cmDg', function () { sv.dg = sv.dg ? 0 : 1; });
