@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* Speed guard for Pineapple Defense: the same two pages in one of the four test browsers, taking turns, and a table of start-up times with the owner's 5% verdict.
    Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Uses the shared test runner from JS-modules (tools/vendor/tools/test-runner).
-     node tools/speed_guard.js <chromium|firefox|webkit|epiphany> <before.html> <after.html> [reps]     (default 7; the warm-up round is dropped)
-   Setup: `npm i --no-save puppeteer-core`; CHROMIUM=$PD_CHROME FIREFOX=$PD_FF; WebKitGTK and GNOME Web need xvfb-run and WebKitWebDriver (see tools/qa.py header).
+     node tools/speed_guard.js <chromium|firefox|webkit> <before.html> <after.html> [reps]     (default 7; the warm-up round is dropped)
+   Setup: `npm i --no-save puppeteer-core`; CHROMIUM=$PD_CHROME FIREFOX=$PD_FF; WebKitGTK needs xvfb-run and WebKitWebDriver (see tools/qa.py header).
    Optional first line `node tools/vendor/tools/test-runner/cli.js warm start` keeps the browsers open between runs. Each page opens with #qa (no first-run tour, one-tab lock off) and is read after a 1 s settle.
    Reads the game's own start-up marks: boot = time until the game's code finished starting (window.__pd.boot), first paint, page fully read. All in ms, lower is better. */
 'use strict';

@@ -23,7 +23,7 @@ else
 fi
 
 CHROME=$(ls -d "$DEST"/ungoogled-chromium-*/chrome 2>/dev/null | head -1)
-if [ -z "$CHROME" ] || [ ! -x "$DEST/firefox/firefox" ] || [ ! -x /usr/bin/epiphany ]; then
+if [ -z "$CHROME" ] || [ ! -x "$DEST/firefox/firefox" ]; then
   sh "$KB/install.sh" "$DEST" >&2 || say "install.sh reported a problem; see above"
 fi
 
@@ -40,5 +40,5 @@ export NFM_PLAYWRIGHT=/tmp/pw/node_modules/playwright-core
 export NFM_PUPPETEER=/tmp/pptr/node_modules/puppeteer-core
 export FIREFOX=$DEST/firefox/firefox
 EOT
-say "ready. Chromium: ${CHROME:-missing}; Firefox: $([ -x "$DEST/firefox/firefox" ] && echo ok || echo missing); GNOME Web: $([ -x /usr/bin/epiphany ] && echo ok || echo missing); settings in $ENVF"
+say "ready. Chromium: ${CHROME:-missing}; Firefox: $([ -x "$DEST/firefox/firefox" ] && echo ok || echo missing); settings in $ENVF"
 exit 0

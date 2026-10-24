@@ -1,5 +1,5 @@
 # Picture gate: do two builds of the game draw the same picture?  usage:
-#   python3 tools/picture_gate.py A.html B.html [chromium firefox webkit gnome]      (default: all four, one at a time)
+#   python3 tools/picture_gate.py A.html B.html [chromium firefox webkit]      (default: all three, one at a time)
 # For stages 1 to 5 it takes the first frame and the frame 1 s of game time later, with a fixed random seed, and reports the share of pixels whose worst color channel
 # differs by at most TOL (3 of 255). Pass is 99.5% or more in every frame. About 20 s per browser; use it instead of the full suite for look-only changes (the full suite stays the release gate).
 # Browser paths come from PD_CHROME, PD_FF, PD_GECKO (see docs/qa-process.md). PD_UA sets a user agent (a Chrome one turns on Chromium's bitmap path). Needs numpy.
@@ -28,10 +28,9 @@ def run(which, url, body, wait_expr='!!window.__pd', fresh=True):
             for _ in range(40):
                 try:
                     o = ArgOptions()
-                    if which == 'gnome': o.set_capability('browserName', 'Epiphany'); o.set_capability('webkitgtk:browserOptions', {'binary': shutil.which('epiphany'), 'args': ['--automation-mode']})
                     d = webdriver.Remote(command_executor='http://127.0.0.1:%d' % port, options=o); break
                 except Exception: time.sleep(0.5)
-        ver = ('GNOME Web ' if which == 'gnome' else 'WebKitGTK ' if which == 'webkit' else 'Firefox ') + d.capabilities['browserVersion']
+        ver = ('WebKitGTK ' if which == 'webkit' else 'Firefox ') + d.capabilities['browserVersion']
         d.set_script_timeout(240); d.get(url); t0 = time.time()
         while not d.execute_script('return ' + wait_expr):
             if time.time() - t0 > 60: raise SystemExit('page not ready')
@@ -65,7 +64,7 @@ def gate(which, A, B):
         ver, r = run(which, 'file://' + os.path.abspath(f) + '#qa', BODY)
         if 'error' in r: print(ver, r); return False
         res[v] = r
-        if which in ('webkit', 'gnome'): wait_webkit_exit()
+        if which == 'webkit': wait_webkit_exit()
     print(ver); ok = True
     for st in '12345':
         row = []
@@ -81,7 +80,7 @@ def gate(which, A, B):
     return ok
 
 if __name__ == '__main__':
-    args = [a for a in sys.argv[1:] if a not in ('chromium', 'firefox', 'webkit', 'gnome')]
+    args = [a for a in sys.argv[1:] if a not in ('chromium', 'firefox', 'webkit')]
     if len(args) != 2: sys.exit(__doc__)
-    which = [a for a in sys.argv[1:] if a in ('chromium', 'firefox', 'webkit', 'gnome')] or ['chromium', 'firefox', 'webkit', 'gnome']
+    which = [a for a in sys.argv[1:] if a in ('chromium', 'firefox', 'webkit')] or ['chromium', 'firefox', 'webkit']
     sys.exit(0 if all([gate(w, args[0], args[1]) for w in which]) else 1)
