@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- Flicking feels quicker: the sling is ready again after 0.3 seconds instead of 0.42, and a flick made up to 0.4 seconds early is now kept and thrown the instant the sling is ready (Early flick helper, now on by default; you can still turn it off in Settings). Flicking every third of a second used to throw about half your flicks; now nearly all of them throw.
 - Behind the scenes only: the check that keeps the drawing work per frame in bounds now uses the shared canvas-probe tool from JS-modules (also checks that nothing is left half-saved). The game itself is unchanged.
 - The speed badge (shown only when you turn on the FPS counter in Settings) now sits above the throw buttons, so a long hitch message can no longer cover the Lobber button on a narrow screen.
 - GNOME Web is no longer one of the test browsers; checks run in Chromium, Firefox and WebKitGTK.
