@@ -4,7 +4,7 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 
 ## Test browsers (owner rule, 2026-10-17)
 
-- Test only with the browsers on the `browsers` branch of the private lfcfoundry/knowledge-base: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 (GNOME Web 46.5). Never stock Chromium, and never two browsers at once.
+- Test only with the browsers on the `browsers` branch of the private lfcfoundry/knowledge-base: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 (GNOME Web was dropped from testing on 2026-10-24). Never stock Chromium, and never two browsers at once.
 - Before each test run, re-read that branch's README: versions can be updated, and browsers can be added or removed. Follow what it says now.
 - Label every result with the browser and its version. `python3 -I tools/qa.py` prints and records the versions that really ran (`.qa-browsers.json`); see `docs/qa-process.md` for the setup (`PD_CHROME`, `PD_FF`, `PD_GECKO`, `--ff`, `--wk`).
 - Every release lists the browsers, with versions, that tested it: the changelog entry ("Tested in", written by `tools/release.py` from the recorded versions) and the README ("Test browsers"). Where an older release did not record them, the changelog says "not recorded". Do not guess.
@@ -20,7 +20,7 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
-- Look-only change? `python3 -I tools/picture_gate.py before.html after.html` compares the two builds in all four browsers in about 80 seconds (needs numpy and the same PD_* paths); the full `tools/qa.py` run stays the release gate.
+- Look-only change? `python3 -I tools/picture_gate.py before.html after.html` compares the two builds in the three test browsers in about 60 seconds (needs numpy and the same PD_* paths); the full `tools/qa.py` run stays the release gate.
 
 ## Speed guard tool
 

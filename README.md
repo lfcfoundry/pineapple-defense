@@ -106,11 +106,11 @@ Everything is one self-contained HTML file built from `src/`. There are no runti
 - Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `index.html` by hand.
 - Packed single file: `python3 tools/pack.py` makes one smaller, self-unpacking `.html` in `dist/`; add `--min` to pack the minified page (`python3 build.py --min` first, needs `esbuild`).
 - Icons: `python3 -I tools/make_icons.py` regenerates `src/sprites/icons.svg` and the standalone files in `docs/icons/`.
-- Speed guard: `node tools/speed_guard.js <chromium|firefox|webkit|epiphany> before.html after.html` takes turns between two builds in one test browser and prints start-up times with the 5% verdict (needs `npm i --no-save puppeteer-core`; see the file header).
-- Picture gate: `python3 -I tools/picture_gate.py before.html after.html` compares two builds in all four test browsers in about 80 seconds (99.5% of pixels within 3 of 255; needs numpy). Use it for look-only changes; the full run below stays the release gate.
+- Speed guard: `node tools/speed_guard.js <chromium|firefox|webkit> before.html after.html` takes turns between two builds in one test browser and prints start-up times with the 5% verdict (needs `npm i --no-save puppeteer-core`; see the file header).
+- Picture gate: `python3 -I tools/picture_gate.py before.html after.html` compares two builds in the three test browsers in about 60 seconds (99.5% of pixels within 3 of 255; needs numpy). Use it for look-only changes; the full run below stays the release gate.
 - Pictures and speed: the 77 pre-drawn sprites are lossy WebP data inside the page (no color profile, 2.6 MB page); Chromium decodes them in background workers, and the 384 pixel copies are let go on phone-sized screens. The speed report panel comes from the vendored `field-report` module and the quality governor from `fx-governor` (both from JS-modules, see `src/vendor/`).
 - Checks: `python3 -I tools/qa.py` (add `--ff` for Firefox). Release: `python3 -I tools/release.py`.
-- Test browsers: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 / GNOME Web 46.5, one at a time. WebKitGTK was added to the rule on 2026-10-17; release 2026.10.17.0716 is the first one tested in it. The changelog lists what each release was tested in, and says "not recorded" where that was not noted. Targets: Android Chrome, Firefox and Chromium-based desktop browsers.
+- Test browsers: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6, one at a time. GNOME Web was a fourth test browser until 2026-10-24 and is no longer used. The changelog lists what each release was tested in, and says "not recorded" where that was not noted. Targets: Android Chrome, Firefox and Chromium-based desktop browsers.
 
 ## More from LFC Foundry
 

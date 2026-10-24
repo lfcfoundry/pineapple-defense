@@ -4,7 +4,6 @@
   python3 -I tools/qa.py            build, syntax check, then the in-page suite in Chromium (about 10 s)
   python3 -I tools/qa.py --ff       also run it in Firefox (the stress test)
   python3 -I tools/qa.py --wk       also run it in WebKitGTK (the nearest WebKit a Linux cloud machine can run)
-  python3 -I tools/qa.py --gnome    also run it in GNOME Web (Epiphany), the real browser built on that engine
   python3 -I tools/qa.py --lab      test the tester (lab) build instead
   python3 -I tools/qa.py --min      test the minified page (the one that gets packed)
   python3 -I tools/qa.py --packed FILE  open a packed file (what players get) and run the 2 second smoke checks; add --ff --wk for the other browsers
@@ -33,7 +32,7 @@ args = sys.argv[1:]
 flag = lambda f: f in args
 opt = lambda f, d: args[args.index(f) + 1] if f in args and args.index(f) + 1 < len(args) else d
 QUICK = flag('--quick'); CALM = flag('--calm')
-LEGS = ['chromium'] + (['firefox'] if flag('--ff') else []) + (['webkit'] if flag('--wk') else []) + (['gnome'] if flag('--gnome') else [])
+LEGS = ['chromium'] + (['firefox'] if flag('--ff') else []) + (['webkit'] if flag('--wk') else [])
 # --smart: choose the cheapest run that still covers what changed since the last passing run (file fingerprints kept in .qa-smart.json)
 SMART_ONLY = ''
 def _fingerprints():
@@ -58,7 +57,8 @@ _qi = args.index('--quick') + 1 if '--quick' in args else len(args)
 SEED = int(args[_qi]) if QUICK and _qi < len(args) and args[_qi].isdigit() else int(time.time() // 86400)
 FUZZ = int(opt('--fuzz', 5 if QUICK else 60)); SHOTS = opt('--shots', ''); PACKED = opt('--packed', ''); ONLY = opt('--only', '^(load|stage 1 runs)$' if PACKED else SMART_ONLY)   # --only REGEX runs just the checks whose names match (never cached)
 t0 = time.time(); stamp = lambda: '%5.1fs' % (time.time() - t0)
-import faulthandler; faulthandler.dump_traceback_later(int(os.environ.get('QA_MAX_S', 150 + 120 * (('--ff' in sys.argv) + ('--wk' in sys.argv) + ('--gnome' in sys.argv)) + (300 if '--fuzz' in sys.argv else 0))), file=sys.stdout, exit=True)   # a run that hangs (a browser call with no timeout) ends with the stack of where it sat: 150 s for Chromium alone (a full run takes about 55 s), +120 s per extra browser
+if '--gnome' in sys.argv: print('GNOME Web is no longer a test browser (rule of 2026-10-24); use --wk for WebKitGTK'); sys.exit(2)
+import faulthandler; faulthandler.dump_traceback_later(int(os.environ.get('QA_MAX_S', 150 + 120 * (('--ff' in sys.argv) + ('--wk' in sys.argv)) + (300 if '--fuzz' in sys.argv else 0))), file=sys.stdout, exit=True)   # a run that hangs (a browser call with no timeout) ends with the stack of where it sat: 150 s for Chromium alone (a full run takes about 55 s), +120 s per extra browser
 TIMES = os.environ.get('QA_TIMES') == '1'; _ph = [time.time()]; PHASES = []   # QA_TIMES=1 prints where each leg's time goes (checks, layout, old saves, launches) and the slowest checks
 def phase(label):
     now = time.time(); PHASES.append((label, now - _ph[0])); _ph[0] = now
@@ -116,7 +116,7 @@ USED = []   # (key, full label) of every browser this run really used
 suite = open(os.path.join(ROOT, 'tools/qa_suite.js'), encoding='utf-8').read()
 layout = open(os.path.join(ROOT, 'tools/qa_layout.js'), encoding='utf-8').read()
 PROBE = open(os.path.join(ROOT, 'tools/canvas-probe.js'), encoding='utf-8').read()
-key = hashlib.sha1((src + suite + layout + PROBE + str(FUZZ) + str(flag('--ff')) + str(flag('--wk')) + str(flag('--gnome')) + str(CALM) + os.environ.get('PD_CHROME', '')).encode()).hexdigest()
+key = hashlib.sha1((src + suite + layout + PROBE + str(FUZZ) + str(flag('--ff')) + str(flag('--wk')) + str(CALM) + os.environ.get('PD_CHROME', '')).encode()).hexdigest()
 cache = os.path.join(ROOT, '.qa-cache'); mode = ('lab' if lab else 'main') + ('-min' if mini else '') + ('-calm' if CALM else '')
 store = json.load(open(cache)) if os.path.exists(cache) else {}
 if store.get(mode) == key and not flag('--force') and not QUICK and not ONLY:
@@ -288,7 +288,7 @@ if flag('--ff'):
     finally:
         d.quit()
 
-for _wf, _gnome in (('--wk', False), ('--gnome', True)):   # WebKitGTK's MiniBrowser, then (--gnome) GNOME Web itself, both through WebKitWebDriver
+for _wf, _gnome in (('--wk', False),):   # WebKitGTK's MiniBrowser through WebKitWebDriver (GNOME Web was dropped from testing on 2026-10-24)
     if not flag(_wf): continue
     import signal
     from selenium import webdriver
