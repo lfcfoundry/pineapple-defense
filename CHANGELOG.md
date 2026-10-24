@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- Behind the scenes only: the check that keeps the drawing work per frame in bounds now uses the shared canvas-probe tool from JS-modules (also checks that nothing is left half-saved). The game itself is unchanged.
 - The speed badge (shown only when you turn on the FPS counter in Settings) now sits above the throw buttons, so a long hitch message can no longer cover the Lobber button on a narrow screen.
 - GNOME Web is no longer one of the test browsers; checks run in Chromium, Firefox and WebKitGTK.
 - The built-in pictures are packed a little tighter (about 4% smaller, 65 KB) with the same quality setting, so the page is 86 KB smaller. The game looks the same (every picture check passes at 100%).

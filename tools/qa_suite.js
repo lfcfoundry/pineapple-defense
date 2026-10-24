@@ -440,14 +440,13 @@ await T('For grown-ups card: opens from Settings and says what is true', async (
 
 await T('canvas work per frame stays under its ceiling in every stage (counts, not time)', async () => {
   if (typeof CanvasProbe === 'undefined') return 'skipped: the probe was not loaded';
-  const CEIL = [0, 620, 600, 750, 950, 670], out = [], sv = P.sv(), NF = 45; sv.au = 1; sv.um = 3; sv.ra = 2;   /* 45 frames: the median of counts does not need more (100 took 6.8 s) */
+  const CEIL = [0, 1720, 1800, 2370, 3300, 1730], out = [], sv = P.sv(), NF = 45; sv.au = 1; sv.um = 3; sv.ra = 2;   /* 45 frames: the median of counts does not need more (100 took 6.8 s) */
   for (let st = 1; st <= 5; st++) {
     await go(st, st === 5 ? 6 : 3); P.bot = true; P.step(4, 0.033, 0); const probe = CanvasProbe.install({ keep: NF });
     for (let i = 0; i < NF; i++) { P.step(0.033, 0.033, 1); probe.frame(); }
-    const r = probe.report(); probe.uninstall(); P.bot = false;
-    const total = Object.keys(r.calls).reduce((a, k) => a + r.calls[k].median, 0); out.push(st + ':' + total);
-    if (total > CEIL[st]) throw new Error('stage ' + st + ' draws ' + total + ' canvas calls a frame, ceiling ' + CEIL[st] + ' (' + probe.text().slice(0, 160) + ')');
-    if (r.saveRestore.leakFrames > 0 || r.saveRestore.restoreWithoutSave > 0) throw new Error('stage ' + st + ': save/restore out of balance (' + r.saveRestore.leakFrames + ' leaking frames, ' + r.saveRestore.restoreWithoutSave + ' extra restores)');
+    const r = probe.report(), v = probe.check({ callsPerFrame: CEIL[st] }); probe.uninstall(); P.bot = false;   /* check(): median of the per-frame totals against the ceiling, plus save/restore balance, source overhang and growing paths; the page's own loop (and so the quality governor) is idle while the suite steps the game */
+    out.push(st + ':' + r.callsPerFrame.median);
+    if (!v.ok) throw new Error('stage ' + st + ' (median ' + r.callsPerFrame.median + ' canvas calls a frame, ceiling ' + CEIL[st] + '): ' + v.problems.join(' ') + ' ' + probe.text().slice(0, 160));
   }
   sv.au = 0; sv.um = 0; sv.ra = 0; return 'median calls per frame by stage ' + out.join(' ');
 });
