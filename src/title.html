@@ -194,9 +194,11 @@ html[data-land="1"] .cbox{zoom:var(--cz);width:calc(min(560px,var(--side)*1.7)/v
 html[data-land="1"] .card{max-height:calc((var(--ah) - 28px)/var(--cz))}
 html[data-land="1"] .xbtn{width:3.4rem;height:3.4rem}html[data-land="1"] .card .sb{min-height:max(34px,2.4rem)}
 /* soft plate behind the two HUD counter rows (portrait play; sideways and the bonus game keep bare pills; no blur, so nothing is re-filtered every frame) */
-html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{background:rgba(255,247,227,.5);border-radius:1rem;padding:.3rem .5rem;margin-inline:.3rem;box-shadow:0 .12em 0 rgba(183,154,99,.5)}
-html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow+.hrow{align-self:flex-start}
-html[data-lh="1"]:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow+.hrow{align-self:flex-end}
+.topbar{display:flex;align-items:center;gap:.4rem}.topbar .prog{flex:1;min-width:0}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud{gap:.25rem}html:not([data-land="1"]) .game:not([data-bonus]) .topbar{margin-inline:.3rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog{height:1.15rem;margin-bottom:0}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog .seg{height:.46rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog svg{display:none}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pause{width:max(44px,2.75rem);height:max(44px,2.75rem)}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{background:rgba(255,247,227,.5);border-radius:1rem;padding:.2rem .35rem;margin-inline:.3rem;box-shadow:0 .12em 0 rgba(183,154,99,.5);flex-wrap:wrap;gap:.35rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill{min-height:1.9rem;font-size:.82rem;padding:.15em .6em}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill small{font-size:.62rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill b{font-size:.9rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill svg{width:1.2rem;height:1.2rem}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{align-self:flex-start}
+html[data-lh="1"]:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{align-self:flex-end}
 /* Roomy letters (setting ro): wider letter and word spacing and taller lines in cards and menus */
 html[data-ro="1"] .card *:not(svg):not(path):not(h2):not(h3),html[data-ro="1"] .menu .btn{letter-spacing:.04em;word-spacing:.16em}
 html[data-ro="1"] .card :is(p,li,span,div,small,i){line-height:1.55}
@@ -253,7 +255,7 @@ html[data-calm="1"] .th,html[data-calm="1"] .tf,html[data-calm="1"] .tb,html[dat
 @keyframes swayp{from{transform:rotate(-1.8deg)}to{transform:rotate(2.2deg)}}
 @keyframes bbflip{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0)}}
 
-html[data-lh="1"] .hrow{flex-direction:row-reverse}html[data-lh="1"] .pause{margin-left:0;margin-right:auto}
+html[data-lh="1"] .hrow,html[data-lh="1"] .topbar{flex-direction:row-reverse}html[data-lh="1"] .pause{margin-left:0;margin-right:auto}
 html[data-lh="1"] .cheer{right:auto;left:6px}html[data-lh="1"] .bossbar{left:auto!important;right:6px!important}
 html[data-lh="1"] .raid{right:auto;left:3px}html[data-lh="1"] .picks{left:auto;right:max(12px,env(safe-area-inset-right))}
 html[data-hc="1"] .pill,html[data-hc="1"] .pause,html[data-hc="1"] .pick{box-shadow:0 0 0 2.5px #1c0f06,0 .3em .45em rgba(0,0,0,.3)}html[data-hc="1"] .pill{color:#000}html[data-hc="1"] .pill small{color:#2a1a08}
@@ -360,9 +362,8 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <section class="game" id="game" hidden aria-label="Stage 1, Sandy Snack Shore"><span id="bcGuard" hidden></span>
 <canvas id="cv" aria-hidden="true"></canvas>
 <div class="hud">
-<div class="prog" id="prog" role="img" aria-label="Stage progress"><b class="stg" id="progStg">S1</b><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-medal"/></svg></div>
-<div class="hrow"><span class="pill" id="waveBox"><span id="waveTxt">Wave 1 / 8</span></span><span class="pill sm" id="leftPill" title="Penguins left"><small>Left</small><b id="leftTxt">0</b></span><span class="pill sm" id="comboPill" title="Hits in a row"><small>Combo</small><b id="comboTxt">0</b></span><button class="pause" id="bPause" type="button" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-pause"/></svg></button></div>
-<div class="hrow"><span class="pill sm" id="credPill" title="Credits you have won this roll" hidden><small>Won</small><b id="goldTxt">0</b></span><span class="pill sm" title="Your Golden Pineapples"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#lp-art"/></svg><b id="bankTxt">0</b></span><span class="pill sm" title="Trophies collected"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-trophy"/></svg><b id="cupsTxt">0/10</b></span></div>
+<div class="topbar"><div class="prog" id="prog" role="img" aria-label="Stage progress"><b class="stg" id="progStg">S1</b><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-medal"/></svg></div><button class="pause" id="bPause" type="button" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-pause"/></svg></button></div>
+<div class="hrow"><span class="pill" id="waveBox"><span id="waveTxt">Wave 1 / 8</span></span><span class="pill sm" id="leftPill" title="Penguins left"><small>Left</small><b id="leftTxt">0</b></span><span class="pill sm" id="comboPill" title="Hits in a row"><small>Combo</small><b id="comboTxt">0</b></span><span class="pill sm" id="credPill" title="Credits you have won this roll" hidden><small>Won</small><b id="goldTxt">0</b></span><span class="pill sm" title="Your Golden Pineapples"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#lp-art"/></svg><b id="bankTxt">0</b></span><span class="pill sm" title="Trophies collected"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-trophy"/></svg><b id="cupsTxt">0/10</b></span></div>
 </div>
 <div class="cheer" role="img" aria-label="Stand cheer"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#ic-heart"/></svg><div class="bar" data-low="0"><i id="cheerFill"></i></div></div>
 <button class="raid" id="bRaid" type="button" hidden aria-label="Pineapple Rain: pineapples fall across the lane (R)"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#ic-raid"/></svg><b id="raidN">0</b></button>
