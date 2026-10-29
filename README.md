@@ -1,7 +1,5 @@
 <div align="center">
 
-<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
-
 **Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
 
 [**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/about.html) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
@@ -16,6 +14,8 @@
 <img src="docs/img/stage3.jpg" alt="Iceberg Harbor Hullabaloo" width="170">
 <img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
 </p>
+
+<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
 
 ## What it is and how it works
 
