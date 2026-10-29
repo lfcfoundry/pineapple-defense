@@ -1,10 +1,14 @@
+<div align="center">
+
 <p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
 
-<p align="center"><b>Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.</b></p>
+**Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
 
-<p align="center">
-<a href="https://lfcfoundry.github.io/pineapple-defense/"><b>▶ Play it now</b></a> · free · one small file · works offline · no ads · no tracking
-</p>
+[**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/about.html) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
+
+![alpha](https://img.shields.io/badge/alpha-informational) ![MIT](https://img.shields.io/badge/MIT-informational) ![free](https://img.shields.io/badge/free-informational) ![no ads, no tracking](https://img.shields.io/badge/no%20ads%20no%20tracking-informational) ![works offline](https://img.shields.io/badge/works%20offline-informational)
+
+</div>
 
 <p align="center">
 <img src="docs/img/title.jpg" alt="Title screen" width="170">
@@ -15,15 +19,19 @@
 
 ## What it is and how it works
 
-A silly, glossy toy-box game for kids of all ages. The penguins are jealous of your tropical fruit and march down the ice toward your stand. You flick a pineapple from the bottom of the screen: the direction of the flick picks the target area, its speed sets the power, and a gentle snap pulls the shot toward the nearest penguin. Bonk them, chain combos, collect trophies, and beat a different Champion at the end of every stage. It works on phones, tablets and computers, in any modern browser.
-
-It is one self-contained HTML file with no runtime dependencies and no network calls. The glossy toy look is drawn on a 2D canvas from sprites scaled by depth, progress is saved in your browser, and players get a smaller self-unpacking copy of the same page.
-
-> **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
+A silly, glossy toy-box game for kids of all ages. Penguins march toward your fruit stand and you flick a pineapple from the bottom of the screen: the direction picks the target area, the speed sets the power, and an aim help (which you can turn off in Settings) pulls the shot toward the nearest penguin. It is one self-contained HTML file with no network calls, and it works on phones, tablets and computers.
 
 ## Why it exists
 
-LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set: made for kids first, with silly fun and no cruelty, so there are no ads, purchases, accounts, streaks, timers, prize boxes or leaderboards, and losing is gentle. It is also a working test of the shared [JS-modules](https://github.com/lfcfoundry/JS-modules) pieces in a real game.
+LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set, made for kids first: no ads, purchases, accounts, streaks, timers or leaderboards, and losing is gentle.
+
+## Highlights
+
+| Five stages, five Champions | Pineapple Roll | 21 trophies | Comfortable settings |
+|---|---|---|---|
+| Each Champion fights differently, and a hint tells you how to win. | A carnival bonus game after stage 4, with holes that score more the harder they are. | Trophies pay Golden Pineapples to spend in the Shop. | Left-handed layout, calm mode, larger text, high contrast and a battery saver. |
+
+> **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
 
 ## How to play
 
