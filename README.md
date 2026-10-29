@@ -37,7 +37,7 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 
 | One file | Start-up | Next stage | Tested in |
 |---|---|---|---|
-| 2.4 MB with all art and sound, no network calls | 113 ms to a finished start (Chromium, median of 9) | 6.1 ms of page code to start stages 2 to 5 | Chromium, Firefox and WebKitGTK |
+| 2.4 MB with all art and code, no network calls | 113 ms to a finished start (Chromium, median of 9) | 6.1 ms of page code to start stages 2 to 5 | Chromium, Firefox and WebKitGTK |
 
 See the [about page](https://lfcfoundry.github.io/pineapple-defense/about.html) for screenshots, the stages and the upgrades.
 
