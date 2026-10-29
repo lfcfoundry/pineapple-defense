@@ -19,7 +19,7 @@
 
 ## What it is and how it works
 
-A silly, glossy toy-box game for kids of all ages. Penguins march toward your fruit stand and you flick a pineapple from the bottom of the screen: the direction picks the target area, the speed sets the power, and an aim help (which you can turn off in Settings) pulls the shot toward the nearest penguin. It is one self-contained HTML file with no network calls, and it works on phones, tablets and computers.
+A silly, glossy toy-box game for kids of all ages. Penguins march toward your fruit stand and you flick a pineapple from the bottom of the screen: the direction picks the target area, the speed sets the power. It is one self-contained HTML file with no network calls, and it works on phones, tablets and computers.
 
 ## Why it exists
 
