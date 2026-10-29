@@ -33,6 +33,14 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 
 > **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
 
+## By the numbers
+
+| One file | Start-up | Next stage | Tested in |
+|---|---|---|---|
+| 2.4 MB with all art and sound, no network calls | 113 ms to a finished start (Chromium, median of 9) | 6.1 ms of page code to start stages 2 to 5 | Chromium, Firefox and WebKitGTK |
+
+See the [about page](https://lfcfoundry.github.io/pineapple-defense/about.html) for screenshots, the stages and the upgrades.
+
 ## How to play
 
 A short picture tour shows the first time you open the game (you can skip it, and replay it from **How to play**).
