@@ -1,6 +1,6 @@
 <div align="center">
 
-<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
+# Pineapple Defense
 
 **Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
 
@@ -10,12 +10,7 @@
 
 </div>
 
-<p align="center">
-<img src="docs/img/title.jpg" alt="Title screen" width="170">
-<img src="docs/img/stage1.jpg" alt="Sandy Snack Shore" width="170">
-<img src="docs/img/stage3.jpg" alt="Iceberg Harbor Hullabaloo" width="170">
-<img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
-</p>
+<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
 
 ## What it is and how it works
 
@@ -25,6 +20,24 @@ A silly, glossy toy-box game for kids of all ages. Penguins march toward your fr
 
 LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set, made for kids first: no ads, purchases, accounts, streaks, timers or leaderboards, and losing is gentle.
 
+## Made for kids, kept simple
+
+- **No ads.** Not one, anywhere in the game.
+- **No accounts.** Nothing to sign up for or log in to.
+- **No data sent anywhere.** The game makes no network calls, and progress stays in your own browser.
+- **No microtransactions.** Golden Pineapples are earned by playing and nothing is for sale.
+- **Fully open source.** MIT licensed, with every line on GitHub.
+- **Works offline.** The game is one self-contained file with no network calls, so once the page has loaded (or you have saved it) you can play with no connection.
+- **Single player.** Just you and the penguins: no online play, no chat, nobody else to meet.
+- **Works in any modern browser.** Tested in Chromium, Firefox and WebKitGTK, on phones, tablets and computers of most standard screen sizes.
+
+<p align="center">
+<img src="docs/img/title.jpg" alt="Title screen" width="170">
+<img src="docs/img/stage1.jpg" alt="Sandy Snack Shore" width="170">
+<img src="docs/img/stage3.jpg" alt="Iceberg Harbor Hullabaloo" width="170">
+<img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
+</p>
+
 ## Highlights
 
 | Five stages, five Champions | Pineapple Roll | 21 trophies | Comfortable settings |
@@ -33,13 +46,15 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 
 > **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
 
+**New here?** The first time you open the game, a short picture tour shows how to play. You can skip it, and replay it any time from **How to play**.
+
 ## By the numbers
 
 | One file | Start-up | Next stage | Tested in |
 |---|---|---|---|
 | 2.4 MB with all art and code, no network calls | 113 ms to a finished start (Chromium, median of 9) | 6.1 ms of page code to start stages 2 to 5 | Chromium, Firefox and WebKitGTK |
 
-Silent by design: there is no sound at all, so you can play anywhere with nothing to mute.
+Silent by design: with no sound, the game is a visual and tactile experience with less stimulation for players with sensory challenges, and you can play anywhere with nothing to mute.
 
 See the [about page](https://lfcfoundry.github.io/pineapple-defense/about.html) for screenshots, the stages and the upgrades.
 
