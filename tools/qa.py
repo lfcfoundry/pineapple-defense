@@ -41,7 +41,7 @@ def _fingerprints():
     out = {}
     for f in r.stdout.split('\n'):
         full = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
-        if f and f != 'index.html' and os.path.isfile(full): out[f] = hashlib.sha1(open(full, 'rb').read()).hexdigest()
+        if f and f != 'play/index.html' and os.path.isfile(full): out[f] = hashlib.sha1(open(full, 'rb').read()).hexdigest()
     return out
 _docs_only = lambda f: f.endswith('.md') or f.startswith('docs/') or f in ('LICENSE', '.gitignore')
 _smart_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.qa-smart.json')
@@ -75,7 +75,7 @@ if PACKED:   # --packed FILE: open the packed file players get (not a build) and
 else:
     b = run([sys.executable, '-I', 'build.py'] + (['--lab'] if lab else []) + (['--min'] if mini else []))
     if b.returncode: print(b.stdout, b.stderr); sys.exit(2)
-    page = os.path.join(ROOT, ('dist/lab-min' if lab else 'dist/min') + '/index.html' if mini else 'dist/lab/index.html' if lab else 'index.html')
+    page = os.path.join(ROOT, ('dist/lab-min' if lab else 'dist/min') + '/index.html' if mini else 'dist/lab/index.html' if lab else 'play/index.html')
     if not os.path.exists(page): print('minified page missing (npm i --no-save esbuild)'); sys.exit(2)
 src = open(page, encoding='utf-8').read()
 

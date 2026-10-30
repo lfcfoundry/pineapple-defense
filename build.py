@@ -98,7 +98,7 @@ def main():
     t = t.replace("<!--{{LAB_BTN}}-->", '<div class="row"><button class="btn" id="bLab" type="button">Test Lab</button></div>' if LAB else "")
     t = t.replace("{{VERSION}}", ver + (" LAB" if LAB else ""))
     assert "{{" not in re.sub(r"\$\{\{", "", t.replace("{{VERSION}}", "")) or True
-    out = R / "dist" / "lab" / "index.html" if LAB else R / "index.html"
+    out = R / "dist" / "lab" / "index.html" if LAB else R / "play" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     m = None if os.environ.get("PD_READABLE") else minify(t)   # the page itself is the minified one (about 20% faster to start in all four test browsers, see AGENTS.md); the readable copy goes to dist/readable
     if m is None:
