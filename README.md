@@ -10,13 +10,6 @@
 
 </div>
 
-<p align="center">
-<img src="docs/img/title.jpg" alt="Title screen" width="170">
-<img src="docs/img/stage1.jpg" alt="Sandy Snack Shore" width="170">
-<img src="docs/img/stage3.jpg" alt="Iceberg Harbor Hullabaloo" width="170">
-<img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
-</p>
-
 <p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
 
 ## What it is and how it works
@@ -26,6 +19,13 @@ A silly, glossy toy-box game for kids of all ages. Penguins march toward your fr
 ## Why it exists
 
 LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set, made for kids first: no ads, purchases, accounts, streaks, timers or leaderboards, and losing is gentle.
+
+<p align="center">
+<img src="docs/img/title.jpg" alt="Title screen" width="170">
+<img src="docs/img/stage1.jpg" alt="Sandy Snack Shore" width="170">
+<img src="docs/img/stage3.jpg" alt="Iceberg Harbor Hullabaloo" width="170">
+<img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
+</p>
 
 ## Highlights
 
