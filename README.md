@@ -1,4 +1,4 @@
-<div align="center">
+<div align="left">
 
 # Pineapple Defense
 
@@ -10,7 +10,7 @@
 
 </div>
 
-<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
+<p align="left"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
 
 ## What it is and how it works
 
