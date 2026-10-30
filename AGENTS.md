@@ -28,8 +28,8 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 
 ## Minified page
 
-- `build.py` writes the esbuild-minified page as `index.html` (and `dist/lab/index.html`); the readable copy is `dist/readable/index.html` (`PD_READABLE=1` writes the readable page as `index.html`). Measured with esbuild 0.28.2 (desktop speed, readable to minified): the game finishes starting 12 to 25% sooner in the four test browsers; at 6x slower CPU in Chromium, 1570 to 1260 ms. Read `dist/readable/` when debugging; error notes from the hidden panel carry minified names.
-- Without esbuild the build writes the readable page and says so, so commit `index.html` only from a machine that has it.
+- `build.py` writes the esbuild-minified page as `play/index.html` (and `dist/lab/index.html`); the readable copy is `dist/readable/index.html` (`PD_READABLE=1` writes the readable page as `play/index.html`). Measured with esbuild 0.28.2 (desktop speed, readable to minified): the game finishes starting 12 to 25% sooner in the four test browsers; at 6x slower CPU in Chromium, 1570 to 1260 ms. Read `dist/readable/` when debugging; error notes from the hidden panel carry minified names.
+- Without esbuild the build writes the readable page and says so, so commit `play/index.html` only from a machine that has it.
 - Wrapping the baked-pictures block differently (comment, hidden text box) did not make it cheaper to start; only fewer bytes would.
 
 ## Hidden speed report and error log

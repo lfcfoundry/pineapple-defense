@@ -252,7 +252,7 @@ The game reserves slots for hidden areas and hidden enemies, plus unlock rules. 
 - Flick feel and cursor-swipe sensitivity tuning from real phone and touchpad testing.
 
 ## Title screen and logo (alpha 2026.10.12.1556)
-Built and playable in `index.html`. It is made from `src/` by `build.py` (never edit `index.html` by hand).
+Built and playable in `play/index.html`. It is made from `src/` by `build.py` (never edit `play/index.html` by hand).
 - **Scene:** a pineapple and a Rockhopper penguin face each other on a beach-meets-ice shoreline, with a palm tree, a fruit stand, and the silly "BRRR IS BEST!" sign with two cartoon no-pineapple and no-palm posters.
 - **Logo:** sticker-style "Pineapple" lettering with a blue "Defense" pill, flanked by a mini pineapple and a mini Rockhopper. Exported as `assets/logo.png` (transparent).
 - **Characters:** original sprites (`src/sprites/`), glossy toy style, with a lopsided crest on the penguin. Tap or poke them for squish, giggles and "wheee!" or "no thanks!" pops. Their eyes follow the pointer.

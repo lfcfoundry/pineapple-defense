@@ -4,7 +4,7 @@
 
 **Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
 
-[**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/about.html) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
+[**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
 
 ![alpha](https://img.shields.io/badge/alpha-informational) ![MIT](https://img.shields.io/badge/MIT-informational) ![free](https://img.shields.io/badge/free-informational) ![no ads, no tracking](https://img.shields.io/badge/no%20ads%20no%20tracking-informational) ![works offline](https://img.shields.io/badge/works%20offline-informational)
 
@@ -57,7 +57,7 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 
 Silent by design: with no sound, the game is a visual and tactile experience with less stimulation for players with sensory challenges, and you can play anywhere with nothing to mute.
 
-See the [about page](https://lfcfoundry.github.io/pineapple-defense/about.html) for screenshots, the stages and the upgrades.
+See the [about page](https://lfcfoundry.github.io/pineapple-defense/) for screenshots, the stages and the upgrades.
 
 ## How to play
 
@@ -137,7 +137,7 @@ Trophies pay Golden Pineapples. They show as a gold icon when you have them and 
 Everything is one self-contained HTML file built from `src/`. There are no runtime dependencies, no network calls and a strict content security policy.
 
 - Design brief: [docs/pineapple-defense-design.md](docs/pineapple-defense-design.md) · QA and build process: [docs/qa-process.md](docs/qa-process.md) · ideas and performance audits: [docs/ideas-qol-and-performance.md](docs/ideas-qol-and-performance.md) · [changelog](CHANGELOG.md)
-- Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `index.html` by hand.
+- Build: `python3 build.py` makes the single-file `play/index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `play/index.html` by hand.
 - Packed single file: `python3 tools/pack.py` makes one smaller, self-unpacking `.html` in `dist/`; add `--min` to pack the minified page (`python3 build.py --min` first, needs `esbuild`).
 - Icons: `python3 -I tools/make_icons.py` regenerates `src/sprites/icons.svg` and the standalone files in `docs/icons/`.
 - Speed guard: `node tools/speed_guard.js <chromium|firefox|webkit> before.html after.html` takes turns between two builds in one test browser and prints start-up times with the 5% verdict (needs `npm i --no-save puppeteer-core`; see the file header).
