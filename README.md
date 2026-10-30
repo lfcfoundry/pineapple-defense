@@ -27,6 +27,7 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 - **No data sent anywhere.** The game makes no network calls, and progress stays in your own browser.
 - **No microtransactions.** Golden Pineapples are earned by playing and nothing is for sale.
 - **Fully open source.** MIT licensed, with every line on GitHub.
+- **Nothing to install.** No install, no administrator rights and no special computing knowledge: open the page and tap Play.
 - **Works offline.** The game is one self-contained file with no network calls, so once the page has loaded (or you have saved it) you can play with no connection.
 - **Single player.** Just you and the penguins: no online play, no chat, nobody else to meet.
 - **Works in any modern browser.** Tested in Chromium, Firefox and WebKitGTK, on phones, tablets and computers of most standard screen sizes.
