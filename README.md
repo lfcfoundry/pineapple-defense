@@ -46,6 +46,8 @@ LFC Foundry is a home for free, open source games and apps that each live in a s
 
 > **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
 
+**New here?** The first time you open the game, a short picture tour shows how to play. You can skip it, and replay it any time from **How to play**.
+
 ## By the numbers
 
 | One file | Start-up | Next stage | Tested in |
