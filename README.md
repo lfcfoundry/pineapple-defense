@@ -20,6 +20,15 @@ A silly, glossy toy-box game for kids of all ages. Penguins march toward your fr
 
 LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set, made for kids first: no ads, purchases, accounts, streaks, timers or leaderboards, and losing is gentle.
 
+## Made for kids, kept simple
+
+- **No ads.** Not one, anywhere in the game.
+- **No accounts.** Nothing to sign up for or log in to.
+- **No data sent anywhere.** The game makes no network calls, and progress stays in your own browser.
+- **No microtransactions.** Golden Pineapples are earned by playing and nothing is for sale.
+- **Fully open source.** MIT licensed, with every line on GitHub.
+- **Works in any modern browser.** Tested in Chromium, Firefox and WebKitGTK, on phones, tablets and computers of most standard screen sizes.
+
 <p align="center">
 <img src="docs/img/title.jpg" alt="Title screen" width="170">
 <img src="docs/img/stage1.jpg" alt="Sandy Snack Shore" width="170">
