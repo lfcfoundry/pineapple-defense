@@ -56,7 +56,7 @@ async function T(name, fn) {
 async function go(st, w, live) { const gp = P.go(st, w, !(live || window.__qaLive));   /* idle by default: the page's own loop would draw real frames nobody looks at while the suite steps the game itself (a frame costs 150 to 1,250 ms in WebKitGTK) */
    if (gp && gp.then) await gp; if (!await wf(() => P.S && P.S.stage === st && P.penguins !== undefined && !$('game').hidden, 4000 * (window.__qaSlow || 1))) throw new Error('go timeout ' + JSON.stringify({ want: st, stage: P.S && P.S.stage, pen: P.penguins !== undefined, gameHidden: $('game').hidden, card: cardUp(), paused: !!(P.S && P.S.paused), docHidden: document.hidden, waitedMs: 4000 * (window.__qaSlow || 1) })); await wait(80); P.bot = false; }
 
-await T('load', async () => { if (!P) throw new Error('no __pd'); const sv = P.sv(); ['stage', 'wave', 'bank', 'ach', 'ac2', 'gu', 'um', 'ra', 'run', 'cd', 'rl', 'lm', 'lh', 'aim', 'arc', 'hc', 'lt', 'thr'].forEach(k => { if (!isFinite(sv[k])) throw new Error('save field ' + k + ' = ' + sv[k]); }); });
+await T('load', async () => { if (!P) throw new Error('no __pd'); const sv = P.sv(); ['stage', 'wave', 'bank', 'ach', 'ac2', 'gu', 'um', 'ra', 'run', 'cd', 'rl', 'lm', 'lh', 'arc', 'hc', 'lt', 'thr'].forEach(k => { if (!isFinite(sv[k])) throw new Error('save field ' + k + ' = ' + sv[k]); }); });
 
 for (let st = 1; st <= 5; st++) await T('stage ' + st + ' runs', async () => { await go(st, 0); if (P.bgAlpha() !== 255) throw new Error('the stage background has a see-through pixel (lowest alpha ' + P.bgAlpha() + '); the opaque canvas would show it as a dark line'); P.bot = true; P.step(25, 0.033, 40); inv('stage' + st); P.bot = false; });
 
@@ -400,17 +400,16 @@ await T('screen shake: strength setting; Strong adds a little on every hit', asy
   sv.sk = 2; sv.hp = 0; if (wasCalm) $('bCalm').click(); return 'Normal ' + n.toFixed(2) + ', Strong ' + st.toFixed(2) + ' after one hit; all four strengths draw';
 });
 
-await T('sticky aim: the last target keeps the throw for a moment; off, it does not', async () => {
-  const sv = P.sv(); sv.au = 0; sv.lm = 0; sv.hp = 0; sv.aim = 0; sv.thr = 99; await go(1, 3); P.bot = false; const S = P.S;
+await T('no aim help: a flick goes to the penguin it points at, and the last target is not kept', async () => {
+  const sv = P.sv(); sv.au = 0; sv.lm = 0; sv.hp = 0; sv.thr = 99; await go(1, 3); P.bot = false; const S = P.S;
   for (let i = 0; i < 400 && P.penguins.filter(p => p.st === 'walk').length < 2; i++) tk(0.1, 0.05);
   const w = P.penguins.filter(p => p.st === 'walk'); if (w.length < 2) throw new Error('need two penguins');
   const a = w[0], b = w[1]; for (const p of [a, b]) { p.v = 0; p.vx = 0; p.ev = 0; p.p = 0.5; p.hp = 9; p.aut = false; } a.xn = -0.1; b.xn = 0.1;
   const o = P.pouch(), ca = P.center(a), cb = P.center(b), M = { x: ca.x + 0.55 * (cb.x - ca.x), y: ca.y + 0.55 * (cb.y - ca.y) };
   const towards = async (pt) => { S.cd = 0; const n0 = P.sh.length; P.flick(pt.x - o.x, pt.y - o.y, 2); if (P.sh.length !== n0 + 1) throw new Error('no throw'); const s = P.sh[P.sh.length - 1]; return Math.abs(s.xE - ca.x) < Math.abs(s.xE - cb.x) ? 'a' : 'b'; };
-  sv.sa = 0; await towards(ca); const plain = await towards(M); if (plain !== 'b') throw new Error('without sticky aim the nearer penguin should win (got ' + plain + ')');
-  sv.sa = 1; S.stk = null; const first = await towards(ca); if (first !== 'a') throw new Error('flick at a went to ' + first); const kept = await towards(M); if (kept !== 'a') throw new Error('sticky aim did not keep the last target');
-  S.stk = S.stk && { pg: S.stk.pg, t: S.t - 2 }; const later = await towards(M); sv.sa = 0; if (later !== 'b') throw new Error('sticky aim outlived its window');
-  return 'plain b, sticky a, after the window b';
+  await towards(ca); const plain = await towards(M); if (plain !== 'b') throw new Error('the nearer penguin should win (got ' + plain + ')');
+  const first = await towards(ca); if (first !== 'a') throw new Error('flick at a went to ' + first); const next = await towards(M); if (next !== 'b') throw new Error('the last target was kept (got ' + next + ')');
+  return 'a then b: nothing sticks';
 });
 
 await T('smoother flick speed: many pointer samples still make a throw', async () => {
@@ -421,13 +420,13 @@ await T('smoother flick speed: many pointer samples still make a throw', async (
 });
 
 await T('Little hands setup: one tap sets five comfort options, leaves speed alone, and undoes', async () => {
-  const sv = P.sv(); Object.assign(sv, { hp: 0, bb: 0, lt: 0, ib: 0, aim: 1, sp: 2 }); document.getElementById('game').hidden = true; document.getElementById('title').hidden = false; $('bSet').click(); await wait(50);
-  for (const id of ['cmLittle', 'cmHs', 'cmSk', 'cmSa', 'cmCp', 'cmGrown', 'cmWake']) if (!$(id)) throw new Error('row missing: ' + id);
-  $('cmLittle').click(); if (!(sv.hp && sv.bb && sv.lt && sv.ib) || sv.aim !== 0) throw new Error('preset values: ' + [sv.hp, sv.bb, sv.lt, sv.ib, sv.aim]); if (sv.sp !== 2) throw new Error('the preset changed game speed to ' + sv.sp);
+  const sv = P.sv(); Object.assign(sv, { hp: 0, bb: 0, lt: 0, ib: 0, sp: 2 }); document.getElementById('game').hidden = true; document.getElementById('title').hidden = false; $('bSet').click(); await wait(50);
+  for (const id of ['cmLittle', 'cmHs', 'cmSk', 'cmCp', 'cmGrown', 'cmWake']) if (!$(id)) throw new Error('row missing: ' + id);
+  $('cmLittle').click(); if (!(sv.hp && sv.bb && sv.lt && sv.ib)) throw new Error('preset values: ' + [sv.hp, sv.bb, sv.lt, sv.ib]); if (sv.sp !== 2) throw new Error('the preset changed game speed to ' + sv.sp);
   if ($('cmLittle').getAttribute('aria-pressed') !== 'true') throw new Error('row does not show On');
-  $('cmLittle').click(); if (sv.hp || sv.bb || sv.lt || sv.ib || sv.aim !== 1) throw new Error('undo did not restore: ' + [sv.hp, sv.bb, sv.lt, sv.ib, sv.aim]);
+  $('cmLittle').click(); if (sv.hp || sv.bb || sv.lt || sv.ib) throw new Error('undo did not restore: ' + [sv.hp, sv.bb, sv.lt, sv.ib]);
   const k0 = sv.sk; $('cmSk').click(); if (sv.sk !== (k0 + 1) % 4) throw new Error('shake row did not step'); $('cmSk').click(); $('cmSk').click(); $('cmSk').click(); if (sv.sk !== k0) throw new Error('shake row did not cycle');
-  for (const id of ['cmHs', 'cmSa', 'cmCp']) { $(id).click(); $(id).click(); }
+  for (const id of ['cmHs', 'cmCp']) { $(id).click(); $(id).click(); }
   const w0 = sv.wl; $('cmWake').click(); if (sv.wl === w0) throw new Error('keep-screen-on row did not switch'); $('cmWake').click();
   sv.sp = 0; $('cardOk').click(); return 'preset on and off, speed untouched, rows cycle';
 });
@@ -468,13 +467,13 @@ await T('keep screen on: held only while playing; Battery saver and the setting 
 });
 
 await T('assist offer: the same wave lost twice gets one kind offer, never again', async () => {
-  const sv = P.sv(); Object.assign(sv, { ao: 0, hp: 0, bb: 0, lt: 0, ib: 0, aim: 1 }); await go(1, 2); P.bot = false; P.lose(); await wait(30);
+  const sv = P.sv(); Object.assign(sv, { ao: 0, hp: 0, bb: 0, lt: 0, ib: 0 }); await go(1, 2); P.bot = false; P.lose(); await wait(30);
   if (!cardUp() || card().t !== 'Oh no!' || card().b1 !== 'Try again') throw new Error('first loss should be the plain card: ' + JSON.stringify(card()));
   $('gBtn1').click(); await wait(60); P.bot = false; P.lose(); await wait(30);
   if (card().b1 !== 'Yes, a little help' || card().b2 !== 'No thanks, try again' || card().b3 !== 'Title') throw new Error('second loss should offer help: ' + JSON.stringify(card()));
   if (!/Settings/.test(card().body)) throw new Error('the offer does not say it can be undone');
-  $('gBtn1').click(); await wait(80); if (!(sv.hp && sv.bb && sv.lt && sv.ib) || sv.aim !== 0 || sv.ao !== 1) throw new Error('accepting did not set the help: ' + [sv.hp, sv.bb, sv.lt, sv.ib, sv.aim, sv.ao]);
-  Object.assign(sv, { hp: 0, bb: 0, lt: 0, ib: 0, aim: 1 }); P.bot = false; P.lose(); await wait(30); $('gBtn1').click(); await wait(60); P.bot = false; P.lose(); await wait(30);
+  $('gBtn1').click(); await wait(80); if (!(sv.hp && sv.bb && sv.lt && sv.ib) || sv.ao !== 1) throw new Error('accepting did not set the help: ' + [sv.hp, sv.bb, sv.lt, sv.ib, sv.ao]);
+  Object.assign(sv, { hp: 0, bb: 0, lt: 0, ib: 0 }); P.bot = false; P.lose(); await wait(30); $('gBtn1').click(); await wait(60); P.bot = false; P.lose(); await wait(30);
   if (card().b1 !== 'Try again') throw new Error('the offer came back: ' + JSON.stringify(card())); $('gBtn1').click(); await wait(50); sv.ao = 0; return 'plain, then the offer, accept sets the help, never again';
 });
 
@@ -585,13 +584,13 @@ await T('lime launcher: shield first, then Champion', async () => {
   sv.lm = 0; inv('lime'); return 'popped ' + popped + ', hurt ' + hurt + ', max in flight ' + maxM;
 });
 
-await T('comfort: left-handed, aim help, countdown, text, contrast', async () => {
+await T('comfort: left-handed, countdown, text, contrast', async () => {
   const sv = P.sv(); await go(1, 2); const S = P.S, r = document.documentElement;
-  sv.lh = 1; sv.hc = 1; sv.lt = 1; sv.aim = 0; sv.arc = 1; document.documentElement.setAttribute('data-lh', '1');
+  sv.lh = 1; sv.hc = 1; sv.lt = 1; sv.arc = 1; document.documentElement.setAttribute('data-lh', '1');
   P.step(1, 0.033); const cheer = document.querySelector('.cheer').getBoundingClientRect(), boss = document.querySelector('.bossbar');
   if (cheer.left > innerWidth / 2) throw new Error('left-handed cheer bar is still on the right');
   const hrow = [...document.querySelectorAll('.hud .hrow > *')].filter(e => e.offsetParent); if (hrow.some(e => { const b = e.getBoundingClientRect(); return b.left < -1 || b.right > innerWidth + 1; })) throw new Error('left-handed HUD overflows');
-  sv.lh = 0; sv.hc = 0; sv.lt = 0; sv.aim = 1; sv.arc = 0; document.documentElement.setAttribute('data-lh', '0');
+  sv.lh = 0; sv.hc = 0; sv.lt = 0; sv.arc = 0; document.documentElement.setAttribute('data-lh', '0');
   P.pause(); P.resume(); if (!(S.rc > 2.9)) throw new Error('no resume countdown'); const t0 = S.t; P.step(1, 0.05); if (S.t !== t0) throw new Error('world moved during countdown'); P.step(3, 0.05); if (S.rc !== 0) throw new Error('countdown did not finish');
   inv('comfort');
 });
