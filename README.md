@@ -1,5 +1,7 @@
 <div align="center">
 
+# Pineapple Defense
+
 **Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
 
 [**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/about.html) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
