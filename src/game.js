@@ -2131,8 +2131,8 @@ function frame(now) {
   if (w0) fmWork = performance.now() - w0;
   if (labTick) labTick(gap, now, fmWork);
 }
-function run() { if (running) return; running = true; $('bcGuard').hidden = false; wakeSet(); last = 0; even.reset(); fpsShow(); raf = requestAnimationFrame(frame); }
-function halt() { running = false; $('bcGuard').hidden = true; if (wk) wk.want(false); cancelAnimationFrame(raf); hold = null; if (elFps) elFps.hidden = true; }
+function run() { if (running) return; running = true; if (FR.frames) FR.frames(true); $('bcGuard').hidden = false; wakeSet(); last = 0; even.reset(); fpsShow(); raf = requestAnimationFrame(frame); }
+function halt() { running = false; if (FR.frames) FR.frames(false); $('bcGuard').hidden = true; if (wk) wk.want(false); cancelAnimationFrame(raf); hold = null; if (elFps) elFps.hidden = true; }
 
 /* ---------- FPS badge (Settings: FPS counter) ---------- */
 var elFps = $('fps'), fm = new FrameMeter(), fmWork = 0;
