@@ -45,7 +45,7 @@ for cl in [os.path.join(ROOT, 'CHANGELOG.md')] + ([full_cl] if os.path.exists(fu
     if cl == full_cl: t = t.replace('@VER@', vers[-1])   # the repo copy is stamped below with the docs
     open(cl, 'w', encoding='utf-8').write(t)
 if not os.path.exists(full_cl): print('note: the full changelog was not found at', full_cl, '- write this release\'s full entry there by hand')
-for d in ['CHANGELOG.md', 'README.md'] + sorted(glob.glob(os.path.join(ROOT, 'docs/*.md'))):   # the changelog heading "## @VER@" becomes this release's stamp
+for d in ['CHANGELOG.md', 'CHANGELOG-DEV.md', 'README.md'] + sorted(glob.glob(os.path.join(ROOT, 'docs/*.md'))):   # the changelog heading "## @VER@" becomes this release's stamp
     p = d if os.path.isabs(d) else os.path.join(ROOT, d); t = open(p, encoding='utf-8').read()
     if '@VER@' in t: open(p, 'w', encoding='utf-8').write(t.replace('@VER@', vers[-1]))
 run('tools/docs_check.py')   # now strict: the newest changelog heading must be the version just built
