@@ -5,6 +5,8 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 Developers: [CHANGELOG-DEV.md](CHANGELOG-DEV.md) has the same versions in three depths (Quick, Details, Deep). Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- Your progress is now saved a second, safer way, so if the browser crashes or is closed by the phone you no longer lose the last minute of saves.
+- The title screen and welcome tour now sit completely still when nothing moves, so the game uses almost no battery or processor time there (it was waking the browser 60 times a second for nothing).
 - Aim help and Sticky aim are gone from Settings. A flick now goes where you point it, with no extra forgiveness and no last-target memory (it used to be on Normal by default). Little hands setup no longer changes aim.
 - The counters at the top take up less of the picture: the pause button now sits at the end of the stage progress bar and the four counters (Left, Combo, Golden Pineapples, trophies) share one row, so the top block covers 15% of the play area instead of 24%. Left-handed mode mirrors it.
 - Behind the scenes only: the check that keeps the drawing work per frame in bounds now uses the shared canvas-probe tool from JS-modules (also checks that nothing is left half-saved). The game itself is unchanged.

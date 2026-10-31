@@ -134,12 +134,15 @@ function loadAssets() {
 }
 
 /* ---------- save ---------- */
-var kit = SaveKit.create({ key: 'pd-save', prefix: 'PD1',
+var kit = SaveKit.create({ key: 'pd-save', prefix: 'PD1', durable: true,
   schema: { stage: 'int:5', wave: 'int:8', golden: 'int:9999', cheer: 'int:100', cleared: 'int:5', bank: 'int:999999', ach: 'int:1023', au: 'int:1', ar: 'int:3', ap: 'int:2', ac2: 'int:65535', gu: 'int:3', um: 'int:3', ra: 'int:2', run: 'int:99', cd: 'int:1', lm: 'int:3', lh: 'int:1', arc: 'int:2', hc: 'int:1', lt: 'int:1', thr: 'int:99', bs1: 'int:9999', bs2: 'int:9999', bs3: 'int:9999', bs4: 'int:9999', bs5: 'int:9999', rl: 'int:9', tr: 'int:1', sp: 'int:4', bb: 'int:1', bv: 'int:1', hp: 'int:1', fp: 'int:1', ib: 'int:1', tc: 'int:1', sl: 'int:99', sg: 'int:9999', sc: 'int:100', hs: 'int:1', sk: 'int:3', cp: 'int:1', hh: 'int:2', wl: 'int:1', ao: 'int:1', ef: 'int:1', dg: 'int:1', lp: 'int:1', ro: 'int:1' },
   defaults: { stage: 1, wave: 0, golden: 0, cheer: 100, cleared: 0, bank: 0, ach: 0, au: 0, ar: 0, ap: 0, ac2: 0, gu: 0, um: 0, ra: 0, run: 0, cd: 0, lm: 0, lh: 0, arc: 0, hc: 0, lt: 0, thr: 0, bs1: 0, bs2: 0, bs3: 0, bs4: 0, bs5: 0, rl: 0, tr: 0, sp: 0, bb: 0, bv: 0, hp: 0, fp: 0, ib: 0, tc: 0, sl: 0, sg: 0, sc: 0, hs: 0, sk: 2, sa: 0, cp: 0, hh: 0, wl: 1, ao: 0, ef: 0, dg: 1, lp: 0, ro: 0 } });
 var sv = kit.load() || kit.validate({});
+function normSv() {
 sv.ach = sv.ach | 0; sv.au = sv.au | 0; sv.ar = sv.ar | 0; sv.ap = sv.ap | 0; sv.ac2 = sv.ac2 | 0; sv.gu = sv.gu | 0; sv.um = sv.um | 0; sv.ra = sv.ra | 0; sv.run = sv.run | 0; sv.cd = sv.cd | 0; sv.lm = sv.lm | 0;
-['rl', 'lh', 'arc', 'hc', 'lt', 'hp', 'fp', 'ib', 'tc', 'sl', 'sg', 'sc', 'hs', 'sk', 'cp', 'hh', 'wl', 'ao', 'ro', 'thr', 'bs1', 'bs2', 'bs3', 'bs4', 'bs5'].forEach(function (k) { sv[k] = sv[k] | 0; });
+  ['rl', 'lh', 'arc', 'hc', 'lt', 'hp', 'fp', 'ib', 'tc', 'sl', 'sg', 'sc', 'hs', 'sk', 'cp', 'hh', 'wl', 'ao', 'ro', 'thr', 'bs1', 'bs2', 'bs3', 'bs4', 'bs5'].forEach(function (k) { sv[k] = sv[k] | 0; });
+}
+normSv();
 var HINT_FLICK = 'Flick up from the bottom toward a penguin!', HINT_TAP = 'Tap a penguin to throw! Hold to keep throwing.';
 function hintSet() { if (typeof elHint === 'undefined' || !elHint || !elHint.lastChild || (typeof K !== 'undefined' && K)) return; HINT_TXT = sv.hp ? HINT_TAP : HINT_FLICK; elHint.lastChild.textContent = HINT_TXT; }
 /* comfort settings travel with the save (and so with the save code) */
@@ -162,6 +165,7 @@ function updateContinue() {
   $('bRep').disabled = !(sv.cleared >= 1); if (typeof SHOP === 'object') updateGoal();
 }
 updateContinue();
+kit.recover().then(function (n) { if (!n) return; var key; for (key in n) sv[key] = n[key]; normSv(); applyPrefs(); updateContinue(); });   /* a crash can lose the last minute of localStorage writes; the IndexedDB copy is kept only if it is newer */
 
 /* ---------- state ---------- */
 var S, penguins, shots, bits, pops, rings, flys, saveT = 0;
@@ -2131,8 +2135,8 @@ function frame(now) {
   if (w0) fmWork = performance.now() - w0;
   if (labTick) labTick(gap, now, fmWork);
 }
-function run() { if (running) return; running = true; $('bcGuard').hidden = false; wakeSet(); last = 0; even.reset(); fpsShow(); raf = requestAnimationFrame(frame); }
-function halt() { running = false; $('bcGuard').hidden = true; if (wk) wk.want(false); cancelAnimationFrame(raf); hold = null; if (elFps) elFps.hidden = true; }
+function run() { if (running) return; running = true; if (FR.frames) FR.frames(true); $('bcGuard').hidden = false; wakeSet(); last = 0; even.reset(); fpsShow(); raf = requestAnimationFrame(frame); }
+function halt() { running = false; if (FR.frames) FR.frames(false); $('bcGuard').hidden = true; if (wk) wk.want(false); cancelAnimationFrame(raf); hold = null; if (elFps) elFps.hidden = true; }
 
 /* ---------- FPS badge (Settings: FPS counter) ---------- */
 var elFps = $('fps'), fm = new FrameMeter(), fmWork = 0;

@@ -19,7 +19,7 @@
 
 Test browsers: only the ones on the "browsers" branch of lfcfoundry/knowledge-base (Firefox, ungoogled Chromium,
 WebKitGTK), one at a time, each with its version printed and recorded in .qa-browsers.json (tools/release.py puts them in the
-changelog). Point the harness at them with PD_CHROME, PD_FF, PD_GECKO; WebKitGTK needs WebKitWebDriver, xvfb-run and dbus-run-session
+changelog). Point the harness at them with PD_CHROME and PD_FF (Firefox runs through Puppeteer over WebDriver BiDi, no geckodriver: needs node and puppeteer-core, found through NFM_PUPPETEER or NODE_PATH; PD_GECKO is now used only by tools/picture_gate.py); WebKitGTK needs WebKitWebDriver, xvfb-run and dbus-run-session
 (kb-browsers/install.sh as root). Read that branch's README before each run: versions and browsers can change.
 
 Why it is cheap: the suite fast-forwards game time inside the page (no waiting on frames, no per-frame screenshots),
@@ -270,23 +270,18 @@ def sel_leg(d, name, slow=1):   # slow: patience factor for stage starts and the
     phase(name + ': layout')
     print('[%s] %s' % (stamp(), name)); report(name.split()[0].lower(), res, lay)
 
-if flag('--ff'):
-    from selenium import webdriver
-    from selenium.webdriver.firefox.service import Service
-    from selenium.webdriver.firefox.options import Options
-    _ff, _gk = os.environ.get('PD_FF', ''), os.environ.get('PD_GECKO', '')
-    if not (os.path.exists(_ff) and os.path.exists(_gk)): print('PD_FF and PD_GECKO must point at Firefox from the browsers branch and a geckodriver (see docs/qa-process.md)'); sys.exit(2)
-    o = Options(); o.add_argument('-headless'); o.set_preference('ui.prefersReducedMotion', 1) if CALM else None; o.binary_location = _ff
-    d = webdriver.Firefox(service=Service(_gk), options=o)
-    try:
-        _fv = d.capabilities.get('browserVersion', 'unknown'); USED.append(('Firefox %s' % _fv.split('.')[0], 'Firefox %s' % _fv))
-        sel_leg(d, 'Firefox %s' % _fv)
-        if not QUICK and not ONLY:
-            d.set_window_size(500, 900); d.get('file://' + os.path.join(ROOT, 'dist/lab/index.html') + '#qa'); time.sleep(0.6)
-            bad = labview(d.get_screenshot_as_png, d.execute_script, 'firefox'); print('  %-4s tester color view (Firefox) %s' % ('ok' if not bad else 'FAIL', '; '.join(bad)))
-            for x in bad: fails.append('tester color view: ' + x)
-    finally:
-        d.quit()
+if flag('--ff'):   # stock Firefox through Puppeteer over WebDriver BiDi (no geckodriver); tools/qa_bidi.js runs the same in-page suite
+    _ff = os.environ.get('PD_FF', '')
+    if not (os.path.exists(_ff) and shutil.which('node')): print('PD_FF must point at Firefox from the browsers branch, and node with puppeteer-core must be installed (NFM_PUPPETEER or NODE_PATH; see docs/qa-process.md)'); sys.exit(2)
+    _job = os.path.join(ROOT, '.qa-bidi-job.json')
+    json.dump({'url': url, 'suite': suite, 'layout': layout, 'probe': PROBE, 'slow': 1, 'fuzz': min(FUZZ, 60), 'seed': SEED if QUICK else 0, 'only': ONLY, 'firefox': _ff}, open(_job, 'w'))
+    phase('Firefox: start')
+    try: _p = subprocess.run(['node', os.path.join(ROOT, 'tools/qa_bidi.js'), _job], capture_output=True, text=True, timeout=600)
+    finally: os.remove(_job)
+    if _p.returncode != 0: print('Firefox leg failed:', _p.stderr.strip()[-600:]); sys.exit(1)
+    _o = json.loads(_p.stdout.strip().splitlines()[-1]); _fv = _o['version']
+    USED.append(('Firefox %s' % _fv.split('.')[0], 'Firefox %s' % _fv)); phase('Firefox: suite and layout')
+    print('[%s] Firefox %s' % (stamp(), _fv)); report('firefox', _o['res'], [tuple(x) for x in _o['lay']])
 
 for _wf, _gnome in (('--wk', False),):   # WebKitGTK's MiniBrowser through WebKitWebDriver (GNOME Web was dropped from testing on 2026-10-24)
     if not flag(_wf): continue
