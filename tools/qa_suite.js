@@ -175,7 +175,7 @@ await T('auto slingshot is slower and sometimes misses', async () => {
 await T('mecha penguins: a Gentoo that eats a fish is tougher than a normal penguin', async () => {
   await go(2, 2, true); P.bot = false; P.step(4, 0.05); const S = P.S, L = P.penguins, sv0 = P.sv(); if (!L.length) throw new Error('no penguins');
   L.forEach(pg => { if (pg.st === 'walk') { pg.kind = 'gt'; pg.hp = 2; pg.big = 1.12; pg.p = 0.18; pg.v = Math.min(pg.v, 0.02); } });
-  let mc = null, drops = 0, k; for (k = 0; k < 24 && !mc; k++) { if (P.fish()) drops++; P.step(4.5, 0.05); mc = P.penguins.find(pg => pg.kind === 'mc'); if (!mc) P.penguins.forEach(pg => { if (pg.st === 'walk') { if (pg.kind === 'ad') { pg.kind = 'gt'; pg.hp = 2; } if (pg.p > 0.3) pg.p = 0.18; } }); }
+  let mc = null, drops = 0, k; for (k = 0; k < 24 && !mc; k++) { if (P.fish()) { drops++; const f = S.fish[S.fish.length - 1], tg = L.concat(P.penguins).find(pg => pg.st === 'walk' && pg.xn === f.xn); if (tg) tg.p = Math.max(tg.p, f.p - 0.05); } P.step(4.5, 0.05);   /* the fish lands at a random spot; put the penguin it was dropped for just before it, so the check never depends on the penguin's slow walk reaching it */ mc = P.penguins.find(pg => pg.kind === 'mc'); if (!mc) P.penguins.forEach(pg => { if (pg.st === 'walk') { if (pg.kind === 'ad') { pg.kind = 'gt'; pg.hp = 2; } if (pg.p > 0.3) pg.p = 0.18; } }); }
   if (!mc) throw new Error('no Gentoo ever became a mecha penguin (' + drops + ' fish dropped in ' + k + ' tries; gull level ' + sv0.gu + '; penguins ' + P.penguins.map(pg => pg.kind + '/' + pg.st + '/' + pg.p.toFixed(2)).join(' ') + '; fish left ' + S.fish.length + ')');
   if (mc.hp !== 3) throw new Error('mecha hp ' + mc.hp + ', wanted 3'); if (!(mc.hp > 2 && mc.hp < 8)) throw new Error('mecha toughness out of range');
   const hits0 = mc.hp; P.penguins.forEach(pg => { if (pg !== mc) pg.p = -9; }); return 'mecha with ' + hits0 + ' hits';
@@ -593,6 +593,16 @@ await T('comfort: left-handed, countdown, text, contrast', async () => {
   sv.lh = 0; sv.hc = 0; sv.lt = 0; sv.arc = 0; document.documentElement.setAttribute('data-lh', '0');
   P.pause(); P.resume(); if (!(S.rc > 2.9)) throw new Error('no resume countdown'); const t0 = S.t; P.step(1, 0.05); if (S.t !== t0) throw new Error('world moved during countdown'); P.step(3, 0.05); if (S.rc !== 0) throw new Error('countdown did not finish');
   inv('comfort');
+});
+
+await T('calm idle: the title scene holds still after 30 s untouched and moves again on touch', async () => {
+  document.getElementById('game').hidden = true; document.getElementById('title').hidden = false; await wait(60);
+  const running = () => document.getAnimations().filter(a => a.playState === 'running' && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.title')).length;
+  document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true })); window.dispatchEvent(new PointerEvent('pointermove')); await wait(40);
+  const r0 = running(); if (!r0) throw new Error('the title scene is not animating at all (' + r0 + ')');
+  const clk = fakeClock(); try { await clk.jump(31000); window.__titleIdle(); await wait(40); const held = running(); if (held) throw new Error(held + ' animations still run after 30 s idle');
+    window.dispatchEvent(new PointerEvent('pointermove')); await wait(40); const back = running(); if (back < r0 / 2) throw new Error('the scene did not resume on touch: ' + back + ' of ' + r0);
+    return r0 + ' animations, held at 0 after 30 s, back to ' + back + ' on touch'; } finally { clk.restore(); }
 });
 
 await T('replay keeps the saved run; best scores', async () => {
