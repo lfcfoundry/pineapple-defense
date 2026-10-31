@@ -498,6 +498,7 @@ var mql=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)');
 setCalm(stored==='1'||(stored===null&&!!(mql&&mql.matches)),false);
 btnCalm.addEventListener('click',function(){setCalm(!calm,true)});
 
+
 function mkChar(id,dx){var el=$(id);return{id:id,el:el,art:el.querySelector('.art'),pupils:el.querySelector('.pupils'),dx:dx,timer:0}}
 var chars=[mkChar('pa',4.8),mkChar('pg',-4.8)];
 function lookIdle(c){c.pupils.style.transform='translate('+c.dx+'px,.8px)'}
@@ -542,6 +543,12 @@ var cw=$('cw'),opener=null;
 var dlgHeld=[];
 function dlgAnim(on){var i,a,t;if(on){a=document.getAnimations();for(i=0;i<a.length;i++){t=a[i].effect&&a[i].effect.target;if(a[i].playState==='running'&&t&&t.closest&&t.closest('.title')){a[i].pause();dlgHeld.push(a[i])}}}else{for(i=0;i<dlgHeld.length;i++)if(dlgHeld[i].playState==='paused')dlgHeld[i].play();dlgHeld=[]}}
 new MutationObserver(function(){dlgAnim(root.hasAttribute('data-dlg'))}).observe(root,{attributes:true,attributeFilter:['data-dlg']});
+/* Calm idle: after 30 s with no touch, key or mouse on the title (no card open), the scene holds still the same way a card holds it; the first touch brings it back. */
+(function(){var IDLE_MS=30000,last=performance.now(),tm=0,held=false;
+function chk(){tm=0;var r=IDLE_MS-(performance.now()-last);if(r>0){tm=setTimeout(chk,r);return}if(!held&&!root.hasAttribute('data-dlg')&&!$('title').hidden){held=true;dlgAnim(true)}}
+function wake(){last=performance.now();if(held){held=false;if(!root.hasAttribute('data-dlg'))dlgAnim(false)}if(!tm)tm=setTimeout(chk,IDLE_MS)}
+['pointerdown','pointermove','keydown','wheel'].forEach(function(t){addEventListener(t,wake,{passive:true,capture:true})});
+tm=setTimeout(chk,IDLE_MS);if(location.hash==='#qa')window.__titleIdle=chk})();
 function openCard(tid,t,from){$('cardBody').replaceChildren($(tid).content.cloneNode(true));$('cardTitle').textContent=t;cw.hidden=false;root.setAttribute('data-dlg','1');opener=from;$('cardOk').focus()}
 function closeCard(){cw.hidden=true;root.removeAttribute('data-dlg');if(opener)opener.focus()}
 $('bHow').addEventListener('click',function(){openCard('t-how','How to play',this)});

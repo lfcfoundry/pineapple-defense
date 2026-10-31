@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 Developers: [CHANGELOG-DEV.md](CHANGELOG-DEV.md) has the same versions in three depths (Quick, Details, Deep). Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- If you leave the title screen alone for 30 seconds, the moving scenery rests (so it uses almost no battery); touch anything and it moves again.
 - Your progress is now saved a second, safer way, so if the browser crashes or is closed by the phone you no longer lose the last minute of saves.
 - The title screen and welcome tour now sit completely still when nothing moves, so the game uses almost no battery or processor time there (it was waking the browser 60 times a second for nothing).
 - Aim help and Sticky aim are gone from Settings. A flick now goes where you point it, with no extra forgiveness and no last-target memory (it used to be on Normal by default). Little hands setup no longer changes aim.
