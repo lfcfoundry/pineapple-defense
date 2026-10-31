@@ -6,6 +6,7 @@ What changed in each version, newest first, for developers, in three depths: **Q
 ## @VER@ · next release
 
 ### Quick
+- Stage shadow (0 12px 60px blur) drawn once per resize into a quarter-size still picture used as the body background, ring as outline; cheer banner and boss bar layered like the pills. Firefox 158 frame time 0.57x (about 1.7x the FPS), Chromium 155 0.96x, same picture.
 - HUD pills, progress bar and pause button: tan edge on a layer behind the fill (pills, bar) or a single hard shadow (pause), soft blur dropped (owner pick 2026-10-31); Firefox 158 frame time about 6% lower.
 - The old-save check no longer expects the removed aim and sticky-aim fields (left over from the aim-assist removal).
 - Title scene: sun rays are a real child element, water shimmer and Play shine move by transform (round 20); Chromium main thread 263 to 14 ms per second, same picture.

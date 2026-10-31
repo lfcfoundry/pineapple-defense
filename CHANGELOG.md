@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 Developers: [CHANGELOG-DEV.md](CHANGELOG-DEV.md) has the same versions in three depths (Quick, Details, Deep). Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The soft shadow around the game frame is now drawn once instead of on every frame, and the cheer bar and boss bar use the same crisp edge as the counters. Same picture, and Firefox plays much more smoothly.
 - The counters and the pause button at the top of a stage have a crisper edge and no soft glow under them, which makes the game smoother in Firefox.
 - The title screen's sun, water sparkle and Play button shine now move in a lighter way, so the title screen uses far less processor time. It looks exactly the same.
 - If you leave the title screen alone for 30 seconds, the moving scenery rests (so it uses almost no battery); touch anything and it moves again.
