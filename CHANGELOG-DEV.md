@@ -6,6 +6,7 @@ What changed in each version, newest first, for developers, in three depths: **Q
 ## @VER@ · next release
 
 ### Quick
+- Title scene: sun rays are a real child element, water shimmer and Play shine move by transform (round 20); Chromium main thread 263 to 14 ms per second, same picture.
 - The title scene holds still after 30 seconds untouched (calm idle); one flaky check made steady.
 - The checks drive Firefox without geckodriver (Puppeteer over WebDriver BiDi).
 - Saves survive a browser crash or kill; shared save-kit 1.4.0 and field-report 1.1.0 adopted.

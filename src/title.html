@@ -96,11 +96,12 @@ body{height:100dvh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-righ
 .btn[disabled]{opacity:.55;filter:saturate(.5);cursor:default}
 .btn[disabled]:active{transform:none}
 .btn-play{font-size:clamp(1.5rem,5cqmin,2.3rem);min-height:4.75rem;padding:.5em 1.9em .58em;color:#fff;letter-spacing:.06em;background:linear-gradient(180deg,#62c981,#2c8a49);box-shadow:0 .16em 0 #1b5c32,0 .4em .6em rgba(0,0,0,.25),inset 0 .1em 0 rgba(255,255,255,.35);text-shadow:0 .06em 0 rgba(0,0,0,.28)}
-.sun::before{content:"";position:absolute;inset:-150%;border-radius:50%;background:repeating-conic-gradient(rgba(255,244,190,.5) 0 6deg,transparent 6deg 20deg);-webkit-mask:radial-gradient(circle,#000 6%,transparent 66%);mask:radial-gradient(circle,#000 6%,transparent 66%);animation:spin 80s linear infinite;pointer-events:none;z-index:-1}
-.shim{position:absolute;left:0;right:0;bottom:calc(var(--floor-h) + 1.3cqh);height:2.4cqh;pointer-events:none;opacity:.9;background:radial-gradient(ellipse 4cqw .35cqh at 6cqw 35%,rgba(255,255,255,.95),transparent),radial-gradient(ellipse 3cqw .3cqh at 17cqw 70%,rgba(255,255,255,.8),transparent),radial-gradient(ellipse 2.4cqw .28cqh at 11cqw 8%,rgba(255,255,255,.7),transparent);background-size:23cqw 100%;animation:shim 16s linear infinite}
-@keyframes shim{to{background-position:-23cqw 0}}
+.sun>.rays{display:block;position:absolute;inset:-150%;border-radius:50%;background:repeating-conic-gradient(rgba(255,244,190,.5) 0 6deg,transparent 6deg 20deg);-webkit-mask:radial-gradient(circle,#000 6%,transparent 66%);mask:radial-gradient(circle,#000 6%,transparent 66%);animation:spin 80s linear infinite;pointer-events:none;z-index:-1}
+.shim{position:absolute;left:0;right:0;bottom:calc(var(--floor-h) + 1.3cqh);height:2.4cqh;pointer-events:none;opacity:.9;overflow:hidden}
+.shim:before{content:"";position:absolute;top:0;bottom:0;left:0;width:calc(100% + 23cqw);background:radial-gradient(ellipse 4cqw .35cqh at 6cqw 35%,rgba(255,255,255,.95),transparent),radial-gradient(ellipse 3cqw .3cqh at 17cqw 70%,rgba(255,255,255,.8),transparent),radial-gradient(ellipse 2.4cqw .28cqh at 11cqw 8%,rgba(255,255,255,.7),transparent);background-size:23cqw 100%;animation:shimT 16s linear infinite}
+@keyframes shimT{to{transform:translateX(-23cqw)}}
 .btn-play{position:relative;overflow:hidden}.btn-play::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-40%;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:sweep 5s ease-in-out infinite;pointer-events:none}
-@keyframes sweep{0%,62%{left:-40%}100%{left:130%}}
+@keyframes sweep{0%,62%{transform:translateX(0) skew(-20deg)}to{transform:translateX(607.142857%) skew(-20deg)}}
 .btn-play:active{box-shadow:0 .04em 0 #1b5c32,0 .2em .4em rgba(0,0,0,.25),inset 0 .1em 0 rgba(255,255,255,.35)}
 .dot{width:.7em;height:.7em;border-radius:50%;background:#b9c4c8;box-shadow:inset 0 .1em .15em rgba(0,0,0,.25)}
 #bCalm[aria-pressed="true"] .dot{background:#3fbf68;box-shadow:0 0 .5em #7ee89c}
@@ -238,7 +239,7 @@ html[data-calm="1"] .th,html[data-calm="1"] .tf,html[data-calm="1"] .tb,html[dat
 .ti[data-got="0"] svg{filter:grayscale(1);opacity:.45}.ti.sh svg{width:2.2rem;height:2.2rem;filter:none!important;opacity:1!important}.ti[data-got="0"] b{color:#7b6a55}
 .ti.sh[data-got="0"] b{color:#4a2b0f}.sh{gap:.6em}.sh>span{flex:1}.card .sb{margin:0;flex:none;font-size:.85rem;min-height:max(48px,2.7rem);padding:.4em .9em .48em}
 .card .note{margin:.2rem 0 .3rem;font:700 .9rem/1.2 var(--body)}
-.sun::before{content:"";position:absolute;inset:-85%;border-radius:50%;background:repeating-conic-gradient(rgba(255,238,170,.42) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 66%);mask:radial-gradient(circle,#000 28%,transparent 66%);animation:spin 46s linear infinite;z-index:-1}
+.sun>.rays{display:block;position:absolute;inset:-85%;border-radius:50%;background:repeating-conic-gradient(rgba(255,238,170,.42) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 66%);mask:radial-gradient(circle,#000 28%,transparent 66%);animation:spin 46s linear infinite;z-index:-1}
 .gull{position:absolute;left:-14cqw;width:11cqw;z-index:1;pointer-events:none;animation:glide 30s linear infinite}.gull svg{width:100%;display:block;overflow:visible}.gull path{fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;animation:flapw .55s ease-in-out infinite alternate}
 .g1{top:11cqh}.g2{top:17cqh;width:8cqw;animation-duration:42s;animation-delay:-16s}.g2 path{animation-duration:.7s}.g3{top:8cqh;width:7cqw;animation-duration:55s;animation-delay:-38s}
 .flake,.ember{position:absolute;top:0;border-radius:50%;pointer-events:none;z-index:1;animation:fall 11s linear infinite}
@@ -287,7 +288,7 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <div id="stage">
 <main class="title" id="title">
 <div class="scene">
-<div class="sun" aria-hidden="true"></div>
+<div class="sun" aria-hidden="true"><i class="rays"></i></div>
 <svg class="cloud c1" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
 <svg class="cloud c2" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
 <svg class="cloud c3" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
