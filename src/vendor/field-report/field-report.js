@@ -106,14 +106,18 @@
     // ---- frames ----
     var ring = typeof Float32Array === 'function' ? new Float32Array(keep) : new Array(keep), rn = 0, rw = 0, last = 0, raf = 0, hidden = false;
     function frame(ts) {
-      raf = 0; if (stopped) return;
+      raf = 0; if (stopped || !framesOn) return;
       if (last && !hidden) { var d = ts - last; if (d > 0 && d < 5000) { ring[rw] = d; rw = (rw + 1) % keep; if (rn < keep) rn++; } }
       last = ts;
       raf = win.requestAnimationFrame(frame);
     }
     function framesNow() { var a = [], i, from = rn < keep ? 0 : rw; for (i = 0; i < rn; i++) a.push(ring[(from + i) % keep]); return a; }
     function onVis() { hidden = doc.visibilityState === 'hidden'; last = 0; }
-    if (fr.supported && o.frames !== false && typeof win.requestAnimationFrame === 'function') { raf = win.requestAnimationFrame(frame); doc.addEventListener('visibilitychange', onVis); }
+    var framesOn = false;
+    function framesStart() { if (framesOn || stopped || !fr.supported || typeof win.requestAnimationFrame !== 'function') return; framesOn = true; last = 0; raf = win.requestAnimationFrame(frame); doc.addEventListener('visibilitychange', onVis); }
+    function framesStop() { if (!framesOn) return; framesOn = false; if (raf && win.cancelAnimationFrame) win.cancelAnimationFrame(raf); raf = 0; last = 0; doc.removeEventListener('visibilitychange', onVis); }
+    fr.frames = function (on) { if (o.frames === false) return; if (on) framesStart(); else framesStop(); };   /* o.frames 'play': record only while the app calls frames(true), so a still screen costs no frames */
+    if (o.frames !== false && o.frames !== 'play') framesStart();
 
     // ---- tasks, marks, long tasks ----
     var tasks = [], marks = [], longs = [], po = null;
