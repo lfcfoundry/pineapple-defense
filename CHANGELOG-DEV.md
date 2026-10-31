@@ -6,6 +6,7 @@ What changed in each version, newest first, for developers, in three depths: **Q
 ## @VER@ · next release
 
 ### Quick
+- The checks drive Firefox without geckodriver (Puppeteer over WebDriver BiDi).
 - Saves survive a browser crash or kill; shared save-kit 1.4.0 and field-report 1.1.0 adopted.
 - A still title screen no longer wakes the browser 60 times a second.
 - Aim help and Sticky aim removed (owner ruling 2026-10-30; PR 46 source, PR 47 rebuilt page).
