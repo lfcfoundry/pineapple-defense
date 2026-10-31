@@ -6,6 +6,7 @@ What changed in each version, newest first, for developers, in three depths: **Q
 ## @VER@ · next release
 
 ### Quick
+- Inset white highlight of pills, progress bar, cheer bar and boss bar as a top gradient strip on the fill layer (no inset box-shadow); Firefox 158 frame time 0.87x, Chromium 155 1.00x, picture 99.74-99.89%.
 - Stage shadow (0 12px 60px blur) drawn once per resize into a quarter-size still picture used as the body background, ring as outline; cheer banner and boss bar layered like the pills. Firefox 158 frame time 0.57x (about 1.7x the FPS), Chromium 155 0.96x, same picture.
 - HUD pills, progress bar and pause button: tan edge on a layer behind the fill (pills, bar) or a single hard shadow (pause), soft blur dropped (owner pick 2026-10-31); Firefox 158 frame time about 6% lower.
 - The old-save check no longer expects the removed aim and sticky-aim fields (left over from the aim-assist removal).

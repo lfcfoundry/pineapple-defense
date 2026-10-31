@@ -282,14 +282,14 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 .holdbar{height:.7rem;border-radius:.4rem;background:#eadfc8;margin:.9rem 1rem .2rem;overflow:hidden}.holdbar i{display:block;height:100%;width:0;background:#e5b24b}.holdnote{margin:.2rem 0 0;font:600 .8rem/1.25 var(--body);color:#6b5a45}
 .demo{position:absolute;left:50%;transform:translateX(-50%);top:15cqh;z-index:5;display:flex;align-items:center;gap:.6rem;padding:.3rem .4rem .3rem .9rem;border-radius:999px;background:rgba(255,247,227,.96);box-shadow:0 .14em 0 #b79a63,0 .3em .45em rgba(0,0,0,.2);font:800 .9rem var(--display);color:#4a2b0f;white-space:nowrap}.demo[hidden]{display:none}.demo .btn{margin:0;font-size:.8rem;min-height:2.1rem;padding:.3em .8em}
 /* HUD lift without box-shadow (Firefox repaints box-shadows over the moving scene every frame): pills and progress bar: tan edge on a layer behind, the cream fill on a layer above it. Owner pick 2026-10-31: hard edge only, no soft glow. */
-html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{isolation:isolate;background:none;box-shadow:inset 0 .1em 0 rgba(255,255,255,.7)}
+html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{isolation:isolate;background:none;box-shadow:none}
 html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{position:relative}
 html:not([data-hc="1"]) .hud .pill::before,html:not([data-hc="1"]) .hud .prog::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
-html:not([data-hc="1"]) .hud .pill::after,html:not([data-hc="1"]) .hud .prog::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
+html:not([data-hc="1"]) .hud .pill::after,html:not([data-hc="1"]) .hud .prog::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(rgba(255,255,255,.7),rgba(255,255,255,.7)) 0 0/100% .1em no-repeat,linear-gradient(180deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
 html:not([data-hc="1"]) .hud .pause{box-shadow:0 .2em 0 #b79a63,inset 0 .12em 0 rgba(255,255,255,.7)}
-html:not([data-hc="1"]) .cheer,html:not([data-hc="1"]) .bossbar{isolation:isolate;background:none;box-shadow:inset 0 .1em 0 rgba(255,255,255,.7)}
+html:not([data-hc="1"]) .cheer,html:not([data-hc="1"]) .bossbar{isolation:isolate;background:none;box-shadow:none}
 html:not([data-hc="1"]) .cheer::before,html:not([data-hc="1"]) .bossbar::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
-html:not([data-hc="1"]) .cheer::after,html:not([data-hc="1"]) .bossbar::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
+html:not([data-hc="1"]) .cheer::after,html:not([data-hc="1"]) .bossbar::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(rgba(255,255,255,.7),rgba(255,255,255,.7)) 0 0/100% .1em no-repeat,linear-gradient(90deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
 </style>
 </head>
 <body>
