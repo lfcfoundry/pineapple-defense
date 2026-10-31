@@ -2,7 +2,7 @@
 
 What changed in each version of Pineapple Defense, in plain words. Version stamps use `year.month.day.HHMM` (US Eastern). Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE).
 
-The detailed developer changelog (measurements, tools, test runs) is kept separately by the maintainers. Each release below lists the browsers it was tested in; where that was not recorded it says so.
+Developers: [CHANGELOG-DEV.md](CHANGELOG-DEV.md) has the same versions in three depths (Quick, Details, Deep). Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
 - Aim help and Sticky aim are gone from Settings. A flick now goes where you point it, with no extra forgiveness and no last-target memory (it used to be on Normal by default). Little hands setup no longer changes aim.
