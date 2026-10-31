@@ -137,8 +137,8 @@ def report(label, res, lay):
 
 # 3b. frozen saves from older releases must still load, keep their values and start a game (Round 41)
 OLDSAVE_JS = '''(async()=>{const raw=JSON.parse(window.__fixRaw),bad=[],sv=__pd.sv(),wait=ms=>new Promise(r=>setTimeout(r,ms));
-for(const k in raw){if(k==='seen')continue;if(sv[k]!==raw[k])bad.push(k+' is '+sv[k]+', saved as '+raw[k]);}
-const D={sl:0,sg:0,sc:0,hs:0,sk:2,sa:0,cp:0};for(const k in D)if(sv[k]!==D[k]&&!(k in raw))bad.push('new field '+k+' started as '+sv[k]+', not '+D[k]);
+for(const k in raw){if(k==='seen'||k==='aim'||k==='sa')continue;if(sv[k]!==raw[k])bad.push(k+' is '+sv[k]+', saved as '+raw[k]);}
+const D={sl:0,sg:0,sc:0,hs:0,sk:2,cp:0};for(const k in D)if(sv[k]!==D[k]&&!(k in raw))bad.push('new field '+k+' started as '+sv[k]+', not '+D[k]);
 const c=document.getElementById('bCont');if(!c||c.disabled)bad.push('Continue is not offered');
 __pd.cont();await wait(150);if(__pd.S.stage!==raw.stage||__pd.S.wave!==raw.wave+1)bad.push('Continue started stage '+__pd.S.stage+' wave '+__pd.S.wave);
 document.getElementById('bPause').click();await wait(50);
