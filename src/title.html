@@ -28,7 +28,8 @@ html{--w1:#8fc3e0;--w2:#cfe6ec;--w3:#f1e2b8;--wash:linear-gradient(180deg,var(--
 @media (min-aspect-ratio:1/1){html{--wash:radial-gradient(120% 90% at 50% 40%,var(--w2) 0,var(--w1) 100%)}}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--wash,#23203f);overscroll-behavior:none;font-family:var(--body);color:var(--fg);touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body{height:100dvh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);display:flex;align-items:center;justify-content:center}
-#stage{position:relative;flex:none;width:360px;height:640px;container-type:size;overflow:hidden;border-radius:14px;background:#cfe6ec;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 60px rgba(0,0,0,.5)}
+#stage{position:relative;flex:none;width:360px;height:640px;container-type:size;overflow:hidden;border-radius:14px;background:#cfe6ec;outline:1px solid rgba(255,255,255,.08)}
+body{background:var(--shade,none) 0 0/100% 100% no-repeat}
 .title{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,var(--sky-top) 0%,#cfe6ec 50%,var(--sky-bot) 80%)}
 .scene{position:absolute;inset:0;overflow:hidden;border-radius:14px}
 .title::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:6;background:radial-gradient(ellipse at 50% 55%,transparent 62%,rgba(42,18,13,.2) 100%)}
@@ -286,6 +287,9 @@ html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{position:r
 html:not([data-hc="1"]) .hud .pill::before,html:not([data-hc="1"]) .hud .prog::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
 html:not([data-hc="1"]) .hud .pill::after,html:not([data-hc="1"]) .hud .prog::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
 html:not([data-hc="1"]) .hud .pause{box-shadow:0 .2em 0 #b79a63,inset 0 .12em 0 rgba(255,255,255,.7)}
+html:not([data-hc="1"]) .cheer,html:not([data-hc="1"]) .bossbar{isolation:isolate;background:none;box-shadow:inset 0 .1em 0 rgba(255,255,255,.7)}
+html:not([data-hc="1"]) .cheer::before,html:not([data-hc="1"]) .bossbar::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
+html:not([data-hc="1"]) .cheer::after,html:not([data-hc="1"]) .bossbar::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
 </style>
 </head>
 <body>
@@ -491,7 +495,9 @@ html:not([data-hc="1"]) .hud .pause{box-shadow:0 .2em 0 #b79a63,inset 0 .12em 0 
 (function(){
 'use strict';
 var root=document.documentElement,title=document.getElementById('title');
-function fit(){var cs=getComputedStyle(document.body),pl=parseFloat(cs.paddingLeft)||0,pr=parseFloat(cs.paddingRight)||0,pt=parseFloat(cs.paddingTop)||0,pb=parseFloat(cs.paddingBottom)||0,aw=Math.max(120,innerWidth-pl-pr),ah=Math.max(120,innerHeight-pt-pb),u=Math.min(aw/360,ah/640),st=document.getElementById('stage');st.style.width=Math.floor(360*u)+'px';st.style.height=Math.floor(640*u)+'px';root.style.fontSize=(16*u).toFixed(2)+'px';var sw=Math.floor(360*u),side=Math.floor((aw-sw)/2),land=aw>=ah*1.4&&ah<=540&&side>=130;root.setAttribute('data-land',land?'1':'0');root.style.setProperty('--side',(land?side:0)+'px');root.style.setProperty('--u',u.toFixed(4)+'px');root.style.setProperty('--ah',ah+'px');root.style.setProperty('--cz',Math.max(1.4,0.9/u).toFixed(3))}
+function fit(){var cs=getComputedStyle(document.body),pl=parseFloat(cs.paddingLeft)||0,pr=parseFloat(cs.paddingRight)||0,pt=parseFloat(cs.paddingTop)||0,pb=parseFloat(cs.paddingBottom)||0,aw=Math.max(120,innerWidth-pl-pr),ah=Math.max(120,innerHeight-pt-pb),u=Math.min(aw/360,ah/640),sw=Math.floor(360*u),st=document.getElementById('stage');st.style.width=Math.floor(360*u)+'px';st.style.height=Math.floor(640*u)+'px';
+/* the soft shadow around the stage: drawn once per resize into a small still picture (a live CSS blur shadow made Firefox redo the blur on every frame) */
+(function(){var c=document.createElement('canvas'),d=.25,W=innerWidth,H=innerHeight,h=Math.floor(640*u),x=pl+(aw-sw)/2,y=pt+(ah-h)/2,g,O=10000;c.width=Math.max(1,Math.round(W*d));c.height=Math.max(1,Math.round(H*d));g=c.getContext('2d');g.scale(d,d);g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=60*d;g.shadowOffsetX=-O*d;g.shadowOffsetY=12*d;g.beginPath();g.roundRect(x+O,y,sw,h,14);g.fill();root.style.setProperty('--shade','url('+c.toDataURL()+')')}());root.style.fontSize=(16*u).toFixed(2)+'px';var side=Math.floor((aw-sw)/2),land=aw>=ah*1.4&&ah<=540&&side>=130;root.setAttribute('data-land',land?'1':'0');root.style.setProperty('--side',(land?side:0)+'px');root.style.setProperty('--u',u.toFixed(4)+'px');root.style.setProperty('--ah',ah+'px');root.style.setProperty('--cz',Math.max(1.4,0.9/u).toFixed(3))}
 fit();addEventListener('resize',fit);addEventListener('orientationchange',fit);
 function $(i){return document.getElementById(i)}
 function mk(c){var e=document.createElement('span');e.className=c;return e}
