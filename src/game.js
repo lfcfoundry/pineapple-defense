@@ -220,6 +220,87 @@ function hud() {
   var r = Math.round((1 - Math.max(0, S.cd) / COOLDOWN) * 20);
   if (r !== shown.ready) { shown.ready = r; elReady.style.setProperty('--pct', (r * 5) + '%'); elReady.setAttribute('data-ready', r >= 20 ? '1' : '0'); }
 }
+/* ---------- the counters row, drawn into the canvas ----------
+   Firefox repaints every HTML piece that sits over a moving canvas on every frame, so the row of counters (Wave, Left, Combo, bank, trophies)
+   is drawn on the canvas instead. The HTML stays in place, invisible, so layout, screen readers and tooltips are unchanged. Until the two icons
+   are baked, and in High contrast, the HTML shows as before. Positions are read from the page only when something changed. */
+var CH = { items: [], box: null, dirty: true, on: false, ready: false, imgs: {} };
+function chBake(id, vb) {
+  var defs = '', els = document.querySelectorAll('svg[width="0"]'), i, im = new Image(), e = CH.imgs[id] = { img: im, ok: false, vb: vb };
+  for (i = 0; i < els.length; i++) defs += els[i].innerHTML;
+  im.onload = function () { e.ok = true; CH.ready = CH.imgs['lp-art'].ok && CH.imgs['ic-trophy'].ok; CH.dirty = true; };
+  im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="' + (-vb / 4) + ' ' + (-vb / 4) + ' ' + (vb * 1.5) + ' ' + (vb * 1.5) + '">' + defs + '<use href="#' + id + '" width="' + vb + '" height="' + vb + '"/></svg>');
+}
+function chRead() {
+  var pr, gr = gameEl.getBoundingClientRect(), row = document.querySelector('.hrow'), pills = row.querySelectorAll('.pill'), i, j, p, r, cs, c, it, kid, g, k, items = [], on = CH.ready && root.getAttribute('data-hc') !== '1';
+  CH.dirty = false; CH.box = null;
+  r = row.getBoundingClientRect(); if (r.left < gr.left - 1 || r.right > gr.right + 1 || r.top < gr.top - 1 || r.bottom > gr.bottom + 1) on = false;   /* sideways layout: the row sits beside the picture, so the HTML stays */
+  if (on) {
+    cs = getComputedStyle(row);
+    if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)') { r = row.getBoundingClientRect(); CH.box = { x: r.left - gr.left, y: r.top - gr.top, w: r.width, h: r.height, fill: cs.backgroundColor, rad: parseFloat(cs.borderTopLeftRadius) || 0 }; }
+    for (i = 0; i < pills.length; i++) {
+      p = pills[i]; if (!p.offsetWidth) continue;
+      r = p.getBoundingClientRect(); cs = getComputedStyle(p);
+      it = { x: r.left - gr.left, y: r.top - gr.top, w: r.width, h: r.height, em: parseFloat(cs.fontSize), kids: [], g: null };
+      g = ctx.createLinearGradient(0, it.y, 0, it.y + it.h); g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#f3e6c8'); it.g = g;
+      for (j = 0; j < p.children.length; j++) {
+        c = p.children[j]; r = c.getBoundingClientRect();
+        if (c.tagName.toLowerCase() === 'svg') {
+          k = c.querySelector('use'); k = k && CH.imgs[k.getAttribute('href').slice(1)]; if (!k) continue;
+          it.kids.push({ img: k, x: r.left - gr.left - r.width * 0.25, y: r.top - gr.top - r.height * 0.25, w: r.width * 1.5, h: r.height * 1.5 });
+        } else {
+          cs = getComputedStyle(c); kid = { n: c, font: cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily, color: cs.color, ls: cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing, up: cs.textTransform === 'uppercase', x: r.left - gr.left, txt: null, src: null };
+          pr = document.createElement('i'); pr.style.cssText = 'display:inline-block;width:0;height:0'; c.insertBefore(pr, c.firstChild); kid.y = pr.getBoundingClientRect().bottom - gr.top; c.removeChild(pr);   /* a zero-size inline box sits on the text's baseline */
+          it.kids.push(kid);
+        }
+      }
+      items.push(it);
+    }
+  }
+  CH.items = items; CH.on = on && items.length > 0;
+  if (CH.on) root.setAttribute('data-chud', '1'); else root.removeAttribute('data-chud');
+}
+function chRR(g, x, y, w, h, rad) { g.beginPath(); g.roundRect(x, y, w, h, Math.min(rad, w / 2, h / 2)); }
+/* the row is painted into a small still picture and stamped once per frame; it is painted again only when a number or the layout changes */
+function chPaint() {
+  var i, j, it, k, t, b = CH.box, x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, g, c = CH.cv || (CH.cv = document.createElement('canvas'));
+  if (b) { x0 = b.x; y0 = b.y; x1 = b.x + b.w; y1 = b.y + b.h; }
+  for (i = 0; i < CH.items.length; i++) { it = CH.items[i]; x0 = Math.min(x0, it.x); y0 = Math.min(y0, it.y); x1 = Math.max(x1, it.x + it.w); y1 = Math.max(y1, it.y + it.h + it.em * 0.14); }
+  x0 = Math.floor(x0 - 12); y0 = Math.floor(y0 - 12); x1 = Math.ceil(x1 + 12); y1 = Math.ceil(y1 + 12);
+  CH.ux = x0; CH.uy = y0; CH.uw = x1 - x0; CH.uh = y1 - y0; CH.dpr = DPR;
+  c.width = Math.ceil(CH.uw * DPR); c.height = Math.ceil(CH.uh * DPR); g = c.getContext('2d');
+  g.setTransform(DPR, 0, 0, DPR, -x0 * DPR, -y0 * DPR); g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+  if (b) { g.fillStyle = b.fill; chRR(g, b.x, b.y, b.w, b.h, b.rad); g.fill(); }
+  for (i = 0; i < CH.items.length; i++) {
+    it = CH.items[i];
+    g.fillStyle = '#b79a63'; chRR(g, it.x, it.y + it.em * 0.14, it.w, it.h, 999); g.fill();
+    g.fillStyle = it.g; chRR(g, it.x, it.y, it.w, it.h, 999); g.fill();
+    g.save(); g.clip(); g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(it.x, it.y, it.w, it.em * 0.1); g.restore();
+    for (j = 0; j < it.kids.length; j++) {
+      k = it.kids[j];
+      if (k.img) g.drawImage(k.img.img, k.x, k.y, k.w, k.h);
+      else { t = k.n.textContent; k.src = t; g.font = k.font; g.letterSpacing = k.ls; g.fillStyle = k.color; g.fillText(k.up ? t.toUpperCase() : t, k.x, k.y); }
+    }
+  }
+}
+function drawHudRow() {
+  var i, j, k;
+  if (!CH.started) { CH.started = true; (window.requestIdleCallback || setTimeout)(chStart); }
+  if (CH.dirty) { chRead(); CH.paint = true; }
+  if (!CH.on) return;
+  if (!CH.paint && CH.dpr !== DPR) CH.paint = true;
+  if (!CH.paint) for (i = 0; i < CH.items.length && !CH.paint; i++) for (j = 0; j < CH.items[i].kids.length; j++) { k = CH.items[i].kids[j]; if (k.n && k.n.textContent !== k.src) { CH.paint = true; break; } }
+  if (CH.paint) { CH.paint = false; chPaint(); }
+  ctx.drawImage(CH.cv, CH.ux, CH.uy, CH.uw, CH.uh);
+}
+function chStart() {   /* started on the first game frame, when the browser is idle, so it costs the page's start-up nothing */
+  var row = document.querySelector('.hrow'), dirty = function () { CH.dirty = true; };
+  if (!ctx.roundRect || !window.ResizeObserver || !window.MutationObserver || !row) return;
+  chBake('lp-art', 100); chBake('ic-trophy', 40);
+  var ro = new ResizeObserver(dirty); ro.observe(row); ro.observe(gameEl); Array.prototype.forEach.call(row.children, function (c) { ro.observe(c); });
+  new MutationObserver(dirty).observe(root, { attributes: true, attributeFilter: ['data-hc', 'data-lh', 'data-lt', 'data-land', 'style'] });
+  new MutationObserver(dirty).observe(gameEl, { attributes: true, attributeFilter: ['data-bonus', 'data-raid', 'class'] });
+}
 var bannerT = 0;
 function banner(text, ms) {
   elBanner.textContent = text; elBanner.classList.toggle('ml', text.indexOf('\n') >= 0);
@@ -1468,6 +1549,7 @@ function draw() {
   drawFx(drawParticles()); drawGulls(); drawRaid(); drawCall();
   if (S.gl > 0) { ctx.fillStyle = 'rgba(255,226,120,' + (S.gl * 0.22) + ')'; ctx.fillRect(0, 0, W, H); }
   drawResume();
+  drawHudRow();
 }
 
 /* ---------- bonus game: a long lane, a hop, and a small 35 degree board of raised rings ---------- */
@@ -2101,6 +2183,7 @@ function drawSkee() {
     }
     if (K.ts < 0.6) { ctx.fillStyle = 'rgba(255,240,200,' + (0.12 * (0.6 - K.ts) / 0.3) + ')'; ctx.fillRect(0, 0, W, H); }
   }
+  drawHudRow();
 }
 function hudSkee() {
   if (!elRaid.hidden) { elRaid.hidden = true; shown.raid = -9; gameEl.removeAttribute('data-raid'); }
