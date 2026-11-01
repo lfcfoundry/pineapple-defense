@@ -517,7 +517,7 @@ var ACH = [
   { n: 'Hat Trick', d: 'Hit 3 penguins in a row.' },
   { n: 'Splash Party', d: 'Splash 3 penguins with one throw.' },
   { n: 'Perfect Wave', d: 'Clear a wave with no bumps.' },
-  { n: 'Snowball Popper', d: 'Pop all of Coach Waddles’ snowballs.' },
+  { n: 'Snowball Popper', d: 'Pop all of Coach Waddles\u2019 snowballs.' },
   { n: 'Coach Champ', d: 'Beat Coach Waddles.' },
   { n: 'Power Pal', d: 'Grab a power-up pineapple.' },
   { n: 'Eagle Eye', d: 'Hit 5 penguins in a row.' },
@@ -962,7 +962,7 @@ function spawnBoss() {
   var CH = CHAMP[S.stage];
   S.boss = { id: ++S.id, kind: CH.kind, xn: 0, p: 0.05, v: 0.07, st: 'walk', t: 0, mood: 'happy', ph: 0, hat: false, a: 1, big: CH.big, hp: CH.hp, shield: CH.shield || 0, sp: 0, puff: 0, vx: 0, dph: 0, nd: CH.slide || 0, tele: false, x0: 0, x1: 0, rs: 0 };
   champInit(S.boss); if (CH.tip && !demo && !S.replay && sv.cleared < S.stage) toast(CH.tip, 3.6);   /* a Champion's tip shows until you have beaten that Champion once */
-  if (!demo) { S.boss.rs = 1; banner('Ready…', 2600); }
+  if (!demo) { S.boss.rs = 1; banner('Ready\u2026', 2600); }
 }
 function updateBoss(b, dt) {
   if (b.fz > 0) { b.fz -= dt; return; }   /* hit pause */
@@ -970,7 +970,7 @@ function updateBoss(b, dt) {
   b.t += dt; b.ph += dt * 5; b.sp += dt; b.vx = 0;
   if (b.st === 'walk') {
     b.p += b.v * dt * slowK;
-    if (b.rs === 1 && b.p >= 0.22) { b.rs = 2; banner('Set…', 3200); }   /* ready, set, go while the Champion strolls into place */
+    if (b.rs === 1 && b.p >= 0.22) { b.rs = 2; banner('Set\u2026', 3200); }   /* ready, set, go while the Champion strolls into place */
     if (b.p >= 0.4) { b.p = 0.4; b.st = 'hold'; b.t = 0; if (b.rs) { b.rs = 0; banner('GO!', 900); } }
   }
   else if (b.st === 'hold') {
@@ -2447,7 +2447,7 @@ function tourShow() {
   for (i = 0; i < TOUR.length; i++) d += '<i' + (i === tourI ? ' class="on"' : '') + '></i>';
   $('cardTitle').textContent = T.t;
   body.innerHTML = '<div class="tour"><svg class="tvis" viewBox="0 0 240 150" aria-hidden="true">' + T.s + '</svg><p class="tbig" role="status">' + T.x + '</p><div class="tdots" aria-hidden="true">' + d + '</div>' +
-    '<div class="tbtns"><button class="btn tback" type="button"' + (tourI ? '' : ' hidden') + '>Back</button><button class="btn btn-play tnext" type="button">' + (last ? 'Let’s play!' : 'Next') + '</button></div>' +
+    '<div class="tbtns"><button class="btn tback" type="button"' + (tourI ? '' : ' hidden') + '>Back</button><button class="btn btn-play tnext" type="button">' + (last ? 'Let\u2019s play!' : 'Next') + '</button></div>' +
     '<button class="tskip" type="button">' + (last ? 'Close' : 'Skip the tour') + '</button></div>';
   body.querySelector('.tnext').onclick = function () { if (last) tourEnd(true); else { tourI++; tourShow(); } };
   body.querySelector('.tback').onclick = function () { if (tourI) { tourI--; tourShow(); } };
