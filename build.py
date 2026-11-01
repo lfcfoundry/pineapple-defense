@@ -110,6 +110,9 @@ def main():
         ro.parent.mkdir(parents=True, exist_ok=True); ro.write_text(t, encoding="utf-8")
         out.write_text(m, encoding="utf-8")
         print("built", out.relative_to(R), ver, len(m) // 1024, "KB (minified; readable copy in", ro.relative_to(R).as_posix() + ")")
+    for page in ([out] + ([] if LAB else [R / "index.html", R / "about.html"])):   # every delivered page stays Latin-1: one character above U+00FF (emoji, curly quote, arrow, ellipsis) makes the browser keep the WHOLE page's text at 2 bytes per character (JS: \\u2019, CSS: \\2019, markup: &#x2019;)
+        bad = sorted({c for c in page.read_text(encoding="utf-8") if ord(c) > 0xFF})
+        if bad: sys.exit("%s has characters above U+00FF: %s. Escape them (see the comment in build.py)." % (page.relative_to(R), " ".join("U+%04X" % ord(c) for c in bad[:12])))
     if MIN:
         mo = R / "dist" / ("lab-min" if LAB else "min") / "index.html"
         mo.parent.mkdir(parents=True, exist_ok=True); mo.write_text(m if m is not None else (minify(t) or t), encoding="utf-8")

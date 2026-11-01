@@ -6,6 +6,7 @@ What changed in each version, newest first, for developers, in three depths: **Q
 ## @VER@ · next release
 
 ### Quick
+- Build check: build.py fails if a delivered page (play, index, about) holds any character above U+00FF (one such character makes the browser keep the whole page's text at 2 bytes per character, round 33). The shipped minified page was already Latin-1 (esbuild escapes); the readable build and the sources now are too (curly apostrophe and ellipsis escaped in game.js and the vendored field-report).
 - Option D (owner pick 2026-10-31): counters row (Wave, Left, Combo, bank, trophies) painted on the game canvas from the page's own layout (still picture stamped once per frame, repainted when a number or the layout changes; the HTML stays, invisible, for layout, screen readers and tooltips), remaining box-shadows removed (Classic/Lobber, pause, counters row, stage badge, raid), bar inner shading as gradients, wave ring as an outline. Firefox 158 frame time 0.80x, Chromium 155 1.02x.
 - Fix: PR 55 had moved the page wash off the body, so the tester's Gray colour view (filter on body) kept colour; the wash is on the body again.
 - Inset white highlight of pills, progress bar, cheer bar and boss bar as a top gradient strip on the fill layer (no inset box-shadow); Firefox 158 frame time 0.87x, Chromium 155 1.00x, picture 99.74-99.89%.
