@@ -302,7 +302,7 @@ function drawHudRow() {
 /* ---------- the stage progress bar and the cheer bar, painted on the canvas too ----------
    Same idea and same rules as the counters row: the HTML stays (invisible) for layout, tooltips and screen readers, the picture comes from here.
    The fills ease toward their target the way the page's own transitions do (.35 s and .2 s), the Champion medal pulses as the page's does. */
-var CB = { on: false, ready: false, items: [], gray: null, last: 0, keep: [], keepC: 0 };
+var CB = { ff: 'mozInnerScreenX' in window, on: false, ready: false, items: [], gray: null, last: 0, keep: [], keepC: 0 };
 function cbBase(el, gr) {   /* the text's baseline: a zero-size inline box sits on it */
   var pr = document.createElement('i'); pr.style.cssText = 'display:inline-block;width:0;height:0'; el.insertBefore(pr, el.firstChild);
   var y = pr.getBoundingClientRect().bottom - gr.top; el.removeChild(pr); return y;
@@ -313,7 +313,7 @@ function cbRect(el, gr) {   /* the page snaps boxes to whole device pixels; so d
 }
 function cbRead(gr, on) {
   var items = [], prog = elProg, che = document.querySelector('.cheer'), cs, r, i, segs, it, svg;
-  on = on && CB.ready && root.getAttribute('data-hc') !== '1';
+  on = on && CB.ready && CB.ff && root.getAttribute('data-hc') !== '1';
   if (on && prog.offsetWidth) {
     r = prog.getBoundingClientRect(); if (r.left < gr.left - 1 || r.right > gr.right + 1 || r.top < gr.top - 1 || r.bottom > gr.bottom + 1) on = false;
   }
