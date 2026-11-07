@@ -228,7 +228,11 @@ var CH = { items: [], box: null, dirty: true, on: false, ready: false, imgs: {} 
 function chBake(id, vb) {
   var defs = '', els = document.querySelectorAll('svg[width="0"]'), i, im = new Image(), e = CH.imgs[id] = { img: im, ok: false, vb: vb };
   for (i = 0; i < els.length; i++) defs += els[i].innerHTML;
-  im.onload = function () { e.ok = true; CH.ready = CH.imgs['lp-art'].ok && CH.imgs['ic-trophy'].ok; CH.dirty = true; };
+  im.onload = function () {
+    e.ok = true; CH.ready = CH.imgs['lp-art'].ok && CH.imgs['ic-trophy'].ok;
+    if (id === 'ic-medal') { CB.gray = document.createElement('canvas'); CB.gray.width = CB.gray.height = 288; var gg = CB.gray.getContext('2d'); gg.filter = 'grayscale(1) opacity(.55)'; gg.drawImage(im, 0, 0); }
+    CB.ready = !!(CH.imgs['ic-medal'] && CH.imgs['ic-medal'].ok && CH.imgs['ic-heart'] && CH.imgs['ic-heart'].ok && CB.gray); CH.dirty = true;
+  };
   im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="' + (-vb / 4) + ' ' + (-vb / 4) + ' ' + (vb * 1.5) + ' ' + (vb * 1.5) + '">' + defs + '<use href="#' + id + '" width="' + vb + '" height="' + vb + '"/></svg>');
 }
 function chRead() {
@@ -285,19 +289,129 @@ function chPaint() {
 }
 function drawHudRow() {
   var i, j, k;
-  if (!CH.started) { CH.started = true; (window.requestIdleCallback || setTimeout)(chStart); }
-  if (CH.dirty) { chRead(); CH.paint = true; }
+  if (!CH.started) { CH.started = true; if (window.requestIdleCallback) requestIdleCallback(chStart, { timeout: 3000 }); else setTimeout(chStart, 1000); }
+  if (CH.dirty) { chRead(); cbRead(gameEl.getBoundingClientRect(), true); CH.paint = true; }
+  drawBars();
   if (!CH.on) return;
   if (!CH.paint && CH.dpr !== DPR) CH.paint = true;
   if (!CH.paint) for (i = 0; i < CH.items.length && !CH.paint; i++) for (j = 0; j < CH.items[i].kids.length; j++) { k = CH.items[i].kids[j]; if (k.n && k.n.textContent !== k.src) { CH.paint = true; break; } }
   if (CH.paint) { CH.paint = false; chPaint(); }
   ctx.drawImage(CH.cv, CH.ux, CH.uy, CH.uw, CH.uh);
 }
+
+/* ---------- the stage progress bar and the cheer bar, painted on the canvas too ----------
+   Same idea and same rules as the counters row: the HTML stays (invisible) for layout, tooltips and screen readers, the picture comes from here.
+   The fills ease toward their target the way the page's own transitions do (.35 s and .2 s), the Champion medal pulses as the page's does. */
+var CB = { on: false, ready: false, items: [], gray: null, last: 0, keep: [], keepC: 0 };
+function cbBase(el, gr) {   /* the text's baseline: a zero-size inline box sits on it */
+  var pr = document.createElement('i'); pr.style.cssText = 'display:inline-block;width:0;height:0'; el.insertBefore(pr, el.firstChild);
+  var y = pr.getBoundingClientRect().bottom - gr.top; el.removeChild(pr); return y;
+}
+function cbRect(el, gr) {   /* the page snaps boxes to whole device pixels; so do we, or the picture sits a half pixel off */
+  var r = el.getBoundingClientRect(), x0 = Math.round(r.left * DPR) / DPR, y0 = Math.round(r.top * DPR) / DPR, x1 = Math.round(r.right * DPR) / DPR, y1 = Math.round(r.bottom * DPR) / DPR;
+  return { x: x0 - Math.round(gr.left * DPR) / DPR, y: y0 - Math.round(gr.top * DPR) / DPR, w: x1 - x0, h: y1 - y0 };
+}
+function cbRead(gr, on) {
+  var items = [], prog = elProg, che = document.querySelector('.cheer'), cs, r, i, segs, it, svg;
+  on = on && CB.ready && root.getAttribute('data-hc') !== '1';
+  if (on && prog.offsetWidth) {
+    r = prog.getBoundingClientRect(); if (r.left < gr.left - 1 || r.right > gr.right + 1 || r.top < gr.top - 1 || r.bottom > gr.bottom + 1) on = false;
+  }
+  if (on && che.offsetWidth) {
+    r = che.getBoundingClientRect(); if (r.left < gr.left - 1 || r.right > gr.right + 1) on = false;
+  }
+  if (on && prog.offsetWidth) {
+    cs = getComputedStyle(prog); it = { k: 'p', el: prog, r: cbRect(prog, gr), em: parseFloat(cs.fontSize), rem: parseFloat(getComputedStyle(root).fontSize), seg: [], key: '' };
+    cs = getComputedStyle(elProgStg); it.stg = { n: elProgStg, r: cbRect(elProgStg, gr), font: cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily, color: cs.color, ls: cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing, pl: parseFloat(cs.paddingLeft) || 0, y: cbBase(elProgStg, gr) };
+    segs = prog.querySelectorAll('.seg');
+    for (i = 0; i < segs.length; i++) it.seg.push({ el: segs[i], f: segs[i].firstChild, r: cbRect(segs[i], gr), cur: i < CB.keep.length ? CB.keep[i] : 0 });
+    svg = prog.querySelector('svg'); it.medal = svg.getBoundingClientRect().width ? cbRect(svg, gr) : null; items.push(it);
+  }
+  if (on && che.offsetWidth) {
+    cs = getComputedStyle(che); it = { k: 'c', el: che, r: cbRect(che, gr), em: parseFloat(cs.fontSize), bar: che.querySelector('.bar'), fill: elCheer, cur: CB.keepC, key: '' };
+    it.br = cbRect(it.bar, gr); it.heart = cbRect(che.querySelector('svg'), gr); items.push(it);
+  }
+  CB.items = items; CB.on = items.length > 0;
+  if (CB.on) root.setAttribute('data-cbar', '1'); else root.removeAttribute('data-cbar');
+}
+function cbRR(g, x, y, w, h, rad) { g.beginPath(); g.roundRect(x, y, w, h, Math.min(rad, w / 2, h / 2)); }
+function cbPill(g, r, em, horiz) {   /* tan edge behind, cream fill, one light line along the top: the same three layers as the page's pills */
+  var gr;
+  g.fillStyle = '#b79a63'; cbRR(g, r.x, r.y + em * 0.14, r.w, r.h, 999); g.fill();
+  gr = horiz ? g.createLinearGradient(r.x, 0, r.x + r.w, 0) : g.createLinearGradient(0, r.y, 0, r.y + r.h); gr.addColorStop(0, '#fffaf0'); gr.addColorStop(1, '#f3e6c8');
+  g.fillStyle = gr; cbRR(g, r.x, r.y, r.w, r.h, 999); g.fill();
+  g.save(); g.clip(); g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(r.x, r.y, r.w, em * 0.1); g.restore();
+}
+function cbIcon(g, id, r, rot, sc, gray) {
+  var e = CH.imgs[id], im = gray ? CB.gray : e.img, cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  g.save(); g.translate(cx, cy); if (rot) g.rotate(rot); if (sc !== 1) g.scale(sc, sc); g.drawImage(im, -r.w * 0.75, -r.h * 0.75, r.w * 1.5, r.h * 1.5); g.restore();
+}
+function cbPaint(it, boss, ph) {
+  CB.n = (CB.n || 0) + 1;
+  var c = it.cv || (it.cv = document.createElement('canvas')), g, i, s, r = it.r, pad = 10, x0 = Math.floor(r.x - pad), y0 = Math.floor(r.y - pad), w = Math.ceil(r.w + pad * 2), h = Math.ceil(r.h + pad * 2 + it.em * 0.2), gr, b, k, f;
+  if (c.width !== Math.ceil(w * DPR) || c.height !== Math.ceil(h * DPR)) { c.width = Math.ceil(w * DPR); c.height = Math.ceil(h * DPR); }
+  it.ux = x0; it.uy = y0; it.uw = w; it.uh = h; g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
+  g.setTransform(DPR, 0, 0, DPR, -x0 * DPR, -y0 * DPR);
+  if (it.k === 'p') {
+    cbPill(g, r, it.em, false);
+    s = it.stg.r; gr = g.createLinearGradient(0, s.y, 0, s.y + s.h); gr.addColorStop(0, '#ffe38a'); gr.addColorStop(1, '#f7b92e'); g.fillStyle = gr; cbRR(g, s.x, s.y, s.w, s.h, 999); g.fill();
+    g.font = it.stg.font; g.letterSpacing = it.stg.ls; g.fillStyle = it.stg.color; g.textBaseline = 'alphabetic'; g.textAlign = 'left'; g.fillText(it.stg.n.textContent, it.stg.r.x + it.stg.pl, it.stg.y);
+    for (i = 0; i < it.seg.length; i++) {
+      s = it.seg[i]; b = s.r;
+      gr = g.createLinearGradient(0, b.y, 0, b.y + it.em * 0.22); gr.addColorStop(0, 'rgba(90,60,20,.4)'); gr.addColorStop(1, 'rgba(90,60,20,0)');
+      g.fillStyle = 'rgba(122,90,50,.24)'; cbRR(g, b.x, b.y, b.w, b.h, 999); g.fill();
+      g.save(); cbRR(g, b.x, b.y, b.w, b.h, 999); g.clip(); g.fillStyle = gr; g.fillRect(b.x, b.y, b.w, Math.min(b.h, it.em * 0.22));
+      if (s.cur > 0.001) {
+        f = g.createLinearGradient(0, b.y, 0, b.y + b.h); f.addColorStop(0, '#b6ec8c'); f.addColorStop(0.6, '#2fa84a'); f.addColorStop(1, '#23863a');
+        g.translate(b.x, 0); g.scale(s.cur, 1); g.fillStyle = f; cbRR(g, 0, b.y, b.w, b.h, 999); g.fill();
+      }
+      g.restore();
+      if (s.el.getAttribute('data-now') === '1') {   /* the yellow ring around the wave being played: an outline .13rem thick */
+        k = it.rem * 0.13; g.fillStyle = '#ffd23f'; g.beginPath(); g.roundRect(b.x - k, b.y - k, b.w + k * 2, b.h + k * 2, (b.h + k * 2) / 2); g.roundRect(b.x, b.y, b.w, b.h, b.h / 2); g.fill('evenodd');
+      }
+    }
+    if (it.medal) cbIcon(g, 'ic-medal', it.medal, boss ? -0.1047 * ph : 0, boss ? 1 + 0.22 * ph : 1, !boss);
+  } else {
+    cbPill(g, r, it.em, true);
+    b = it.br; gr = g.createLinearGradient(0, b.y, 0, b.y + 3);
+    g.save(); cbRR(g, b.x, b.y, b.w, b.h, 99); g.clip(); g.fillStyle = '#e2d6b6'; g.fillRect(b.x, b.y, b.w, b.h);
+    gr.addColorStop(0, 'rgba(0,0,0,.2)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(b.x, b.y, b.w, 3);
+    if (it.cur > 0.001) {
+      f = g.createLinearGradient(b.x, 0, b.x + b.w, 0); if (it.bar.getAttribute('data-low') === '1') { f.addColorStop(0, '#ffb3c1'); f.addColorStop(1, '#e0526f'); } else { f.addColorStop(0, '#8be6a3'); f.addColorStop(1, '#2c8a49'); }
+      g.translate(0, b.y + b.h); g.scale(1, it.cur); g.fillStyle = f; cbRR(g, b.x, -b.h, b.w, b.h, 99); g.fill();
+    }
+    g.restore();
+    cbIcon(g, 'ic-heart', it.heart, 0, 1, false);
+  }
+}
+function drawBars() {
+  var now = performance.now(),  i, j, it, s, t, a, dt = Math.min(0.1, (now - CB.last) / 1000), boss, ph, key, ch;
+  if (!CB.on) return;
+  CB.last = now;
+  for (i = 0; i < CB.items.length; i++) {
+    it = CB.items[i]; ch = false;
+    if (it.k === 'p') {
+      boss = it.el.getAttribute('data-boss') === '1'; ph = boss && !calm ? 0.5 - 0.5 * Math.cos(now / 1000 * 6.2832) : 0;
+      a = calm ? 1 : 1 - Math.exp(-dt / 0.12);
+      key = it.stg.n.textContent + '|' + (boss ? ph.toFixed(2) : 'n');
+      for (j = 0; j < it.seg.length; j++) {
+        s = it.seg[j]; t = parseFloat(s.f.style.transform.slice(7)); if (!(t >= 0)) t = 0; s.cur += (t - s.cur) * a; if (Math.abs(t - s.cur) < 0.004) s.cur = t;
+        CB.keep[j] = s.cur; key += '|' + Math.round(s.cur * s.r.w * DPR) + s.el.getAttribute('data-now');
+      }
+      if (key !== it.key) { it.key = key; cbPaint(it, boss, ph); }
+    } else {
+      a = calm ? 1 : 1 - Math.exp(-dt / 0.08); t = parseFloat(it.fill.style.transform.slice(7)); if (!(t >= 0)) t = 0; it.cur += (t - it.cur) * a; if (Math.abs(t - it.cur) < 0.004) it.cur = t; CB.keepC = it.cur;
+      key = Math.round(it.cur * it.br.h * DPR) + it.bar.getAttribute('data-low');
+      if (key !== it.key) { it.key = key; cbPaint(it, false, 0); }
+    }
+    ctx.drawImage(it.cv, it.ux, it.uy, it.uw, it.uh);
+  }
+}
 function chStart() {   /* started on the first game frame, when the browser is idle, so it costs the page's start-up nothing */
   var row = document.querySelector('.hrow'), dirty = function () { CH.dirty = true; };
   if (!ctx.roundRect || !window.ResizeObserver || !window.MutationObserver || !row) return;
-  chBake('lp-art', 100); chBake('ic-trophy', 40);
-  var ro = new ResizeObserver(dirty); ro.observe(row); ro.observe(gameEl); Array.prototype.forEach.call(row.children, function (c) { ro.observe(c); });
+  chBake('lp-art', 100); chBake('ic-trophy', 40); chBake('ic-medal', 40); chBake('ic-heart', 64);
+  var ro = new ResizeObserver(dirty); ro.observe(row); ro.observe(elProg); ro.observe(document.querySelector('.cheer')); ro.observe(gameEl); Array.prototype.forEach.call(row.children, function (c) { ro.observe(c); });
   new MutationObserver(dirty).observe(root, { attributes: true, attributeFilter: ['data-hc', 'data-lh', 'data-lt', 'data-land', 'style'] });
   new MutationObserver(dirty).observe(gameEl, { attributes: true, attributeFilter: ['data-bonus', 'data-raid', 'class'] });
 }
@@ -2677,7 +2791,7 @@ var qa = null;
 if (location.hash === '#qa') {
   qa = window.__pd = { get boot() { return BOOT_MS; }, set trimW(v) { TRIM_W = v; }, get bigKept() { var n = 0, r = 0; Object.keys(IMG).forEach(function (k) { Object.keys(IMG[k]).forEach(function (m) { var im = IMG[k][m]; if (im) { if (im._rel) r++; else n++; } }); }); return { kept: n, released: r, w: cv.width }; }, get bgAhead() { return !!bgNext; }, get bgHash() { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, h = 0, i; for (i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1] * 3 + d[i + 2] * 7) >>> 0; return h; }, lose: function () { S.cheer = 0; endStage(false); }, twinTest: function (on) { twin = !!on; if (on) twinCard(); }, get twin() { return twin; }, ctxLost: ctxLost, ctxCardOpen: function () { return ctxCard; }, wake: function () { return { sup: !!(wk && wk.supported), held: !!(wk && wk.held), want: wakeOn(), idle: !!(wk && wk.idle), refusals: wk ? wk.refusals : 0 }; }, tour: tourStart, choice: throwChoice, pouch: function () { return pouchPos(); }, snap: function () { return { sl: sv.sl, sg: sv.sg, sc: sv.sc }; }, cont: function () { titleEl.hidden = true; gameEl.hidden = false; startStage(sv); run(); }, pause: function () { pause(); }, backArmed: function () { return !$('bcGuard').hidden; }, backOk: BackClose.supported, rsg: function () { return rsg(); }, rollGear: function () { return rollGear(); }, stap: function (x, y) { return sceneTap({ x: x, y: y }); }, get sc() { return S.sc; }, zone: function (i) { var z = ZONES[stageNo()][i]; return zoneHit({ x: z.x * W, y: z.y * H }); }, fish: function () { return tryDrop(); }, go: function (st, w, idle) { titleEl.hidden = true; gameEl.hidden = false; return loadAssets().then(function () { resize(true); startStage({ stage: st, wave: w, golden: 0, cheer: 100 }); if (!idle) run(); }); }, bgAlpha: function () { var d = bg.getContext('2d').getImageData(0, 0, bg.width, bg.height).data, m = 255, i; for (i = 3; i < d.length; i += 4) if (d[i] < m) m = d[i]; return m; }, idleLoop: function () { if (raf) cancelAnimationFrame(raf); raf = 0; running = false; }, bot: false, sv: function () { return sv; }, scale: function (v) { timeScale = v; }, center: function (pg) { return penCenter(pg); }, hp: function (x, y, id) { return penAt({ x: x, y: y }); }, holdOn: function () { return !!hold; }, fpsTxt: function () { return elFps ? elFps.textContent : ''; }, get S() { return S; }, get penguins() { return penguins; },
     /* fast-forward without waiting for frames: sec game seconds in steps of dt, drawing every `every` steps (0 = never, one final draw) */
-    step: function (sec, dt, every, lazy) { var n = Math.round(sec / (dt || 0.033)), i, d = dt || 0.033; calm = root.getAttribute('data-calm') === '1';   /* the page's own frame reads Calm like this; stepping by hand does too, so a check never sees a stale value */ for (i = 0; i < n; i++) { if (hold) holdTick(); if (K) updateSkee(d); else update(d); if (every && i % every === 0) { if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } } } if (lazy) return; if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } }, get timeScale() { return timeScale; }, get bits() { return bits.length; }, get shots() { return shots.length; }, get rings() { return rings.length; }, pause: pause, resume: function () { hideCard(); resume(); }, runK: runK, key: function (k) { document.dispatchEvent(new KeyboardEvent('keydown', { key: k })); },
+    step: function (sec, dt, every, lazy) { var n = Math.round(sec / (dt || 0.033)), i, d = dt || 0.033; calm = root.getAttribute('data-calm') === '1';   /* the page's own frame reads Calm like this; stepping by hand does too, so a check never sees a stale value */ for (i = 0; i < n; i++) { if (hold) holdTick(); if (K) updateSkee(d); else update(d); if (every && i % every === 0) { if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } } } if (lazy) return; if (K) { drawSkee(); hudSkee(); } else { draw(); hud(); } }, get timeScale() { return timeScale; }, get cb() { return CB; }, warm: function () { CH.started = true; chStart(); }, get bits() { return bits.length; }, get shots() { return shots.length; }, get rings() { return rings.length; }, pause: pause, resume: function () { hideCard(); resume(); }, runK: runK, key: function (k) { document.dispatchEvent(new KeyboardEvent('keydown', { key: k })); },
     win: function () { endStage(true); }, flick: function (dx, dy, spd) { var o = pouchPos(); throwAt(o.x, o.y, dx, dy, spd); }, get sh() { return shots; }, demo: startDemo, replay: startReplay, get dm() { return demo; }, tick: function () { return demo; }, goal: updateGoal, undoShop: function () { var u = document.querySelector('#shUndo'); if (u) u.click(); }, fillShop: fillShop, raid: callRaid, st: function (k, v) { sv[k] = v; S.umL = sv.um; S.raL = RAID_N[sv.ra] || 0; }, gull: function () { S.fish = []; var ok = tryDrop(); return ok; }, endSk: function (v) { K.lastV = v; K.balls = 0; endSkee(); }, cmb: function (n, src) { var i; curSrc = src === 3 ? 2 : (src || 2); for (i = 0; i < n; i++) cmbHit(W * 0.5, H * 0.5); curSrc = 1; if (src === 3) cmbHit(W * .5, H * .5); }, give: function (k) { spawnPU(k); }, award: award, collect: function () { collectPU(); collectTro(false); }, skee: startSkee, get K() { return K; }, roll: skeeRoll, plan: function (dx, dy, spd) { return skLaunch({ dx: dx, dy: dy, spd: spd }); }, sim: function (dx, dy, spd, dA, dF) { var h = skSim(skLaunch({ dx: dx, dy: dy, spd: spd }, dA, dF)); return h ? h.v : 0; }, get H() { return SK_HOLES; }, tap: function (x, y) { var o = pouchPos(); throwAt(o.x, o.y, x - o.x, y - o.y, 1.5, { x: x, y: y }); } };
 }
 FR.mark('game-script-ready');
