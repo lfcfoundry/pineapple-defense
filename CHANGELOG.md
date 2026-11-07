@@ -5,6 +5,7 @@ What changed in each version of Pineapple Defense, in plain words. Version stamp
 Developers: [CHANGELOG-DEV.md](CHANGELOG-DEV.md) has the same versions in three depths (Quick, Details, Deep). Each release below lists the browsers it was tested in; where that was not recorded it says so.
 
 ## @VER@
+- The stage progress bar and the cheer bar are now drawn into the game picture in Firefox, so the game plays a little more smoothly there. Same look.
 - The counters at the top of a stage are now drawn into the game picture, and the last soft shadows on the buttons, bars and counters are flat edges (your pick), so Firefox plays much more smoothly. Everything works as before, including screen readers.
 - The thin white highlight along the top of the counters, progress bar and side bars is now a plain gradient, so Firefox draws it faster. Same look.
 - The soft shadow around the game frame is now drawn once instead of on every frame, and the cheer bar and boss bar use the same crisp edge as the counters. Same picture, and Firefox plays much more smoothly.
