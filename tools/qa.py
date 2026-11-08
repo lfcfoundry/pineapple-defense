@@ -3,6 +3,7 @@
 
   python3 -I tools/qa.py            build, syntax check, then the in-page suite in Chromium (about 10 s)
   python3 -I tools/qa.py --ff       also run it in Firefox (the stress test)
+  python3 -I tools/qa.py --legs firefox   run only the named browsers (comma list); tools/qa-par.sh uses it
   python3 -I tools/qa.py --wk       also run it in WebKitGTK (the nearest WebKit a Linux cloud machine can run)
   python3 -I tools/qa.py --lab      test the tester (lab) build instead
   python3 -I tools/qa.py --min      test the minified page (the one that gets packed)
@@ -32,7 +33,7 @@ args = sys.argv[1:]
 flag = lambda f: f in args
 opt = lambda f, d: args[args.index(f) + 1] if f in args and args.index(f) + 1 < len(args) else d
 QUICK = flag('--quick'); CALM = flag('--calm')
-LEGS = ['chromium'] + (['firefox'] if flag('--ff') else []) + (['webkit'] if flag('--wk') else [])
+LEGS = opt('--legs', '').split(',') if flag('--legs') else ['chromium'] + (['firefox'] if flag('--ff') else []) + (['webkit'] if flag('--wk') else [])   # --legs chromium,firefox picks the browsers by name (used by tools/qa-par.sh)
 # --smart: choose the cheapest run that still covers what changed since the last passing run (file fingerprints kept in .qa-smart.json)
 SMART_ONLY = ''
 def _fingerprints():
@@ -116,7 +117,7 @@ USED = []   # (key, full label) of every browser this run really used
 suite = open(os.path.join(ROOT, 'tools/qa_suite.js'), encoding='utf-8').read()
 layout = open(os.path.join(ROOT, 'tools/qa_layout.js'), encoding='utf-8').read()
 PROBE = open(os.path.join(ROOT, 'tools/canvas-probe.js'), encoding='utf-8').read()
-key = hashlib.sha1((src + suite + layout + PROBE + str(FUZZ) + str(flag('--ff')) + str(flag('--wk')) + str(CALM) + os.environ.get('PD_CHROME', '')).encode()).hexdigest()
+key = hashlib.sha1((src + suite + layout + PROBE + str(FUZZ) + str(LEGS) + str(CALM) + os.environ.get('PD_CHROME', '')).encode()).hexdigest()
 cache = os.path.join(ROOT, '.qa-cache'); mode = ('lab' if lab else 'main') + ('-min' if mini else '') + ('-calm' if CALM else '')
 store = json.load(open(cache)) if os.path.exists(cache) else {}
 if store.get(mode) == key and not flag('--force') and not QUICK and not ONLY:
@@ -195,55 +196,56 @@ def labview(shoot, run_js, name):
     if float(np.abs(imgs[1] - imgs[2]).mean()) < 0.3: bad.append('%s: Protan and Deutan look identical' % name)
     return bad
 
-# 4. Chromium: one browser, one page for the suite, one fresh page per viewport for layout
-from playwright.sync_api import sync_playwright
 url = 'file://' + page + '#qa'
-with sync_playwright() as p:
-    br = p.chromium.launch(executable_path=CHROME, args=['--no-sandbox'])
-    _cv = br.version; _cn = 'ungoogled Chromium' if 'ungoogled' in CHROME.lower() else 'Chromium'
-    USED.append(('%s %s' % (_cn, _cv.split('.')[0]), '%s %s' % (_cn, _cv)))
-    phase('chromium: launch')
-    pg = br.new_page(viewport={'width': 500, 'height': 827}, **({'reduced_motion': 'reduce'} if CALM else {})); perr = []
-    pg.on('pageerror', lambda e: perr.append(str(e))); pg.on('console', lambda m: perr.append(m.text) if m.type == 'error' else None)
-    pg.goto(url); pg.wait_for_function('window.__pd')
-    pg.evaluate('window.__qaFuzz=%d;window.__qaQuick=%d;window.__qaOnly=%s' % (FUZZ, SEED if QUICK else 0, json.dumps(ONLY))); pg.evaluate(PROBE)
-    phase('chromium: page load')
-    res = pg.evaluate('(async()=>{' + suite + '})()')
-    phase('chromium: suite')
-    if SHOTS:
-        os.makedirs(SHOTS, exist_ok=True); pg.screenshot(path=os.path.join(SHOTS, 'suite-end.png'))
-    # the six sizes are independent pages (each its own context, so the twin-tab guard never sees a second copy): start all six layout
-    # scripts, then collect them, so their fixed waits overlap (about 1.5 s per size when run one after the other)
-    lay = []; lps = []
-    for vw, vh in ([] if ONLY else VIEWPORTS):   # --only (and smart's smoke) skip the layout sizes: they are a separate pass
-        q = br.new_context(viewport={'width': vw, 'height': vh}).new_page(); q.on('pageerror', lambda e: perr.append(str(e)))
-        q.goto(url); q.wait_for_function('window.__pd'); lps.append((vw, vh, q))
-    for vw, vh, q in lps: q.evaluate('window.__lay=(async()=>{' + layout + '})();0')
-    for vw, vh, q in lps:
-        out = q.evaluate('Promise.race([window.__lay, new Promise(r => setTimeout(() => r({ hung: document.visibilityState + " " + innerWidth + "x" + innerHeight + " " + (document.getElementById("cardTitle") || {}).textContent }), 60000))])')   # a stuck layout page fails with its state instead of waiting forever
-        if out.get('hung'): lay.append((vw, vh, ['layout script did not finish in 60 s (' + out['hung'] + ')'])); q.context.close(); continue
-        lay.append((out['vw'], out['vh'], out['bad']))
-        if SHOTS: q.screenshot(path=os.path.join(SHOTS, 'layout-%dx%d.png' % (vw, vh)))
-        q.context.close()
-    phase('chromium: layout, 6 sizes')
-    old = oldsaves(br) if not QUICK and not ONLY else []
-    phase('chromium: old saves')
-    extra = []
-    if not QUICK and not ONLY:
-        extra.append(('two real tabs', twintabs(br)))
-        run([sys.executable, '-I', 'build.py', '--lab'])
-        lp = br.new_page(viewport={'width': 500, 'height': 827}); lp.goto('file://' + os.path.join(ROOT, 'dist/lab/index.html') + '#qa'); lp.wait_for_function('window.__pd')
-        extra.append(('tester color view', labview(lambda: lp.screenshot(), lp.evaluate, 'chromium'))); lp.close()
-    br.close()
-    phase('chromium: two tabs, color view, close')
-print('[%s] Chromium%s' % (stamp(), ' (reduced motion on)' if CALM else '')); report('chromium', res, lay)
-for nm, bad in extra:
-    print('  %-4s %s %s' % ('ok' if not bad else 'FAIL', nm, '; '.join(bad)))
-    for x in bad: fails.append('%s: %s' % (nm, x))
-for fx, bad in old:
-    print('  %-4s old save %s %s' % ('ok' if not bad else 'FAIL', fx, '; '.join(bad)))
-    for x in bad: fails.append('old save %s: %s' % (fx, x))
-for e in perr: fails.append('chromium console: ' + e)
+# 4. Chromium: one browser, one page for the suite, one fresh page per viewport for layout
+if 'chromium' in LEGS:
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        br = p.chromium.launch(executable_path=CHROME, args=['--no-sandbox'])
+        _cv = br.version; _cn = 'ungoogled Chromium' if 'ungoogled' in CHROME.lower() else 'Chromium'
+        USED.append(('%s %s' % (_cn, _cv.split('.')[0]), '%s %s' % (_cn, _cv)))
+        phase('chromium: launch')
+        pg = br.new_page(viewport={'width': 500, 'height': 827}, **({'reduced_motion': 'reduce'} if CALM else {})); perr = []
+        pg.on('pageerror', lambda e: perr.append(str(e))); pg.on('console', lambda m: perr.append(m.text) if m.type == 'error' else None)
+        pg.goto(url); pg.wait_for_function('window.__pd')
+        pg.evaluate('window.__qaFuzz=%d;window.__qaQuick=%d;window.__qaOnly=%s' % (FUZZ, SEED if QUICK else 0, json.dumps(ONLY))); pg.evaluate(PROBE)
+        phase('chromium: page load')
+        res = pg.evaluate('(async()=>{' + suite + '})()')
+        phase('chromium: suite')
+        if SHOTS:
+            os.makedirs(SHOTS, exist_ok=True); pg.screenshot(path=os.path.join(SHOTS, 'suite-end.png'))
+        # the six sizes are independent pages (each its own context, so the twin-tab guard never sees a second copy): start all six layout
+        # scripts, then collect them, so their fixed waits overlap (about 1.5 s per size when run one after the other)
+        lay = []; lps = []
+        for vw, vh in ([] if ONLY else VIEWPORTS):   # --only (and smart's smoke) skip the layout sizes: they are a separate pass
+            q = br.new_context(viewport={'width': vw, 'height': vh}).new_page(); q.on('pageerror', lambda e: perr.append(str(e)))
+            q.goto(url); q.wait_for_function('window.__pd'); lps.append((vw, vh, q))
+        for vw, vh, q in lps: q.evaluate('window.__lay=(async()=>{' + layout + '})();0')
+        for vw, vh, q in lps:
+            out = q.evaluate('Promise.race([window.__lay, new Promise(r => setTimeout(() => r({ hung: document.visibilityState + " " + innerWidth + "x" + innerHeight + " " + (document.getElementById("cardTitle") || {}).textContent }), 60000))])')   # a stuck layout page fails with its state instead of waiting forever
+            if out.get('hung'): lay.append((vw, vh, ['layout script did not finish in 60 s (' + out['hung'] + ')'])); q.context.close(); continue
+            lay.append((out['vw'], out['vh'], out['bad']))
+            if SHOTS: q.screenshot(path=os.path.join(SHOTS, 'layout-%dx%d.png' % (vw, vh)))
+            q.context.close()
+        phase('chromium: layout, 6 sizes')
+        old = oldsaves(br) if not QUICK and not ONLY else []
+        phase('chromium: old saves')
+        extra = []
+        if not QUICK and not ONLY:
+            extra.append(('two real tabs', twintabs(br)))
+            run([sys.executable, '-I', 'build.py', '--lab'])
+            lp = br.new_page(viewport={'width': 500, 'height': 827}); lp.goto('file://' + os.path.join(ROOT, 'dist/lab/index.html') + '#qa'); lp.wait_for_function('window.__pd')
+            extra.append(('tester color view', labview(lambda: lp.screenshot(), lp.evaluate, 'chromium'))); lp.close()
+        br.close()
+        phase('chromium: two tabs, color view, close')
+    print('[%s] Chromium%s' % (stamp(), ' (reduced motion on)' if CALM else '')); report('chromium', res, lay)
+    for nm, bad in extra:
+        print('  %-4s %s %s' % ('ok' if not bad else 'FAIL', nm, '; '.join(bad)))
+        for x in bad: fails.append('%s: %s' % (nm, x))
+    for fx, bad in old:
+        print('  %-4s old save %s %s' % ('ok' if not bad else 'FAIL', fx, '; '.join(bad)))
+        for x in bad: fails.append('old save %s: %s' % (fx, x))
+    for e in perr: fails.append('chromium console: ' + e)
 
 # 5. Firefox and WebKitGTK (optional): the same suite through WebDriver, one browser after the other
 def ready(d):   # wait until the page has made its test hook (instead of sleeping 0.4 s and hoping)
@@ -270,7 +272,7 @@ def sel_leg(d, name, slow=1):   # slow: patience factor for stage starts and the
     phase(name + ': layout')
     print('[%s] %s' % (stamp(), name)); report(name.split()[0].lower(), res, lay)
 
-if flag('--ff'):   # stock Firefox through Puppeteer over WebDriver BiDi (no geckodriver); tools/qa_bidi.js runs the same in-page suite
+if 'firefox' in LEGS:   # stock Firefox through Puppeteer over WebDriver BiDi (no geckodriver); tools/qa_bidi.js runs the same in-page suite
     _ff = os.environ.get('PD_FF', '')
     if not (os.path.exists(_ff) and shutil.which('node')): print('PD_FF must point at Firefox from the browsers branch, and node with puppeteer-core must be installed (NFM_PUPPETEER or NODE_PATH; see docs/qa-process.md)'); sys.exit(2)
     _job = os.path.join(ROOT, '.qa-bidi-job.json')
@@ -283,8 +285,7 @@ if flag('--ff'):   # stock Firefox through Puppeteer over WebDriver BiDi (no gec
     USED.append(('Firefox %s' % _fv.split('.')[0], 'Firefox %s' % _fv)); phase('Firefox: suite and layout')
     print('[%s] Firefox %s' % (stamp(), _fv)); report('firefox', _o['res'], [tuple(x) for x in _o['lay']])
 
-for _wf, _gnome in (('--wk', False),):   # WebKitGTK's MiniBrowser through WebKitWebDriver (GNOME Web was dropped from testing on 2026-10-24)
-    if not flag(_wf): continue
+for _wf, _gnome in (('--wk', False),) if 'webkit' in LEGS else ():   # WebKitGTK's MiniBrowser through WebKitWebDriver (GNOME Web was dropped from testing on 2026-10-24)
     import signal
     from selenium import webdriver
     from selenium.webdriver.common.options import ArgOptions
