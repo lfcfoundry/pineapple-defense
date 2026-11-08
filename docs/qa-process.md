@@ -81,3 +81,6 @@ Round 36 additions: the prop rate test (about 33% have a prop, 8% two or more) a
 Round 35 additions: outfits (shape, mostly dressed, mecha bare), the progress bar stage label and hidden wave pill, scenery taps on stages 4 and 5 (cloud, duck, balloons), and the rim test (14 flicks: longest hang at most 0.5 s, rim touches, lip-outs). The mecha test now re-parks penguins each try so it no longer depends on a lucky fish.
 
 Round 34 additions: new tests for the Auto Slingshot (tosses at least 2.8 s apart, about 28% miss), mecha penguins (a Gentoo that eats a fish gets 3 hits), the progress bar (segments change per wave, medal lights for the Champion), more fish in wave 4 than in wave 2, no "giggl" anywhere in the page, the Pineapple Roll chase camera (no zoom while balls remain; zoom above 1.3 and slow-mo below 0.5 on the last ball; eases back out) and the roll speed (a strong flick crosses the lane in under 0.7 s). Do not override `Math.random` with a constant in tests: the game has loops that need variation and will spin forever.
+
+## Faster pass/fail gate (2026.11.08)
+`bash tools/qa-par.sh` runs Chromium and Firefox together, then WebKitGTK alone: 93 s instead of 149 s one after another. Pass/fail only; never for timing or A/B. A failure seen only there is rerun alone once before it is called real.
