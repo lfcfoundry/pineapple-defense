@@ -13,6 +13,11 @@ def run(which, url, body, wait_expr='!!window.__pd', fresh=True):
             br = p.chromium.launch(executable_path=os.environ['PD_CHROME'], headless=True, args=['--no-sandbox'])
             pg = br.new_page(viewport={'width': 412, 'height': 915}, device_scale_factor=2, **({'user_agent': os.environ['PD_UA']} if os.environ.get('PD_UA') else {})); pg.goto(url); pg.wait_for_function('() => ' + wait_expr, timeout=60000)
             r = pg.evaluate('(async()=>{' + body + '})()'); ver = 'Chromium ' + br.version; br.close(); return ver, r
+    if which == 'firefox' and not os.environ.get('PD_GECKO'):   # no geckodriver: Firefox through Puppeteer over WebDriver BiDi (tools/gate_bidi.js)
+        import tempfile
+        bf = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False); bf.write(body); bf.close()
+        o = subprocess.run(['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gate_bidi.js'), url, bf.name], capture_output=True, text=True, timeout=300); os.unlink(bf.name)
+        j = json.loads(o.stdout or '{"ver":"Firefox","r":{"error":"%s"}}' % o.stderr[-200:].replace('"', "'").replace('\n', ' ')); return j['ver'], j['r']
     from selenium import webdriver
     d = None; drv = None
     try:
@@ -47,7 +52,7 @@ def run(which, url, body, wait_expr='!!window.__pd', fresh=True):
 BODY = (r"""
 const P=window.__pd;window.__LONG=%s;const cv=document.getElementById('cv');const out={};
 async function gz(u8){const cs=new CompressionStream('gzip');const w=cs.writable.getWriter();w.write(u8);w.close();const b=new Uint8Array(await new Response(cs.readable).arrayBuffer());let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
-const px=()=>cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;
+const px=()=>{const c=P.shot?P.shot():cv;return c.getContext('2d').getImageData(0,0,c.width,c.height).data};   /* the WebGL layer draws on several canvases; __pd.shot() puts them together (it is the plain canvas when WebGL is off) */
 for(const st of [1,2,3,4,5]){await P.go(st,3,true)} await new Promise(r=>setTimeout(r,4000));
 for(const st of [1,2,3,4,5]){let s=777+st;Math.random=function(){s=(s*1664525+1013904223)>>>0;return s/4294967296};
  await P.go(st,3,true);P.step(0.033,0.033,1);const a=px().slice();const ga=await gz(new Uint8Array(a.buffer));P.step(30*0.033,0.033,0);const b=px();const gb=await gz(new Uint8Array(b.buffer));let gc='';if(window.__LONG){P.step(8,0.033,0);const c=px();gc=await gz(new Uint8Array(c.buffer))}out[st]={w:cv.width,h:cv.height,a:ga,b:gb,c:gc}}
