@@ -15,7 +15,7 @@ Words like "new here" mean "not in the Apple Press, Fancy the Banana or JS-modul
 ## 1. What the project is, in one screen
 
 - A single-file, offline, kid-first browser game: flick pineapples at jealous penguins from a fruit stand. Five stages of five waves plus a Champion each, a shop, trophies, a minigame ("Pineapple Roll"), and settings for little hands.
-- Shipped as one self-extracting LZMA-packed `.html` (regular) plus a tester build with a Test Lab. Source lives in `src/` and is assembled by `build.py` into `index.html`; **never hand-edit `index.html`**.
+- Shipped as one self-extracting LZMA-packed `.html` (regular) plus a tester build with a Test Lab. Source lives in `src/` and is assembled by `build.py` into `play/index.html`; **never hand-edit `play/index.html`**.
 - Targets: Chrome on Android, Firefox 158 (the stress test), ungoogled Chromium on Windows. Laptop first, phone second.
 - Look: glossy, round, lit, squishy toy sprites on a 2D canvas. Calm scenery, loud hero. One light, upper left. Warm ink, never black.
 - Kid-safe tone: silly, never cruel. No ads, purchases, accounts, streaks, timers, random prize boxes or leaderboards. Losing is gentle; progress is kept.
@@ -84,7 +84,7 @@ The suite is designed so a full check costs seconds, not minutes of babysitting.
 - **One command:** `python3 -I tools/qa.py [--ff] [--fuzz N] [--force] [--min] [--lab] [--shots DIR]`. Builds, syntax-checks every inline script (fails in under a second on a typo), then runs the in-page suite in Chromium; `--ff` adds Firefox (the stress test).
 - **Fast-forward inside the page.** `#qa` in the URL exposes `window.__pd`. `__pd.step(sec, dt, every)` advances game time with no frames and no screenshots. This is what makes 60+ checks run in about a minute in Chromium and about a minute more in Firefox.
 - **One browser session** runs everything (the old way launched a browser per throwaway script).
-- **A cache** (`.qa-cache`, not committed) skips the whole run when `index.html` and the suite are byte-identical to the last pass. Use `--force` when you changed only the harness or the environment.
+- **A cache** (`.qa-cache`, not committed) skips the whole run when `play/index.html` and the suite are byte-identical to the last pass. Use `--force` when you changed only the harness or the environment.
 - **Layout checks measure rectangles**, not screenshots.
 - **`tools/release.py [--ff --force]`** runs QA, builds the lab and minified pages, re-runs QA on the minified page (it is what ships), packs both, and prunes `dist/` to the newest two versions.
 - **Hooks (`__pd`)** include `go(stage, wave)`, `step`, `flick`, `stap` (scenery tap), `st(key, value)` (set a save field), `rsg`, `rollGear`, `tour`, `center(pg)`, `hp(x, y)`, `holdOn()`, `fpsTxt()`, `sv()`, `S`, `penguins`, `sh`.

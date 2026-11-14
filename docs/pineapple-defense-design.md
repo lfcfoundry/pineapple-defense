@@ -252,7 +252,7 @@ The game reserves slots for hidden areas and hidden enemies, plus unlock rules. 
 - Flick feel and cursor-swipe sensitivity tuning from real phone and touchpad testing.
 
 ## Title screen and logo (alpha 2026.10.12.1556)
-Built and playable in `index.html`. It is made from `src/` by `build.py` (never edit `index.html` by hand).
+Built and playable in `play/index.html`. It is made from `src/` by `build.py` (never edit `play/index.html` by hand).
 - **Scene:** a pineapple and a Rockhopper penguin face each other on a beach-meets-ice shoreline, with a palm tree, a fruit stand, and the silly "BRRR IS BEST!" sign with two cartoon no-pineapple and no-palm posters.
 - **Logo:** sticker-style "Pineapple" lettering with a blue "Defense" pill, flanked by a mini pineapple and a mini Rockhopper. Exported as `assets/logo.png` (transparent).
 - **Characters:** original sprites (`src/sprites/`), glossy toy style, with a lopsided crest on the penguin. Tap or poke them for squish, giggles and "wheee!" or "no thanks!" pops. Their eyes follow the pointer.
@@ -475,6 +475,6 @@ Built and playable in `index.html`. It is made from `src/` by `build.py` (never 
 ### Round 50: slow-CPU test, a blind spot in the quality governor
 - **Method:** the packed tester file in the container's Chromium at 412 x 892 (2.625x), CDP CPU throttle 1x, 4x and 6x, Device check each time. Direction only, not a real phone: the numbers say how the code behaves when slow, not how a Pixel looks.
 - **Found 1:** the Device check called a steady 8 to 15 FPS "Smooth" because it only judged evenness. It now has an absolute floor: a typical frame over 25 ms (40 ms with battery saver on) is **Slow**, and the report line no longer calls the spacing a screen rate when it is that slow.
-- **Found 2:** `QualityGovernor` ignored gaps over 100 ms (meant for tab switches), so a device under about 10 fps was never stepped down and one at 10 to 15 fps with jitter rarely was. `src/vendor/frame-kit/quality-governor.js` is now JS-modules frame-kit 1.1.0 (four long gaps in a row count as a slow device) and the game passes `maxGap: 250` so jittery slow frames are measured too. Result at 4x: quality drops to level 1 of 2 (canvas step 3 of 4) and the frame rate rises (about 12 to 14.5 or more, run to run). At 6x (7.5 fps) it needs 100 slow frames per step, so no drop shows inside the 22 s window; a longer run would.
+- **Found 2:** `QualityGovernor` ignored gaps over 100 ms (meant for tab switches), so a device under about 10 fps was never stepped down and one at 10 to 15 fps with jitter rarely was. the governor (now `src/vendor/fx-governor/fx-governor.js`, from JS-modules) was first JS-modules frame-kit 1.1.0 (four long gaps in a row count as a slow device) and the game passes `maxGap: 250` so jittery slow frames are measured too. Result at 4x: quality drops to level 1 of 2 (canvas step 3 of 4) and the frame rate rises (about 12 to 14.5 or more, run to run). At 6x (7.5 fps) it needs 100 slow frames per step, so no drop shows inside the 22 s window; a longer run would.
 - **Not changed:** `slowFrames` (100) stays; making it smaller would also lower quality on borderline devices that are fine, which is a look decision for the owner.
 

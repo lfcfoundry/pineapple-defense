@@ -1,7 +1,8 @@
 #!/bin/bash
 # Copyright (c) 2026 LFC Foundry. MIT License. Forged by LFC Foundry.
 # Session-start hook: installs the four standing test browsers (copy of tools/boot-browsers.sh in lfcfoundry/knowledge-base). Runs only in cloud sessions.
-[ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
+[ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || ( [ -f "$CLAUDE_PROJECT_DIR/tools/warm-browsers.sh" ] && nohup bash "$CLAUDE_PROJECT_DIR/tools/warm-browsers.sh" >/dev/null 2>&1 & ) || true   # first launch per fresh container costs 5-15 s; do it in the background now
+exit 0
 #
 # One command that gets a fresh Linux x86_64 machine ready to test in the four standing browsers (Firefox 158.0, ungoogled-chromium 155.0.8059.39-1,
 # WebKitGTK 2.52.6, GNOME Web 46.5) and writes ~/.lfc-browsers.env with the paths the tests read. Safe to run again: it skips what is already there.
@@ -23,7 +24,7 @@ else
 fi
 
 CHROME=$(ls -d "$DEST"/ungoogled-chromium-*/chrome 2>/dev/null | head -1)
-if [ -z "$CHROME" ] || [ ! -x "$DEST/firefox/firefox" ] || [ ! -x /usr/bin/epiphany ]; then
+if [ -z "$CHROME" ] || [ ! -x "$DEST/firefox/firefox" ]; then
   sh "$KB/install.sh" "$DEST" >&2 || say "install.sh reported a problem; see above"
 fi
 
@@ -40,5 +41,6 @@ export NFM_PLAYWRIGHT=/tmp/pw/node_modules/playwright-core
 export NFM_PUPPETEER=/tmp/pptr/node_modules/puppeteer-core
 export FIREFOX=$DEST/firefox/firefox
 EOT
-say "ready. Chromium: ${CHROME:-missing}; Firefox: $([ -x "$DEST/firefox/firefox" ] && echo ok || echo missing); GNOME Web: $([ -x /usr/bin/epiphany ] && echo ok || echo missing); settings in $ENVF"
+say "ready. Chromium: ${CHROME:-missing}; Firefox: $([ -x "$DEST/firefox/firefox" ] && echo ok || echo missing); settings in $ENVF"
+( [ -f "$CLAUDE_PROJECT_DIR/tools/warm-browsers.sh" ] && nohup bash "$CLAUDE_PROJECT_DIR/tools/warm-browsers.sh" >/dev/null 2>&1 & ) || true   # first launch per fresh container costs 5-15 s; do it in the background now
 exit 0

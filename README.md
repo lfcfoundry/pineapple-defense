@@ -1,10 +1,36 @@
-<p align="center"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
+<div align="center">
 
-<p align="center"><b>Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.</b></p>
+# Pineapple Defense
 
-<p align="center">
-<a href="https://lfcfoundry.github.io/pineapple-defense/"><b>▶ Play it now</b></a> · free · one small file · works offline · no ads · no tracking
-</p>
+**Flick pineapples at jealous penguins. Defend your fruit stand. Nobody gets hurt.**
+
+[**Play it now**](https://lfcfoundry.github.io/pineapple-defense/) · [**About**](https://lfcfoundry.github.io/pineapple-defense/) · [**Source code**](https://github.com/lfcfoundry/pineapple-defense)
+
+![alpha](https://img.shields.io/badge/alpha-informational) ![MIT](https://img.shields.io/badge/MIT-informational) ![free](https://img.shields.io/badge/free-informational) ![no ads, no tracking](https://img.shields.io/badge/no%20ads%20no%20tracking-informational) ![works offline](https://img.shields.io/badge/works%20offline-informational)
+
+</div>
+
+<p align="left"><img src="assets/logo.png" alt="Pineapple Defense" width="560"></p>
+
+## What it is and how it works
+
+A silly, glossy toy-box game for kids of all ages. Penguins march toward your fruit stand and you flick a pineapple from the bottom of the screen: the direction picks the target area, the speed sets the power. It is one self-contained HTML file with no network calls, and it works on phones, tablets and computers.
+
+## Why it exists
+
+LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set, made for kids first: no ads, purchases, accounts, streaks, timers or leaderboards, and losing is gentle.
+
+## Made for kids, kept simple
+
+- **No ads.** Not one, anywhere in the game.
+- **No accounts.** Nothing to sign up for or log in to.
+- **No data sent anywhere.** The game makes no network calls, and progress stays in your own browser.
+- **No microtransactions.** Golden Pineapples are earned by playing and nothing is for sale.
+- **Fully open source.** MIT licensed, with every line on GitHub.
+- **Nothing to install.** No install, no administrator rights and no special computing knowledge: open the page and tap Play.
+- **Works offline.** The game is one self-contained file with no network calls, so once the page has loaded (or you have saved it) you can play with no connection.
+- **Single player.** Just you and the penguins: no online play, no chat, nobody else to meet.
+- **Works in any modern browser.** Tested in Chromium, Firefox and WebKitGTK, on phones, tablets and computers of most standard screen sizes.
 
 <p align="center">
 <img src="docs/img/title.jpg" alt="Title screen" width="170">
@@ -13,17 +39,25 @@
 <img src="docs/img/stage5.jpg" alt="Glacier Party Fortress" width="170">
 </p>
 
-## What it is and how it works
+## Highlights
 
-A silly, glossy toy-box game for kids of all ages. The penguins are jealous of your tropical fruit and march down the ice toward your stand. You flick a pineapple from the bottom of the screen: the direction of the flick picks the target area, its speed sets the power, and a gentle snap pulls the shot toward the nearest penguin. Bonk them, chain combos, collect trophies, and beat a different Champion at the end of every stage. It works on phones, tablets and computers, in any modern browser.
-
-It is one self-contained HTML file with no runtime dependencies and no network calls. The glossy toy look is drawn on a 2D canvas from sprites scaled by depth, progress is saved in your browser, and players get a smaller self-unpacking copy of the same page.
+| Five stages, five Champions | Pineapple Roll | 21 trophies | Comfortable settings |
+|---|---|---|---|
+| Each Champion fights differently, and a hint tells you how to win. | A carnival bonus game after stage 4, with holes that score more the harder they are. | Trophies pay Golden Pineapples to spend in the Shop. | Left-handed layout, calm mode, larger text, high contrast and a battery saver. |
 
 > **Status:** alpha (see the [changelog](CHANGELOG.md) for the current version). All five stages, five Champions, the Pineapple Roll bonus game and a shop are playable. The art is still being polished.
 
-## Why it exists
+**New here?** The first time you open the game, a short picture tour shows how to play. You can skip it, and replay it any time from **How to play**.
 
-LFC Foundry is a home for free, open source games and apps that each live in a single file. Pineapple Defense is the flicking game in that set: made for kids first, with silly fun and no cruelty, so there are no ads, purchases, accounts, streaks, timers, prize boxes or leaderboards, and losing is gentle. It is also a working test of the shared [JS-modules](https://github.com/lfcfoundry/JS-modules) pieces in a real game.
+## By the numbers
+
+| One file | Start-up | Next stage | Tested in |
+|---|---|---|---|
+| 2.4 MB with all art and code, no network calls | 113 ms to a finished start (Chromium, median of 9) | 6.1 ms of page code to start stages 2 to 5 | Chromium, Firefox and WebKitGTK |
+
+Silent by design: with no sound, the game is a visual and tactile experience with less stimulation for players with sensory challenges, and you can play anywhere with nothing to mute.
+
+See the [about page](https://lfcfoundry.github.io/pineapple-defense/) for screenshots, the stages and the upgrades.
 
 ## How to play
 
@@ -43,7 +77,8 @@ A short picture tour shows the first time you open the game (you can skip it, an
 - Tap the **pickups** that appear on your table, and the little **surprises** hiding in the scenery (a talking cloud, a duck, a whale, balloons you can pop). Each stage also hides one secret tap spot on each side.
 - After stage 4 you can play **Pineapple Roll**, a carnival bonus game: flick a ball up the lane into the holes. The harder holes score more, and a ball that rattles around a rim can still drop in. You get two plays per run, and what you win becomes Golden Pineapples.
 - **Runs:** clearing all five stages is a run. Each finished run makes penguins and Champions 10% faster (up to double speed) and brings a new challenge and more trophies.
-- **Settings** (title screen): game speed (100% down to 60%), left-handed layout, aim help, the dotted aim arc, high contrast, larger text, large buttons, a calm mode that turns off bobbing, confetti and other motion, a battery saver, an FPS counter with a plain-words verdict, tap or hold to throw (for very young players), an early flick helper, a one-tap Little hands setup, four game-feel options (hit pause, screen shake, sticky aim, smoother flick speed), every finger plays, a danger glow for penguins near your stand (on by default), a For grown-ups card, keep screen on and full screen. A new game asks once whether you want to Flick or Tap. On Android the back swipe pauses the game. A second copy opened in another tab plays without saving, so two tabs never overwrite each other.
+- **Settings** (title screen): game speed (100% down to 60%), left-handed layout, the dotted aim arc, high contrast, larger text, large buttons, a calm mode that turns off bobbing, confetti and other motion, a battery saver, an FPS counter with a plain-words verdict, tap or hold to throw (for very young players), an early flick helper, a one-tap Little hands setup, four game-feel options (hit pause, screen shake, sticky aim, smoother flick speed), every finger plays, a danger glow for penguins near your stand (on by default), a For grown-ups card, keep screen on and full screen. A new game asks once whether you want to Flick or Tap. On Android the back swipe pauses the game. A second copy opened in another tab plays without saving, so two tabs never overwrite each other.
+- **Game feeling slow or stuck?** Tap the top-left corner of the title screen five times to open a small panel that saves a plain-text speed report or an error log you can send to the makers. Nothing is sent anywhere by the game itself.
 - Keys on a keyboard: **P** or **Esc** pauses, **R** calls the Pineapple Rain, **1** and **2** pick the pineapple.
 
 ## The five stages
@@ -101,12 +136,15 @@ Trophies pay Golden Pineapples. They show as a gold icon when you have them and 
 
 Everything is one self-contained HTML file built from `src/`. There are no runtime dependencies, no network calls and a strict content security policy.
 
-- Design brief: [docs/pineapple-defense-design.md](docs/pineapple-defense-design.md) · QA and build process: [docs/qa-process.md](docs/qa-process.md) · ideas and performance audits: [docs/ideas-qol-and-performance.md](docs/ideas-qol-and-performance.md) · [changelog](CHANGELOG.md)
-- Build: `python3 build.py` makes the single-file `index.html` from `src/` (needs `fonttools`). Do not edit `index.html` by hand.
+- Developer changelog (Quick, Details, Deep per version): [CHANGELOG-DEV.md](CHANGELOG-DEV.md) · Design brief: [docs/pineapple-defense-design.md](docs/pineapple-defense-design.md) · QA and build process: [docs/qa-process.md](docs/qa-process.md) · ideas and performance audits: [docs/ideas-qol-and-performance.md](docs/ideas-qol-and-performance.md) · [changelog](CHANGELOG.md)
+- Build: `python3 build.py` makes the single-file `play/index.html` from `src/` (needs `fonttools`; `npm i --no-save esbuild` for the minified page, which starts about 20% faster; the readable copy lands in `dist/readable/`, or set `PD_READABLE=1`). Do not edit `play/index.html` by hand.
 - Packed single file: `python3 tools/pack.py` makes one smaller, self-unpacking `.html` in `dist/`; add `--min` to pack the minified page (`python3 build.py --min` first, needs `esbuild`).
 - Icons: `python3 -I tools/make_icons.py` regenerates `src/sprites/icons.svg` and the standalone files in `docs/icons/`.
+- Speed guard: `node tools/speed_guard.js <chromium|firefox|webkit> before.html after.html` takes turns between two builds in one test browser and prints start-up times with the 5% verdict (needs `npm i --no-save puppeteer-core`; see the file header).
+- Picture gate: `python3 -I tools/picture_gate.py before.html after.html` compares two builds in the three test browsers in about 60 seconds (99.5% of pixels within 3 of 255; needs numpy). Use it for look-only changes; the full run below stays the release gate.
+- Pictures and speed: the 77 pre-drawn sprites are lossy WebP data inside the page (no color profile, 2.6 MB page); Chromium decodes them in background workers, and the 384 pixel copies are let go on phone-sized screens. The speed report panel comes from the vendored `field-report` module and the quality governor from `fx-governor` (both from JS-modules, see `src/vendor/`).
 - Checks: `python3 -I tools/qa.py` (add `--ff` for Firefox). Release: `python3 -I tools/release.py`.
-- Test browsers: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 / GNOME Web 46.5, one at a time. WebKitGTK was added to the rule on 2026-10-17; release 2026.10.17.0716 is the first one tested in it. The changelog lists what each release was tested in, and says "not recorded" where that was not noted. Targets: Android Chrome, Firefox and Chromium-based desktop browsers.
+- Test browsers: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6, one at a time. GNOME Web was a fourth test browser until 2026-10-24 and is no longer used. The changelog lists what each release was tested in, and says "not recorded" where that was not noted. Targets: Android Chrome, Firefox and Chromium-based desktop browsers.
 
 ## More from LFC Foundry
 

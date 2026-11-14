@@ -5,6 +5,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; worker-src blob:; img-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<script>/*{{FIELDREPORT}}*/</script>
+<script>var FR = FieldReport.start({ name: 'pineapple-defense', version: '{{VERSION}}', frames: 'play' });</script>
 <meta name="color-scheme" content="only light">
 <meta name="theme-color" content="#b5d6e8">
 <meta name="description" content="Pineapple Defense: flick pineapples at silly, jealous penguins. A free game for kids of all ages.">
@@ -26,7 +28,8 @@ html{--w1:#8fc3e0;--w2:#cfe6ec;--w3:#f1e2b8;--wash:linear-gradient(180deg,var(--
 @media (min-aspect-ratio:1/1){html{--wash:radial-gradient(120% 90% at 50% 40%,var(--w2) 0,var(--w1) 100%)}}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--wash,#23203f);overscroll-behavior:none;font-family:var(--body);color:var(--fg);touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body{height:100dvh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);display:flex;align-items:center;justify-content:center}
-#stage{position:relative;flex:none;width:360px;height:640px;container-type:size;overflow:hidden;border-radius:14px;background:#cfe6ec;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 60px rgba(0,0,0,.5)}
+#stage{position:relative;flex:none;width:360px;height:640px;container-type:size;overflow:hidden;border-radius:14px;background:#cfe6ec;outline:1px solid rgba(255,255,255,.08)}
+body{background:var(--shade,none) 0 0/100% 100% no-repeat,var(--wash,#23203f)}   /* the page wash stays on the body too: the tester's colour views filter the body only */
 .title{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,var(--sky-top) 0%,#cfe6ec 50%,var(--sky-bot) 80%)}
 .scene{position:absolute;inset:0;overflow:hidden;border-radius:14px}
 .title::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:6;background:radial-gradient(ellipse at 50% 55%,transparent 62%,rgba(42,18,13,.2) 100%)}
@@ -94,11 +97,12 @@ body{height:100dvh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-righ
 .btn[disabled]{opacity:.55;filter:saturate(.5);cursor:default}
 .btn[disabled]:active{transform:none}
 .btn-play{font-size:clamp(1.5rem,5cqmin,2.3rem);min-height:4.75rem;padding:.5em 1.9em .58em;color:#fff;letter-spacing:.06em;background:linear-gradient(180deg,#62c981,#2c8a49);box-shadow:0 .16em 0 #1b5c32,0 .4em .6em rgba(0,0,0,.25),inset 0 .1em 0 rgba(255,255,255,.35);text-shadow:0 .06em 0 rgba(0,0,0,.28)}
-.sun::before{content:"";position:absolute;inset:-150%;border-radius:50%;background:repeating-conic-gradient(rgba(255,244,190,.5) 0 6deg,transparent 6deg 20deg);-webkit-mask:radial-gradient(circle,#000 6%,transparent 66%);mask:radial-gradient(circle,#000 6%,transparent 66%);animation:spin 80s linear infinite;pointer-events:none;z-index:-1}
-.shim{position:absolute;left:0;right:0;bottom:calc(var(--floor-h) + 1.3cqh);height:2.4cqh;pointer-events:none;opacity:.9;background:radial-gradient(ellipse 4cqw .35cqh at 6cqw 35%,rgba(255,255,255,.95),transparent),radial-gradient(ellipse 3cqw .3cqh at 17cqw 70%,rgba(255,255,255,.8),transparent),radial-gradient(ellipse 2.4cqw .28cqh at 11cqw 8%,rgba(255,255,255,.7),transparent);background-size:23cqw 100%;animation:shim 16s linear infinite}
-@keyframes shim{to{background-position:-23cqw 0}}
+.sun>.rays{display:block;position:absolute;inset:-150%;border-radius:50%;background:repeating-conic-gradient(rgba(255,244,190,.5) 0 6deg,transparent 6deg 20deg);-webkit-mask:radial-gradient(circle,#000 6%,transparent 66%);mask:radial-gradient(circle,#000 6%,transparent 66%);animation:spin 80s linear infinite;pointer-events:none;z-index:-1}
+.shim{position:absolute;left:0;right:0;bottom:calc(var(--floor-h) + 1.3cqh);height:2.4cqh;pointer-events:none;opacity:.9;overflow:hidden}
+.shim:before{content:"";position:absolute;top:0;bottom:0;left:0;width:calc(100% + 23cqw);background:radial-gradient(ellipse 4cqw .35cqh at 6cqw 35%,rgba(255,255,255,.95),transparent),radial-gradient(ellipse 3cqw .3cqh at 17cqw 70%,rgba(255,255,255,.8),transparent),radial-gradient(ellipse 2.4cqw .28cqh at 11cqw 8%,rgba(255,255,255,.7),transparent);background-size:23cqw 100%;animation:shimT 16s linear infinite}
+@keyframes shimT{to{transform:translateX(-23cqw)}}
 .btn-play{position:relative;overflow:hidden}.btn-play::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-40%;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:sweep 5s ease-in-out infinite;pointer-events:none}
-@keyframes sweep{0%,62%{left:-40%}100%{left:130%}}
+@keyframes sweep{0%,62%{transform:translateX(0) skew(-20deg)}to{transform:translateX(607.142857%) skew(-20deg)}}
 .btn-play:active{box-shadow:0 .04em 0 #1b5c32,0 .2em .4em rgba(0,0,0,.25),inset 0 .1em 0 rgba(255,255,255,.35)}
 .dot{width:.7em;height:.7em;border-radius:50%;background:#b9c4c8;box-shadow:inset 0 .1em .15em rgba(0,0,0,.25)}
 #bCalm[aria-pressed="true"] .dot{background:#3fbf68;box-shadow:0 0 .5em #7ee89c}
@@ -161,7 +165,7 @@ html[data-hc="1"] .prog{box-shadow:0 0 0 2.5px #1c0f06}html[data-hc="1"] .prog .
 .banner{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:4;font:800 clamp(2.4rem,9cqmin,5rem)/1 var(--display);pointer-events:none;--st-fill:linear-gradient(180deg,#fff2a8 0%,#f8bd1c 46%,#b3600a 100%);--st-edge:#7a3a05}
 .banner.ml{font-size:clamp(1.7rem,6.6cqmin,3.6rem);text-align:center;white-space:pre}
 .banner[hidden],.hint[hidden]{display:none}
-.fps{position:absolute;right:max(6px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:3;pointer-events:none;padding:.25em .6em;background:rgba(40,24,8,.72);color:#fff;font:700 11px/1.25 ui-monospace,Consolas,monospace;white-space:pre;text-align:right;border-radius:10px;font-variant-numeric:tabular-nums}
+.fps{position:absolute;right:max(6px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 2.2rem + .9rem);z-index:3;pointer-events:none;padding:.25em .6em;background:rgba(40,24,8,.72);color:#fff;font:700 11px/1.25 ui-monospace,Consolas,monospace;white-space:pre;text-align:right;border-radius:10px;font-variant-numeric:tabular-nums}
 html[data-lh="1"] .fps{right:auto;left:max(6px,env(safe-area-inset-left))}
 .hint{position:absolute;left:50%;bottom:36cqh;transform:translateX(-50%);z-index:3;pointer-events:none;width:max-content;display:flex;align-items:center;gap:.6rem;padding:.55em 1.1em;border-radius:999px;background:rgba(255,247,227,.94);font:800 clamp(1rem,3.4cqmin,1.4rem)/1.1 var(--display);color:#4a2b0f;box-shadow:0 .16em 0 #b79a63,0 .35em .5em rgba(0,0,0,.18);animation:nudge 1.6s ease-in-out infinite;text-align:center;max-width:92cqw}
 .hint svg{width:2em;height:2em;flex:none}
@@ -192,9 +196,11 @@ html[data-land="1"] .cbox{zoom:var(--cz);width:calc(min(560px,var(--side)*1.7)/v
 html[data-land="1"] .card{max-height:calc((var(--ah) - 28px)/var(--cz))}
 html[data-land="1"] .xbtn{width:3.4rem;height:3.4rem}html[data-land="1"] .card .sb{min-height:max(34px,2.4rem)}
 /* soft plate behind the two HUD counter rows (portrait play; sideways and the bonus game keep bare pills; no blur, so nothing is re-filtered every frame) */
-html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{background:rgba(255,247,227,.5);border-radius:1rem;padding:.3rem .5rem;margin-inline:.3rem;box-shadow:0 .12em 0 rgba(183,154,99,.5)}
-html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow+.hrow{align-self:flex-start}
-html[data-lh="1"]:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow+.hrow{align-self:flex-end}
+.topbar{display:flex;align-items:center;gap:.4rem}.topbar .prog{flex:1;min-width:0}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud{gap:.25rem}html:not([data-land="1"]) .game:not([data-bonus]) .topbar{margin-inline:.3rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog{height:1.15rem;margin-bottom:0}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog .seg{height:.46rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .prog svg{display:none}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pause{width:max(44px,2.75rem);height:max(44px,2.75rem)}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{background:rgba(255,247,227,.5);border-radius:1rem;padding:.2rem .35rem;margin-inline:.3rem;box-shadow:0 .12em 0 rgba(183,154,99,.5);flex-wrap:wrap;gap:.35rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill{min-height:1.9rem;font-size:.82rem;padding:.15em .6em}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill small{font-size:.62rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill b{font-size:.9rem}html:not([data-land="1"]) .game:not([data-bonus]) .hud .pill svg{width:1.2rem;height:1.2rem}
+html:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{align-self:flex-start}
+html[data-lh="1"]:not([data-land="1"]) .game:not([data-bonus]) .hud .hrow{align-self:flex-end}
 /* Roomy letters (setting ro): wider letter and word spacing and taller lines in cards and menus */
 html[data-ro="1"] .card *:not(svg):not(path):not(h2):not(h3),html[data-ro="1"] .menu .btn{letter-spacing:.04em;word-spacing:.16em}
 html[data-ro="1"] .card :is(p,li,span,div,small,i){line-height:1.55}
@@ -234,8 +240,7 @@ html[data-calm="1"] .th,html[data-calm="1"] .tf,html[data-calm="1"] .tb,html[dat
 .ti[data-got="0"] svg{filter:grayscale(1);opacity:.45}.ti.sh svg{width:2.2rem;height:2.2rem;filter:none!important;opacity:1!important}.ti[data-got="0"] b{color:#7b6a55}
 .ti.sh[data-got="0"] b{color:#4a2b0f}.sh{gap:.6em}.sh>span{flex:1}.card .sb{margin:0;flex:none;font-size:.85rem;min-height:max(48px,2.7rem);padding:.4em .9em .48em}
 .card .note{margin:.2rem 0 .3rem;font:700 .9rem/1.2 var(--body)}
-html[data-dlg] .title *,html[data-dlg] .title *::before,html[data-dlg] .title *::after{animation-play-state:paused!important}
-.sun::before{content:"";position:absolute;inset:-85%;border-radius:50%;background:repeating-conic-gradient(rgba(255,238,170,.42) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 66%);mask:radial-gradient(circle,#000 28%,transparent 66%);animation:spin 46s linear infinite;z-index:-1}
+.sun>.rays{display:block;position:absolute;inset:-85%;border-radius:50%;background:repeating-conic-gradient(rgba(255,238,170,.42) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 66%);mask:radial-gradient(circle,#000 28%,transparent 66%);animation:spin 46s linear infinite;z-index:-1}
 .gull{position:absolute;left:-14cqw;width:11cqw;z-index:1;pointer-events:none;animation:glide 30s linear infinite}.gull svg{width:100%;display:block;overflow:visible}.gull path{fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;animation:flapw .55s ease-in-out infinite alternate}
 .g1{top:11cqh}.g2{top:17cqh;width:8cqw;animation-duration:42s;animation-delay:-16s}.g2 path{animation-duration:.7s}.g3{top:8cqh;width:7cqw;animation-duration:55s;animation-delay:-38s}
 .flake,.ember{position:absolute;top:0;border-radius:50%;pointer-events:none;z-index:1;animation:fall 11s linear infinite}
@@ -252,7 +257,7 @@ html[data-dlg] .title *,html[data-dlg] .title *::before,html[data-dlg] .title *:
 @keyframes swayp{from{transform:rotate(-1.8deg)}to{transform:rotate(2.2deg)}}
 @keyframes bbflip{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0)}}
 
-html[data-lh="1"] .hrow{flex-direction:row-reverse}html[data-lh="1"] .pause{margin-left:0;margin-right:auto}
+html[data-lh="1"] .hrow,html[data-lh="1"] .topbar{flex-direction:row-reverse}html[data-lh="1"] .pause{margin-left:0;margin-right:auto}
 html[data-lh="1"] .cheer{right:auto;left:6px}html[data-lh="1"] .bossbar{left:auto!important;right:6px!important}
 html[data-lh="1"] .raid{right:auto;left:3px}html[data-lh="1"] .picks{left:auto;right:max(12px,env(safe-area-inset-right))}
 html[data-hc="1"] .pill,html[data-hc="1"] .pause,html[data-hc="1"] .pick{box-shadow:0 0 0 2.5px #1c0f06,0 .3em .45em rgba(0,0,0,.3)}html[data-hc="1"] .pill{color:#000}html[data-hc="1"] .pill small{color:#2a1a08}
@@ -276,6 +281,22 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 .holdbtn{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;background:linear-gradient(180deg,#f7ddd2,#e2b3a3)!important;color:#5a1f12}.holdbtn.holding{outline:.3rem solid rgba(229,178,75,.9);outline-offset:.1rem}
 .holdbar{height:.7rem;border-radius:.4rem;background:#eadfc8;margin:.9rem 1rem .2rem;overflow:hidden}.holdbar i{display:block;height:100%;width:0;background:#e5b24b}.holdnote{margin:.2rem 0 0;font:600 .8rem/1.25 var(--body);color:#6b5a45}
 .demo{position:absolute;left:50%;transform:translateX(-50%);top:15cqh;z-index:5;display:flex;align-items:center;gap:.6rem;padding:.3rem .4rem .3rem .9rem;border-radius:999px;background:rgba(255,247,227,.96);box-shadow:0 .14em 0 #b79a63,0 .3em .45em rgba(0,0,0,.2);font:800 .9rem var(--display);color:#4a2b0f;white-space:nowrap}.demo[hidden]{display:none}.demo .btn{margin:0;font-size:.8rem;min-height:2.1rem;padding:.3em .8em}
+/* HUD lift without box-shadow (Firefox repaints box-shadows over the moving scene every frame): pills and progress bar: tan edge on a layer behind, the cream fill on a layer above it. Owner pick 2026-10-31: hard edge only, no soft glow. */
+html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{isolation:isolate;background:none;box-shadow:none}
+html:not([data-hc="1"]) .hud .pill,html:not([data-hc="1"]) .hud .prog{position:relative}
+html:not([data-hc="1"]) .hud .pill::before,html:not([data-hc="1"]) .hud .prog::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
+html:not([data-hc="1"]) .hud .pill::after,html:not([data-hc="1"]) .hud .prog::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(rgba(255,255,255,.7),rgba(255,255,255,.7)) 0 0/100% .1em no-repeat,linear-gradient(180deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
+html:not([data-hc="1"]) .hud .pause{box-shadow:0 .2em 0 #b79a63,inset 0 .12em 0 rgba(255,255,255,.7)}
+html:not([data-hc="1"]) .cheer,html:not([data-hc="1"]) .bossbar{isolation:isolate;background:none;box-shadow:none}
+html:not([data-hc="1"]) .cheer::before,html:not([data-hc="1"]) .bossbar::before{content:"";position:absolute;inset:0;top:.14em;bottom:-.14em;border-radius:inherit;background:#b79a63;z-index:-2;pointer-events:none}
+html:not([data-hc="1"]) .cheer::after,html:not([data-hc="1"]) .bossbar::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(rgba(255,255,255,.7),rgba(255,255,255,.7)) 0 0/100% .1em no-repeat,linear-gradient(90deg,#fffaf0,#f3e6c8);z-index:-1;pointer-events:none}
+/* Firefox repaints every box-shadow over the moving scene on every frame: the remaining ones are flat edges now, the bars' inner shading is a gradient, and the counters row is drawn on the canvas (see drawHudRow in game.js) */
+html:not([data-hc="1"]) .hud .hrow,html:not([data-hc="1"]) .pause,html:not([data-hc="1"]) .pick,html:not([data-hc="1"]) .stg,html:not([data-hc="1"]) .cost,html:not([data-hc="1"]) .raid{box-shadow:none!important}
+html:not([data-hc="1"]) .prog .seg{box-shadow:none;background:linear-gradient(rgba(90,60,20,.4),rgba(90,60,20,0) .22em),rgba(122,90,50,.24)}
+html:not([data-hc="1"]) .prog .seg[data-now="1"]{box-shadow:none;outline:.13rem solid #ffd23f}
+html:not([data-hc="1"]) .bar{box-shadow:none;background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,0) 3px),#e2d6b6}
+html:not([data-hc="1"])[data-chud="1"] .hud .hrow{opacity:0}
+html:not([data-hc="1"])[data-cbar="1"] .prog,html:not([data-hc="1"])[data-cbar="1"] .cheer{opacity:0}
 </style>
 </head>
 <body>
@@ -284,7 +305,7 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <div id="stage">
 <main class="title" id="title">
 <div class="scene">
-<div class="sun" aria-hidden="true"></div>
+<div class="sun" aria-hidden="true"><i class="rays"></i></div>
 <svg class="cloud c1" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
 <svg class="cloud c2" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
 <svg class="cloud c3" viewBox="0 0 120 50" aria-hidden="true"><ellipse cx="60" cy="38" rx="52" ry="10" fill="#fff"/><circle cx="42" cy="28" r="16" fill="#fff"/><circle cx="68" cy="24" r="20" fill="#fff"/><circle cx="92" cy="32" r="12" fill="#fff"/></svg>
@@ -359,9 +380,8 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <section class="game" id="game" hidden aria-label="Stage 1, Sandy Snack Shore"><span id="bcGuard" hidden></span>
 <canvas id="cv" aria-hidden="true"></canvas>
 <div class="hud">
-<div class="prog" id="prog" role="img" aria-label="Stage progress"><b class="stg" id="progStg">S1</b><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-medal"/></svg></div>
-<div class="hrow"><span class="pill" id="waveBox"><span id="waveTxt">Wave 1 / 8</span></span><span class="pill sm" id="leftPill" title="Penguins left"><small>Left</small><b id="leftTxt">0</b></span><span class="pill sm" id="comboPill" title="Hits in a row"><small>Combo</small><b id="comboTxt">0</b></span><button class="pause" id="bPause" type="button" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-pause"/></svg></button></div>
-<div class="hrow"><span class="pill sm" id="credPill" title="Credits you have won this roll" hidden><small>Won</small><b id="goldTxt">0</b></span><span class="pill sm" title="Your Golden Pineapples"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#lp-art"/></svg><b id="bankTxt">0</b></span><span class="pill sm" title="Trophies collected"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-trophy"/></svg><b id="cupsTxt">0/10</b></span></div>
+<div class="topbar"><div class="prog" id="prog" role="img" aria-label="Stage progress"><b class="stg" id="progStg">S1</b><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-medal"/></svg></div><button class="pause" id="bPause" type="button" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-pause"/></svg></button></div>
+<div class="hrow"><span class="pill" id="waveBox"><span id="waveTxt">Wave 1 / 8</span></span><span class="pill sm" id="leftPill" title="Penguins left"><small>Left</small><b id="leftTxt">0</b></span><span class="pill sm" id="comboPill" title="Hits in a row"><small>Combo</small><b id="comboTxt">0</b></span><span class="pill sm" id="credPill" title="Credits you have won this roll" hidden><small>Won</small><b id="goldTxt">0</b></span><span class="pill sm" title="Your Golden Pineapples"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#lp-art"/></svg><b id="bankTxt">0</b></span><span class="pill sm" title="Trophies collected"><svg viewBox="0 0 40 40" aria-hidden="true"><use href="#ic-trophy"/></svg><b id="cupsTxt">0/10</b></span></div>
 </div>
 <div class="cheer" role="img" aria-label="Stand cheer"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#ic-heart"/></svg><div class="bar" data-low="0"><i id="cheerFill"></i></div></div>
 <button class="raid" id="bRaid" type="button" hidden aria-label="Pineapple Rain: pineapples fall across the lane (R)"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#ic-raid"/></svg><b id="raidN">0</b></button>
@@ -422,10 +442,9 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 </template>
 <template id="t-set">
 <h3 class="cm">Play your way</h3>
-<button class="so" id="cmLittle" type="button"><span><b>Little hands setup</b><small>One tap sets tap or hold to throw, large buttons, larger text, the early flick helper and the most forgiving aim help. Game speed is left alone, so no trophy changes. Tap again to undo.</small></span><i class="st"></i></button>
+<button class="so" id="cmLittle" type="button"><span><b>Little hands setup</b><small>One tap sets tap or hold to throw, large buttons, larger text, the early flick helper. Game speed is left alone, so no trophy changes. Tap again to undo.</small></span><i class="st"></i></button>
 <button class="so" id="cmSp" type="button"><span><b>Game speed</b><small>Slower is gentler: everything moves a little slower. Faster Fun and Top Speed trophies need 100%.</small></span><i class="st"></i></button>
 <button class="so" id="cmLh" type="button"><span><b>Left-handed layout</b><small>The pineapple and Rain buttons move to the other side.</small></span><i class="st"></i></button>
-<button class="so" id="cmAim" type="button"><span><b>Aim help</b><small>How forgiving a flick is: Generous, Normal or Off.</small></span><i class="st"></i></button>
 <button class="so" id="cmArc" type="button"><span><b>Aim dots</b><small>A dotted line shows where your flick will go.</small></span><i class="st"></i></button>
 <button class="so" id="cmHc" type="button"><span><b>High contrast</b><small>Thick outlines and plainer colors.</small></span><i class="st"></i></button>
 <button class="so" id="cmLt" type="button"><span><b>Larger text</b><small>Bigger words in the game and in menus.</small></span><i class="st"></i></button>
@@ -438,7 +457,6 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <h3 class="cm">Game feel (try them)</h3>
 <button class="so" id="cmHs" type="button"><span><b>Hit pause</b><small>When you hit a penguin, only that penguin freezes for a blink, so hits feel chunkier. The game itself never stops. Off in Calm mode.</small></span><i class="st"></i></button>
 <button class="so" id="cmSk" type="button"><span><b>Screen shake</b><small>How much the screen shakes on big combos: Off, Low, Normal or Strong. Strong also shakes a little on every hit and a lot on a Champion hit. Off in Calm mode.</small></span><i class="st"></i></button>
-<button class="so" id="cmSa" type="button"><span><b>Sticky aim</b><small>Your last target stays picked for a moment, so a penguin next to it does not steal your throw. Needs Aim help on.</small></span><i class="st"></i></button>
 <button class="so" id="cmCp" type="button"><span><b>Smoother flick speed</b><small>Uses every small finger movement your device reports, so the speed of a flick is measured more exactly.</small></span><i class="st"></i></button>
 <button class="so" id="cmEf" type="button"><span><b>Every finger plays</b><small>A second finger can throw even while another finger rests on the screen. Off keeps the first finger in charge.</small></span><i class="st"></i></button>
 <button class="so" id="cmDg" type="button"><span><b>Danger glow</b><small>A penguin close to your stand gets a red ring and a warning sign, and the ground in front of the stand glows. Calm keeps it still.</small></span><i class="st"></i></button>
@@ -480,12 +498,13 @@ html[data-big="1"] .pick{height:2.9rem;min-width:7.8rem;font-size:1rem}html[data
 <script>/*{{WAKEKEEPER}}*/</script>
 <script>/*{{TABGUARD}}*/</script>
 <script>/*{{SAVEKIT}}*/</script>
-<script>/*{{SLOWNOTE}}*/</script>
 <script>
 (function(){
 'use strict';
 var root=document.documentElement,title=document.getElementById('title');
-function fit(){var cs=getComputedStyle(document.body),pl=parseFloat(cs.paddingLeft)||0,pr=parseFloat(cs.paddingRight)||0,pt=parseFloat(cs.paddingTop)||0,pb=parseFloat(cs.paddingBottom)||0,aw=Math.max(120,innerWidth-pl-pr),ah=Math.max(120,innerHeight-pt-pb),u=Math.min(aw/360,ah/640),st=document.getElementById('stage');st.style.width=Math.floor(360*u)+'px';st.style.height=Math.floor(640*u)+'px';root.style.fontSize=(16*u).toFixed(2)+'px';var sw=Math.floor(360*u),side=Math.floor((aw-sw)/2),land=aw>=ah*1.4&&ah<=540&&side>=130;root.setAttribute('data-land',land?'1':'0');root.style.setProperty('--side',(land?side:0)+'px');root.style.setProperty('--u',u.toFixed(4)+'px');root.style.setProperty('--ah',ah+'px');root.style.setProperty('--cz',Math.max(1.4,0.9/u).toFixed(3))}
+function fit(){var cs=getComputedStyle(document.body),pl=parseFloat(cs.paddingLeft)||0,pr=parseFloat(cs.paddingRight)||0,pt=parseFloat(cs.paddingTop)||0,pb=parseFloat(cs.paddingBottom)||0,aw=Math.max(120,innerWidth-pl-pr),ah=Math.max(120,innerHeight-pt-pb),u=Math.min(aw/360,ah/640),sw=Math.floor(360*u),st=document.getElementById('stage');st.style.width=Math.floor(360*u)+'px';st.style.height=Math.floor(640*u)+'px';
+/* the soft shadow around the stage: drawn once per resize into a small still picture (a live CSS blur shadow made Firefox redo the blur on every frame) */
+(function(){var c=document.createElement('canvas'),d=.25,W=innerWidth,H=innerHeight,h=Math.floor(640*u),x=pl+(aw-sw)/2,y=pt+(ah-h)/2,g,O=10000;c.width=Math.max(1,Math.round(W*d));c.height=Math.max(1,Math.round(H*d));g=c.getContext('2d');g.scale(d,d);g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=60*d;g.shadowOffsetX=-O*d;g.shadowOffsetY=12*d;g.beginPath();g.roundRect(x+O,y,sw,h,14);g.fill();root.style.setProperty('--shade','url('+c.toDataURL()+')')}());root.style.fontSize=(16*u).toFixed(2)+'px';var side=Math.floor((aw-sw)/2),land=aw>=ah*1.4&&ah<=540&&side>=130;root.setAttribute('data-land',land?'1':'0');root.style.setProperty('--side',(land?side:0)+'px');root.style.setProperty('--u',u.toFixed(4)+'px');root.style.setProperty('--ah',ah+'px');root.style.setProperty('--cz',Math.max(1.4,0.9/u).toFixed(3))}
 fit();addEventListener('resize',fit);addEventListener('orientationchange',fit);
 function $(i){return document.getElementById(i)}
 function mk(c){var e=document.createElement('span');e.className=c;return e}
@@ -498,6 +517,7 @@ var stored=null;try{stored=localStorage.getItem('pd-calm')}catch(e){}
 var mql=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)');
 setCalm(stored==='1'||(stored===null&&!!(mql&&mql.matches)),false);
 btnCalm.addEventListener('click',function(){setCalm(!calm,true)});
+
 
 function mkChar(id,dx){var el=$(id);return{id:id,el:el,art:el.querySelector('.art'),pupils:el.querySelector('.pupils'),dx:dx,timer:0}}
 var chars=[mkChar('pa',4.8),mkChar('pg',-4.8)];
@@ -539,6 +559,16 @@ chars.forEach(function(c){
 });
 
 var cw=$('cw'),opener=null;
+/* A card open on the title screen holds the title scene's animations still. That used to be a CSS rule on the page's data-dlg attribute, which made the browser re-style every element of the scene on each open and close (about 175 ms at phone speed); pausing the running animations directly only touches the animations. */
+var dlgHeld=[];
+function dlgAnim(on){var i,a,t;if(on){a=document.getAnimations();for(i=0;i<a.length;i++){t=a[i].effect&&a[i].effect.target;if(a[i].playState==='running'&&t&&t.closest&&t.closest('.title')){a[i].pause();dlgHeld.push(a[i])}}}else{for(i=0;i<dlgHeld.length;i++)if(dlgHeld[i].playState==='paused')dlgHeld[i].play();dlgHeld=[]}}
+new MutationObserver(function(){dlgAnim(root.hasAttribute('data-dlg'))}).observe(root,{attributes:true,attributeFilter:['data-dlg']});
+/* Calm idle: after 30 s with no touch, key or mouse on the title (no card open), the scene holds still the same way a card holds it; the first touch brings it back. */
+(function(){var IDLE_MS=30000,last=performance.now(),tm=0,held=false;
+function chk(){tm=0;var r=IDLE_MS-(performance.now()-last);if(r>0){tm=setTimeout(chk,r);return}if(!held&&!root.hasAttribute('data-dlg')&&!$('title').hidden){held=true;dlgAnim(true)}}
+function wake(){last=performance.now();if(held){held=false;if(!root.hasAttribute('data-dlg'))dlgAnim(false)}if(!tm)tm=setTimeout(chk,IDLE_MS)}
+['pointerdown','pointermove','keydown','wheel'].forEach(function(t){addEventListener(t,wake,{passive:true,capture:true})});
+tm=setTimeout(chk,IDLE_MS);if(location.hash==='#qa')window.__titleIdle=chk})();
 function openCard(tid,t,from){$('cardBody').replaceChildren($(tid).content.cloneNode(true));$('cardTitle').textContent=t;cw.hidden=false;root.setAttribute('data-dlg','1');opener=from;$('cardOk').focus()}
 function closeCard(){cw.hidden=true;root.removeAttribute('data-dlg');if(opener)opener.focus()}
 $('bHow').addEventListener('click',function(){openCard('t-how','How to play',this)});

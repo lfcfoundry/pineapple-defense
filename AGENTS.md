@@ -4,7 +4,7 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 
 ## Test browsers (owner rule, 2026-10-17)
 
-- Test only with the browsers on the `browsers` branch of the private lfcfoundry/knowledge-base: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 (GNOME Web 46.5). Never stock Chromium, and never two browsers at once.
+- Test only with the browsers on the `browsers` branch of the private lfcfoundry/knowledge-base: Firefox 158, ungoogled Chromium 155 and WebKitGTK 2.52.6 (GNOME Web was dropped from testing on 2026-10-24). Never stock Chromium, and never two browsers at once.
 - Before each test run, re-read that branch's README: versions can be updated, and browsers can be added or removed. Follow what it says now.
 - Label every result with the browser and its version. `python3 -I tools/qa.py` prints and records the versions that really ran (`.qa-browsers.json`); see `docs/qa-process.md` for the setup (`PD_CHROME`, `PD_FF`, `PD_GECKO`, `--ff`, `--wk`).
 - Every release lists the browsers, with versions, that tested it: the changelog entry ("Tested in", written by `tools/release.py` from the recorded versions) and the README ("Test browsers"). Where an older release did not record them, the changelog says "not recorded". Do not guess.
@@ -16,19 +16,33 @@ Copyright (c) 2026 LFC Foundry. MIT License (see LICENSE). Forged by LFC Foundry
 - `CHANGELOG.md` in this repo is short and for players: one plain line per change saying what a player will notice, no tables or jargon. Developer-only changes are left out. The entry for the next release sits under `## @VER@`; `tools/release.py` turns that into the version stamp and adds the "Tested in" line.
 - The full developer changelog (every measurement, tool change and test run, each entry quantified in plain words) is `/mnt/project-files/changelogs-full/pineapple-defense/CHANGELOG-full.md`, backed up to the private lfcfoundry/knowledge-base. Write the full entry there first for every release, under the unreleased heading; `release.py` stamps it too (set `PD_FULL_CHANGELOG` to use another path).
 
+- `CHANGELOG-DEV.md` (owner rule 2026-10-31) is the public developer changelog: under every version, **Quick** (one line per change), **Details** (the key numbers, browser named) and **Deep** (design reasons, tests, what was tried). Add the entry under `## @VER@` with each merge, scrubbed of device, processor and project names and of UTC; `tools/release.py` stamps it. The landing page and README charts and feature highlights are updated in the same PR as the change; the detail goes only into the changelogs.
+
 ## Baked pictures
 
 - The game ships its sprites pre-drawn as WebP inside the page (`src/baked-sprites.json`, merged by `build.py`), so the browser decodes them instead of rasterizing SVG on the screen thread. A picture whose SVG changed no longer matches its key and is drawn from the SVG as before, so nothing breaks, it just loses the speed-up.
 - After any change to `src/sprites/` or to code that makes sprite SVG text, re-bake: `PD_CHROME=<test Chromium> python3 -I tools/bake_sprites.py` (quality 97), then build again. Pictures must pass the near-match picture gate (99.5% of pixels within 3/255 per color, owner rule 2026-10-19). `PD_NO_BAKED=1` builds without them.
+- Look-only change? `python3 -I tools/picture_gate.py before.html after.html` compares the two builds in the three test browsers in about 60 seconds (needs numpy and the same PD_* paths); the full `tools/qa.py` run stays the release gate.
 
 ## WebGL drawing layer (experimental, off by default)
 
 - `src/gl.js` (injected into `game.js` at build time) draws cached sprites with WebGL. Turn it on with `gl=1` or `gl=2` in the address, `window.__PD_GL`, or a build with `PD_GL=1|2`; `gl=0` always turns it off. Layout 2 is the exact-order one. Keep these true when editing `draw()` or `drawPenguin()`: vectors that sat under a penguin sprite go through `glUnder()`/`glOver()`; anything that lights or tints other penguins (evolve glow, ice aura) must make the frame fall back (see `glPhase2`); glows drawn after the penguins go to the add-blend overlay.
 - Any change to it must pass the near-match gate in all four test browsers (99.5% of pixels within 3/255 per color, first frame, +1 s and +9 s, five stages) before it merges. `tools/make_gl_test.py` (in the shared files) builds the one-file phone test.
 
-## Hidden speed check and error note
+## Speed guard tool
 
-- `src/speedcheck.js` (injected into `game.js`) holds the Device check and the hidden panel (7 taps on the credit line on the title screen, within 4 seconds). The error note is JS-modules `slow-note` (vendored in `src/vendor/slow-note/`). Nothing in it may use the network. The Test Lab's "Device check" button and `window.__deviceCheck` use the same code.
+- `tools/speed_guard.js` is the merge-card speed table: two pages, one browser at a time, taking turns, warm-up dropped, with the owner's 5% verdict. It uses the shared test runner vendored in `tools/vendor/tools/test-runner/` (copied unchanged from JS-modules; update by copying again) and reads `window.__pd.boot` (the `#qa` hook). Run it once per browser (`chromium`, `firefox`, `webkit`, `epiphany`) with `CHROMIUM=$PD_CHROME FIREFOX=$PD_FF`. Speed only from the four test browsers; this tool is Node only to drive them.
+
+## Minified page
+
+- `build.py` writes the esbuild-minified page as `play/index.html` (and `dist/lab/index.html`); the readable copy is `dist/readable/index.html` (`PD_READABLE=1` writes the readable page as `play/index.html`). Measured with esbuild 0.28.2 (desktop speed, readable to minified): the game finishes starting 12 to 25% sooner in the four test browsers; at 6x slower CPU in Chromium, 1570 to 1260 ms. Read `dist/readable/` when debugging; error notes from the hidden panel carry minified names.
+- Without esbuild the build writes the readable page and says so, so commit `play/index.html` only from a machine that has it.
+- Wrapping the baked-pictures block differently (comment, hidden text box) did not make it cheaper to start; only fewer bytes would.
+
+## Hidden speed report and error log
+
+- The normal game uses JS-modules `field-report` (vendored in `src/vendor/field-report/`, started first in `src/title.html` as `FR`). 5 quick taps in the top-left corner open a panel with Save speed report and Save error log; each saves a small Markdown file. Nothing in it may use the network.
+- `src/speedcheck.js` (the 25 second Device check played by the throwing helper) is built into the Test Lab build only; the Test Lab's "Device check" button and `window.__deviceCheck` use it.
 
 ## Shared files and private notes
 

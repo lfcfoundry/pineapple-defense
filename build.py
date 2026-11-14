@@ -42,7 +42,7 @@ def game_js():
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{GL_JS}}*/", (S / "gl.js").read_text(encoding="utf-8").replace("/*{{GL_DEFAULT}}*/0", os.environ.get("PD_GL") if os.environ.get("PD_GL") in ("1", "2") else "0"))
     g = g.replace("/*{{EXTRAS_JS}}*/", (S / "extras.js").read_text(encoding="utf-8"))
-    g = g.replace("/*{{SPEEDCHECK_JS}}*/", (S / "speedcheck.js").read_text(encoding="utf-8"))
+    g = g.replace("/*{{SPEEDCHECK_JS}}*/", (S / "speedcheck.js").read_text(encoding="utf-8") if LAB else "")
     g = g.replace("/*{{LAB_JS}}*/", (S / "lab" / "lab.js").read_text(encoding="utf-8") if LAB else "")
     return g
 
@@ -78,13 +78,13 @@ def main():
         "/*{{STICKER_CSS}}*/": (S / "vendor/sticker-text/sticker-text.css").read_text(),
         "/*{{STICKER_JS}}*/": (S / "vendor/sticker-text/sticker-text.js").read_text(),
         "/*{{EVEN_DT}}*/": (S / "vendor/frame-kit/even-dt.js").read_text(),
-        "/*{{QGOV}}*/": (S / "vendor/frame-kit/quality-governor.js").read_text(),
+        "/*{{QGOV}}*/": (S / "vendor/fx-governor/fx-governor.js").read_text(),
         "/*{{FRAMEMETER}}*/": (S / "vendor/frame-kit/frame-meter.js").read_text(),
         "/*{{BACKCLOSE}}*/": (S / "vendor/back-close/back-close.js").read_text(),
         "/*{{WAKEKEEPER}}*/": (S / "vendor/wake-keeper/wake-keeper.js").read_text(),
         "/*{{TABGUARD}}*/": (S / "vendor/tab-guard/tab-guard.js").read_text(),
         "/*{{SAVEKIT}}*/": (S / "vendor/save-kit/save-kit.js").read_text(),
-        "/*{{SLOWNOTE}}*/": (S / "vendor/slow-note/slow-note.js").read_text(),
+        "/*{{FIELDREPORT}}*/": (S / "vendor/field-report/field-report.js").read_text().replace("</script>", "<\\/script>"),
         "/*{{BAKED}}*/null": baked_json(),
         "/*{{GAME_JS}}*/": game_js(),
         "<!--{{adelie}}-->": (sp / "adelie.svg").read_text(),
@@ -99,17 +99,24 @@ def main():
     t = t.replace("<!--{{LAB_BTN}}-->", '<div class="row"><button class="btn" id="bLab" type="button">Test Lab</button></div>' if LAB else "")
     t = t.replace("{{VERSION}}", ver + (" LAB" if LAB else ""))
     assert "{{" not in re.sub(r"\$\{\{", "", t.replace("{{VERSION}}", "")) or True
-    out = R / "dist" / "lab" / "index.html" if LAB else R / "index.html"
+    out = R / "dist" / "lab" / "index.html" if LAB else R / "play" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(t, encoding="utf-8")
-    print("built", out.relative_to(R), ver, len(t) // 1024, "KB")
+    m = None if os.environ.get("PD_READABLE") else minify(t)   # the page itself is the minified one (about 20% faster to start in all four test browsers, see AGENTS.md); the readable copy goes to dist/readable
+    if m is None:
+        if not os.environ.get("PD_READABLE"): print("no esbuild found (npm i --no-save esbuild, or set PD_ESBUILD): wrote the readable page, which starts slower")
+        out.write_text(t, encoding="utf-8")
+        print("built", out.relative_to(R), ver, len(t) // 1024, "KB")
+    else:
+        ro = R / "dist" / ("lab-readable" if LAB else "readable") / "index.html"
+        ro.parent.mkdir(parents=True, exist_ok=True); ro.write_text(t, encoding="utf-8")
+        out.write_text(m, encoding="utf-8")
+        print("built", out.relative_to(R), ver, len(m) // 1024, "KB (minified; readable copy in", ro.relative_to(R).as_posix() + ")")
+    for page in ([out] + ([] if LAB else [R / "index.html", R / "about.html"])):   # every delivered page stays Latin-1: one character above U+00FF (emoji, curly quote, arrow, ellipsis) makes the browser keep the WHOLE page's text at 2 bytes per character (JS: \\u2019, CSS: \\2019, markup: &#x2019;)
+        bad = sorted({c for c in page.read_text(encoding="utf-8") if ord(c) > 0xFF})
+        if bad: sys.exit("%s has characters above U+00FF: %s. Escape them (see the comment in build.py)." % (page.relative_to(R), " ".join("U+%04X" % ord(c) for c in bad[:12])))
     if MIN:
-        m = minify(t)
-        if m is None:
-            print("no esbuild found (npm i --no-save esbuild, or set PD_ESBUILD): skipped the minified build")
-        else:
-            mo = R / "dist" / ("lab-min" if LAB else "min") / "index.html"
-            mo.parent.mkdir(parents=True, exist_ok=True); mo.write_text(m, encoding="utf-8")
-            print("built", mo.relative_to(R), len(m) // 1024, "KB (minified)")
+        mo = R / "dist" / ("lab-min" if LAB else "min") / "index.html"
+        mo.parent.mkdir(parents=True, exist_ok=True); mo.write_text(m if m is not None else (minify(t) or t), encoding="utf-8")
+        print("built", mo.relative_to(R), "(same minified page)")
 
 main()
