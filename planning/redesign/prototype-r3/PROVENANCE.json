@@ -1,0 +1,36 @@
+{
+  "sourceCommit": "4356ead15a5eb61693f33497515f0212cf01dd77",
+  "functions": {
+    "sc": "bb99f37ec4b2c742e75ab5884d4c064fb0efe3a4a1a027bdbea7ad99bf2d2937",
+    "px": "8d9990a4b67e17b337be865accb207dd6f3aedc0da68d9a12728fda85a1b92a5",
+    "py": "e8911d4a8d2717943434519c92c4d3d7373d5cbd2184f43541f65ab77477da37",
+    "psz": "4487461c8283e754fd12bf3791110f15c6bd0f6bad949e50eacc6eee5e07eaa9",
+    "newState": "6befee0a6d239dad9a384417f1091f7baf50c5eff00a34bc8162bebe79052073",
+    "bump": "a9d46956503305053f6b0610d0ea6eb47b3433b56ee4121aee54afd850a6d4c9",
+    "hitPenguin": "11192e4b20fc729900fc5339098d6e24b73385ec63211b99297442551d617140",
+    "avoidBoss": "3be8ac4d79bf27affc34c0219dee6cb7b532695fc27486c9b161f462eb3ac32c",
+    "updatePenguin": "fc57b4a78cd6320c9b54d81462d69c8d5c72a08ad3b0a8a1bc71e535dc9949d1",
+    "penCenter": "86f6d8f5e2e9654cb9de3b6fd4935981bc13cad5e5635af1bd2e4a0fdaa23fc6",
+    "targets": "5d01fb1fb7516a80504f6b67e674ba0517679c88c5fcd862164b4dccfc92b5fc",
+    "throwAt": "b86e57c0102de74e5b099ec02908c277a61a9faa3e85a9136adab4c3fa91a3a3",
+    "landShot": "54e0115246d48f0fe419ad14e18fe4a364fa6f4189d6233188743ae75193304c",
+    "updateShot": "7fc8c3dd2bbbe7ae12330dc6710ae1a133bd85cde2fae4d03e369cab49c7f454",
+    "slingGeom": "d422e892dc685f2505506fa5abab92a12310b905f62cb6611648041443c29c2c",
+    "pouchPos": "34e29d43bbf7a56cff4b850446c0bf85f61a00828cc213d04e71297229fab3bd",
+    "drawAimArc": "e163013ffcbf4a87bcd7d2e32407f80608fc04ce934c56e717c245d8138c09d8",
+    "drawPenguin": "0aaf9a30265a5c1f3274e634da245b79e391b9b0b33284150d0d4c3e02453bce",
+    "drawShot": "906cfc281b3eea753cd486bb0be904608dedc8755aa57e2466a05f80914b76d2",
+    "star": "9bf27280f75c9c088eaff23d24692a9709c6b74a426e7362de8fcc21efd8493a"
+  },
+  "input": "cd0fb338f96bb40f05f73862141a35354e84af2f8e19f85901bed897df17aa6c",
+  "exclusions": [
+    "source tableHit replaced by inert dependency",
+    "no persistence/title/campaign bootstrap",
+    "reward/helper/scene dependencies inert"
+  ],
+  "renderingBoundaries": [
+    "common lightweight shadow ellipse",
+    "common danger outline",
+    "source drawPenguin/drawShot/guide retained; no outfit in fixture"
+  ]
+}
