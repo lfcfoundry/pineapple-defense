@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Flick vs point control (2 min)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Drag vs press-and-slide (2 min)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -139,62 +139,157 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     return d;
   }
 
-  /* Shooting test (tester only): plays the REAL game twice for 60 s each, once with today's flick and once with point control (press where it should land, move to correct, lift to throw),
-     in random order. Counts throws and hits, asks two plain questions after each round, and ends with a plain-text report to copy. Nothing is saved or sent. */
-  var SH = null;
-  function shEnd() { SH = null; labTick = null; }
+  /* Shooting test (tester only), second version (2026.11.19): both styles rebuilt after the Royal Smash research (/mnt/project-files/pineapple-defense/shooting-research/).
+     Mechanics and feel only. Shared feel kit: the true path and a landing ring the exact size of the hit area while you aim, a faint ghost of the last throw, a faster flight,
+     no hidden aim lock, a short hit pause, a small shake, and a chain (a knocked-out penguin bumps its neighbors). No aim assist, no sound, nothing punishing.
+     Style A "Drag and let go": drag from the bottom part of the screen; direction = the drag, distance = the drag LENGTH. Style B "Press, slide, let go": the ring sits above the finger.
+     Two 60 s rounds in the real game, random order, then Fun? and Easy? and a copy-paste report. Nothing is saved or sent. */
+  var SH = null, shSave = null, shOv = null, shCtx = null, shAim = null, shGhost = null, shChain = 0, shIn = false;
+  var FLIGHT = 0.55, MINL = 0.06, MAXL = 0.30, OFFY = 0.14;
+  function shEnd() {
+    SH = null; labTick = null; shAim = null; shGhost = null;
+    if (shSave) { AIMW = shSave.aimw; sv.hs = shSave.hs; sv.sk = shSave.sk; shSave = null; }
+    if (shOv) { shOv.remove(); shOv = null; shCtx = null; }
+  }
+  function shFeelOn() { if (!shSave) { shSave = { aimw: AIMW, hs: sv.hs, sk: sv.sk }; } AIMW = 0; sv.hs = 1; sv.sk = 3; }   /* no lock-on; hit pause on; small shake on */
   var shThrow = throwAt, shHit = hitPenguin;
-  throwAt = function () { var n = shots.length; shThrow.apply(null, arguments); if (SH && SH.on && shots.length > n) { SH.th++; SH.t.push(Math.round(performance.now() - SH.t0)); } };
-  hitPenguin = function () { if (SH && SH.on) SH.hit++; return shHit.apply(null, arguments); };
-  var shDown = null;
-  window.addEventListener('pointerdown', function (e) { if (SH && SH.on && SH.mode === 'point' && e.target === cv && S && !S.over && !S.paused) { shDown = e.pointerId; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-  window.addEventListener('pointerup', function (e) {
-    if (!(SH && SH.on && SH.mode === 'point' && shDown === e.pointerId)) return;
-    shDown = null; e.stopImmediatePropagation();
-    var p = rel(e), o = pouchPos(); if (p.y < o.y - H * 0.05) throwAt(o.x, o.y, p.x - o.x, p.y - o.y, 1.5, { x: p.x, y: p.y });
+  function pathFor(ox, oy, dx, dy, pEnd, ty) {
+    var yE = py(pEnd) - psz(pEnd) * 0.3, tt = (yE - oy) / dy, xE = ox + dx * tt;
+    var arc = Math.max(H * 0.05, Math.min(H * (0.14 + 0.2 * (1 - pEnd)) * ty.arc, (oy + yE) / 2 - H * 0.06));
+    return { x0: ox, y0: oy, xE: xE, yE: yE, arc: arc, r: ty.rad * psz(pEnd), pEnd: pEnd };
+  }
+  function pEndFromY(ry) { var p = 0.5, i; for (i = 0; i < 4; i++) p = Math.max(0.1, Math.min(0.88, (ry + psz(p) * 0.3 - hy) / (gy - hy))); return p; }
+  throwAt = function () {
+    var n = shots.length; shThrow.apply(null, arguments);
+    if (SH && SH.on && shots.length > n) {
+      SH.th++; SH.t.push(Math.round(performance.now() - SH.t0));
+      var sh = shots[shots.length - 1]; sh.T *= FLIGHT;
+      shGhost = { x0: sh.x0, y0: sh.y0, xE: sh.xE, yE: sh.yE, arc: sh.arc, r: sh.ty.rad * psz(sh.pEnd), pEnd: sh.pEnd };
+    }
+  };
+  hitPenguin = function (pg, x, y) {
+    if (!(SH && SH.on)) return shHit(pg, x, y);
+    SH.hit++; shHit(pg, x, y);
+    if (shIn || pg.st !== 'hit') return;
+    var c0 = penCenter(pg), i, q, c, d, n = 0, bumped = 0;
+    shIn = true;
+    for (i = 0; i < penguins.length; i++) {
+      q = penguins[i]; if (q === pg || q.st !== 'walk') continue;
+      c = penCenter(q); d = Math.hypot(c.x - c0.x, c.y - c0.y) / c0.s;
+      if (d < 1.05) { if (q.hp <= 1) { SH.hit++; shHit(q, c.x, c.y - c.s * 0.2); n++; } else { q.p = Math.max(0.02, q.p - 0.05); q.pop = 1; bumped++; } }
+    }
+    shIn = false;
+    if (n > 0) { SH.chain++; popText(x, y - psz(pg.p) * 0.75, 'x' + (n + 1) + '!', '#d4540a', 1); shakeAdd(0.12 * n); }
+  };
+  function shSize() {
+    if (!shOv) { shOv = document.createElement('canvas'); shOv.style.cssText = 'position:fixed;pointer-events:none;z-index:5'; document.body.appendChild(shOv); shCtx = shOv.getContext('2d'); }
+    var r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1, w = Math.round(r.width * d), h = Math.round(r.height * d);
+    shOv.style.left = r.left + 'px'; shOv.style.top = r.top + 'px'; shOv.style.width = r.width + 'px'; shOv.style.height = r.height + 'px';
+    if (shOv.width !== w || shOv.height !== h) { shOv.width = w; shOv.height = h; }
+    shCtx.setTransform(d * r.width / W, 0, 0, d * r.height / H, 0, 0);
+  }
+  function shLand(a) {   /* is a penguin under the landing ring? (it only shows the truth; it never moves the throw) */
+    var list = targets(), i, c; for (i = 0; i < list.length; i++) { c = penCenter(list[i]); if (Math.hypot(c.x - a.xE, c.y - a.yE) / c.s < effType().rad) return true; } return false;
+  }
+  function shDraw(a, alpha, ghost) {
+    var g = shCtx, i, u, x, y, n = 14, on = !ghost && shLand(a);
+    g.save(); g.globalAlpha = alpha;
+    for (i = 1; i < n; i++) {
+      u = i / n; x = a.x0 + (a.xE - a.x0) * u; y = a.y0 + (a.yE - a.y0) * u - 4 * a.arc * u * (1 - u);
+      g.beginPath(); g.arc(x, y, Math.max(3, H * 0.014 * (1 - u * 0.5)), 0, 6.2832); g.fillStyle = '#fff7e3'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#7a3a05'; g.stroke();
+    }
+    g.beginPath(); g.arc(a.xE, a.yE, a.r, 0, 6.2832); g.lineWidth = on ? 8 : 6; g.strokeStyle = '#7a3a05'; g.stroke();
+    g.beginPath(); g.arc(a.xE, a.yE, a.r, 0, 6.2832); g.lineWidth = on ? 4.5 : 3; g.strokeStyle = on ? '#ff7a1a' : '#fff7e3'; g.stroke();
+    g.restore();
+  }
+  function shFrame() {
+    if (!shOv && !(SH && SH.on)) return;
+    if (SH && SH.on) {
+      shSize(); shCtx.clearRect(0, 0, W, H);
+      if (shGhost && !shAim) shDraw(shGhost, 0.35, true);
+      if (shAim) shDraw(shAim, 1, false);
+    } else if (shOv) shCtx.clearRect(0, 0, W, H);
+    requestAnimationFrame(shFrame);
+  }
+  function shPlan(p, o) {   /* from the pointer to the planned throw, or null (cancel) */
+    var ty = effType(), L, dx, dy, pEnd, len;
+    if (SH.mode === 'flick') {
+      dx = p.x - SH.sx; dy = p.y - SH.sy; len = Math.hypot(dx, dy); if (len < H * 0.03 || dy > -H * 0.012) return null;
+      L = Math.max(MINL, Math.min(MAXL, len / H)); pEnd = 0.88 - (L - MINL) / (MAXL - MINL) * (0.88 - 0.12);
+      return pathFor(o.x, o.y, dx / len, dy / len, pEnd, ty);
+    }
+    var rx = p.x, ry = p.y - (SH.touch ? H * OFFY : 0);
+    if (ry > o.y - H * 0.06) return null;
+    rx = Math.max(W * 0.04, Math.min(W * 0.96, rx)); pEnd = pEndFromY(ry);
+    dx = rx - o.x; dy = py(pEnd) - psz(pEnd) * 0.3 - o.y; len = Math.hypot(dx, dy) || 1;
+    return pathFor(o.x, o.y, dx / len, dy / len, pEnd, ty);
+  }
+  function shFire(a, o) {
+    var dx = a.xE - o.x, dy = a.yE - o.y;
+    throwAt(o.x, o.y, dx, dy, 1.5, { x: a.xE, y: hy + (gy - hy) * a.pEnd });
+  }
+  var shPid = null;
+  function shOk(e) { return SH && SH.on && SH.mode && e.target === cv && S && !S.over && !S.paused; }
+  window.addEventListener('pointerdown', function (e) {
+    if (!shOk(e) || shPid !== null) return;
+    var p = rel(e); if (SH.mode === 'flick' && p.y < H * 0.55) return;
+    shPid = e.pointerId; SH.sx = p.x; SH.sy = p.y; SH.touch = e.pointerType !== 'mouse';
+    e.stopImmediatePropagation(); e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+    shAim = shPlan(p, pouchPos());
   }, true);
-  function shCard(title, body, b1, f1, b2, f2) { if (gameEl.hidden) { titleEl.hidden = true; gameEl.hidden = false; resize(); } showCard(title, body, b1, f1, b2, f2); $('gBody').style.cssText = 'white-space:pre-wrap;text-align:left;user-select:text;-webkit-user-select:text;word-break:break-word'; }
+  window.addEventListener('pointermove', function (e) { if (shPid === e.pointerId && SH && SH.on) { e.stopImmediatePropagation(); shAim = shPlan(rel(e), pouchPos()); } }, true);
+  window.addEventListener('pointercancel', function (e) { if (shPid === e.pointerId) { shPid = null; shAim = null; } }, true);
+  window.addEventListener('pointerup', function (e) {
+    if (shPid !== e.pointerId) return; shPid = null; e.stopImmediatePropagation();
+    if (!(SH && SH.on)) { shAim = null; return; }
+    var o = pouchPos(), a = shPlan(rel(e), o); shAim = null; if (a) shFire(a, o);
+  }, true);
+  function shCard(title, body, b1, f1, b2, f2, b3, f3) { if (gameEl.hidden) { titleEl.hidden = true; gameEl.hidden = false; resize(); } showCard(title, body, b1, f1, b2, f2, b3, f3); $('gBody').style.cssText = 'white-space:pre-wrap;text-align:left;user-select:text;-webkit-user-select:text;word-break:break-word'; }
   function shoot() {
     var order = Math.random() < 0.5 ? ['flick', 'point'] : ['point', 'flick'], res = [], i = 0, RUN = 60;
-    SH = { on: false };
-    function name(m) { return m === 'flick' ? 'Flick (today)' : 'Point control'; }
-    function how(m) { return m === 'flick' ? 'Swipe up from the slingshot toward a penguin, as you always do.' : 'Press where you want the pineapple to land, slide to fix the spot, then lift your finger to throw. A plain tap works too.'; }
+    SH = { on: false }; shFeelOn();
+    function name(m) { return m === 'flick' ? 'Drag and let go' : 'Press, slide, let go'; }
+    function how(m) {
+      return m === 'flick' ? 'Put your finger down in the lower part of the screen and drag up. The dots show the real path and the ring is exactly where it lands. A longer drag throws farther. Let go to throw. Drag back down and let go to cancel.'
+        : 'Press anywhere on the field. A ring shows where the pineapple will land, a little above your finger. Slide to move it, let go to throw. Slide it below the slingshot and let go to cancel.';
+    }
     function intro() {
       var m = order[i];
       shCard('Round ' + (i + 1) + ' of 2: ' + name(m), how(m) + '\nIt lasts 60 seconds. Keep this tab in front.', 'Start', go, 'Stop test', function () { shEnd(); gBodyReset(); toTitle(); });
     }
     function go() {
       var m = order[i]; hideCard(); gBodyReset();
-      SH = { on: false, mode: m, th: 0, hit: 0, t: [], t0: 0, s0: 0 };
+      SH = { on: false, mode: m, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0 }; shAim = null; shGhost = null;
       startFrom({ stage: 2, wave: 1, golden: 0, cheer: 100 });
       var tries = 0, bar = document.createElement('div');
       bar.style.cssText = 'position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:60;max-width:92vw;padding:.4em .9em;border-radius:999px;background:rgba(255,247,227,.96);color:#4a2b0f;font:800 14px/1.2 var(--display);box-shadow:0 2px 8px rgba(0,0,0,.25)';
       document.body.appendChild(bar);
       (function wait() {
         if (!(S && !S.over && !gameEl.hidden && running && S.stage === 2)) { if (++tries > 200) { bar.remove(); shEnd(); shCard('Shooting test', 'The stage did not start. Close and try again.', 'Close', function () { gBodyReset(); toTitle(); }); return; } setTimeout(wait, 50); return; }
-        SH.on = true; SH.t0 = performance.now(); SH.s0 = S.t;
+        SH.on = true; SH.t0 = performance.now(); SH.s0 = S.t; requestAnimationFrame(shFrame);
         labTick = function () {
           var e = S.t - SH.s0; bar.textContent = name(m) + ': ' + Math.max(0, Math.ceil(RUN - e)) + ' s left. Throws ' + SH.th;
-          if (e >= RUN || S.over) { labTick = null; SH.on = false; SH.sec = Math.round(e); bar.remove(); after(); }
+          if (e >= RUN || S.over) { labTick = null; SH.on = false; SH.sec = Math.round(e); bar.remove(); shAim = null; after(); }
         };
       }());
     }
     function after() {
-      var r = SH; res.push(r); SH = { on: false };
+      var r = SH; res.push(r); SH = { on: false }; shPid = null;
       if (!gameEl.hidden && S && !S.over) pause();
-      shCard('Round ' + (i + 1) + ' done: ' + name(r.mode), 'Throws: ' + r.th + '. Hits: ' + r.hit + '. Was it easy to hit what you aimed at?', 'Easy', function () { r.easy = 'yes'; next(); }, 'Hard', function () { r.easy = 'no'; next(); });
+      shCard('Round ' + (i + 1) + ' done: ' + name(r.mode), 'Throws: ' + r.th + '. Hits: ' + r.hit + '. Chains: ' + r.chain + '.\nWas it fun?', 'Yes', function () { r.fun = 'yes'; easy(r); }, 'A bit', function () { r.fun = 'a bit'; easy(r); }, 'No', function () { r.fun = 'no'; easy(r); });
     }
+    function easy(r) { shCard('Round ' + (i + 1) + ': ' + name(r.mode), 'Was it easy to hit what you aimed at?', 'Easy', function () { r.easy = 'yes'; next(); }, 'Hard', function () { r.easy = 'no'; next(); }); }
     function next() { hideCard(); gBodyReset(); i++; if (i < 2) intro(); else pick(); }
     function pick() {
       shCard('Which felt better?', 'First round was ' + name(order[0]) + '. Second round was ' + name(order[1]) + '.', 'First', function () { fin('first'); }, 'Second', function () { fin('second'); });
     }
     function fin(w) {
-      var best = res[w === 'first' ? 0 : 1], L = ['Pineapple Defense shooting test (tester build)', 'Preferred: ' + name(best.mode) + ' (' + w + ' round)'];
+      var best = res[w === 'first' ? 0 : 1], L = ['Pineapple Defense shooting test, version 2 (tester build)', 'Preferred: ' + name(best.mode) + ' (' + w + ' round)'];
       res.forEach(function (r, k) {
         var ts = r.t, gaps = [], j; for (j = 1; j < ts.length; j++) gaps.push(ts[j] - ts[j - 1]);
-        L.push('Round ' + (k + 1) + ': ' + name(r.mode) + '. ' + r.sec + ' s. Throws ' + r.th + ', hits ' + r.hit + ' (' + (r.th ? Math.round(r.hit * 100 / r.th) : 0) + ' per 100 throws). Easy to hit what I aimed at: ' + r.easy + '.' + (gaps.length ? ' Median gap between throws ' + Math.round(gaps.sort(function (a, b) { return a - b; })[gaps.length >> 1]) + ' ms.' : ''));
+        L.push('Round ' + (k + 1) + ': ' + name(r.mode) + '. ' + r.sec + ' s. Throws ' + r.th + ', hits ' + r.hit + ' (' + (r.th ? Math.round(r.hit * 100 / r.th) : 0) + ' per 100 throws), chains ' + r.chain + '. Fun: ' + r.fun + '. Easy to hit what I aimed at: ' + r.easy + '.' + (gaps.length ? ' Median gap between throws ' + Math.round(gaps.sort(function (a, b) { return a - b; })[gaps.length >> 1]) + ' ms.' : ''));
       });
-      L.push('Run: Stage 2 wave 2, real game, helpers off unless this save owns them. Hits count every pineapple, including helpers.');
+      L.push('Run: Stage 2 wave 2, real game. Feel kit on: true path and landing ring, ghost of the last throw, faster flight, no aim lock, hit pause, small shake, chains. Hits count every pineapple, including helpers and chains.');
       var txt = L.concat(devInfo()).join('\n'); shEnd();
       shCard('Shooting test result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
@@ -202,6 +297,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     intro();
   }
   window.__shoot = shoot;
+  window.__shT = function () { var r = cv.getBoundingClientRect(); return targets().map(function (g) { var c = penCenter(g); return { x: r.left + c.x * r.width / W, y: r.top + c.y * r.height / H, vy: g.v * slowK }; }); };   /* QA: where the penguins are, in page pixels */
   var bLab = $('bLab');
   if (bLab) bLab.addEventListener('click', function () {
     $('cardBody').replaceChildren(panel()); $('cardTitle').textContent = 'Test Lab'; $('cw').hidden = false; root.setAttribute('data-dlg', '1'); $('cardOk').focus();
