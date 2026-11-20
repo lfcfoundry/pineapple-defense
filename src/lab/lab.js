@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><div class="row"><button class="btn" data-a="fg" type="button">Fish and gulls check (20 s)</button><button class="btn" data-a="cs" type="button">Everything-at-once speed check (20 s)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><div class="row"><button class="btn" data-a="fg" type="button">Fish and gulls check (20 s)</button><button class="btn" data-a="cs" type="button">Everything-at-once speed check (60 s)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -433,20 +433,21 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
   /* Cannon speed check (tester only): the same 20 s Device check, but the throws are the physics cannon with all five pineapple types, chains, hit pause, shake and slow motion, so the report shows what the new mechanics and effects cost per frame. */
   function cannonSpeedCheck() {
     SH = { on: true, mode: 'tap', cycle: true, th: 0, hit: 0, chain: 0, ko: 0, t: [], t0: performance.now(), s0: 0 }; shFeelOn(); requestAnimationFrame(shFrame);
-    var st = SH, oldGu = sv.gu, pkP = 0, pkF = 0, pkG = 0, both = 0, nf = 0;
+    var st = SH, oldGu = sv.gu, pkP = 0, pkF = 0, pkG = 0, both = 0, nf = 0, md = {}, mw = 0;
     sv.gu = 3;
     /* worst case: a fish and a gull on screen nearly always, and a horde kept at 14 penguins, with nothing allowed to cost a life */
     var tm = setInterval(function () {
       if (!S || S.over || gameEl.hidden) return;
+      md[S.mode] = (md[S.mode] || 0) + 1; mw = S.wave;
       S.cheer = 100;
       if (S.fishT > 0) S.fishT = 0;
       if (S.mode === 'run') { S.toSpawn = 999; S.spawned = 0; for (var k = 0; k < 4 && penguins.length < 14; k++) { spawn(); penguins[penguins.length - 1].p = 0.14 + Math.random() * 0.12; } }
       pkP = Math.max(pkP, penguins.length); pkF = Math.max(pkF, S.fish.length); pkG = Math.max(pkG, S.gulls.length);
       nf++; if (S.fish.length && S.gulls.length) both++;
     }, 250);
-    deviceCheck({ stage: window.__csStage || 5, wave: window.__csWave || 5 }, function (txt) {
+    deviceCheck({ stage: window.__csStage || 5, wave: window.__csWave || 4, run: window.__csRun || 60000 }, function (txt) {
       clearInterval(tm); sv.gu = oldGu;
-      var out = 'Everything-at-once speed check: the physics cannon with all five pineapple types, hit pause, shake, chains and slow motion, plus fish and gulls forced on and a horde kept near 14 penguins. Peak on screen: ' + pkP + ' penguins, ' + pkF + ' fish, ' + pkG + ' gulls; a fish and a gull were out together in ' + both + ' of ' + nf + ' samples. Shots ' + st.th + ', hits ' + st.hit + ', knockouts ' + st.ko + ', shots that chained ' + st.chain + '.\n' + txt;
+      var out = 'Everything-at-once speed check: the physics cannon with all five pineapple types, hit pause, shake, chains and slow motion, plus fish and gulls forced on and a horde kept near 14 penguins. Peak on screen: ' + pkP + ' penguins, ' + pkF + ' fish, ' + pkG + ' gulls; a fish and a gull were out together in ' + both + ' of ' + nf + ' samples. Game modes seen (250 ms samples): ' + JSON.stringify(md) + ', wave ' + mw + '. Shots ' + st.th + ', hits ' + st.hit + ', knockouts ' + st.ko + ', shots that chained ' + st.chain + '.\n' + txt;
       shEnd();
       if (!gameEl.hidden) { titleEl.hidden = true; gameEl.hidden = false; }
       showCard('Everything-at-once check', out, 'Copy report', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
