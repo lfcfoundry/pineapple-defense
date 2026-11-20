@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -129,6 +129,8 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       else if (a === 'rst') { o = kit.validate({}); for (k in o) sv[k] = o[k]; kit.save(sv); updateContinue(); say('Save reset.'); }
       else if (a === 'dev') deviceCheck();
       else if (a === 'shoot') labGo(shoot);
+      else if (a === 'pzt') labGo(function () { puzzle('tap'); });
+      else if (a === 'pzs') labGo(function () { puzzle('flick'); });
       else if (a === 'flash') { say('Checking Stage 2, wave 3 (0%)'); flashCheck(say); }
       else if (a === 'tap1') say(tapTime());
       else if (a === 'cb') { var nm = cbSet((cbI + 1) % CB.length); e.target.textContent = 'Color view: ' + nm; say('Showing: ' + nm + (cbI ? '. Tap again for the next view.' : '.')); }
@@ -144,7 +146,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
      way (swept check), pushes the penguin back up the lane, bounces off at half speed, and a tumbling penguin knocks the next one (up to 6, "x2!"). Hit pause, a small shake, slow motion on the last penguin
      of a wave, and a faint ghost of the last shot. No aim lock, no aim assist, no sound, nothing punishing. Two 60 s rounds, random order, Fun? Easy?, then a copy-paste report. Nothing is saved or sent. */
   var SH = null, shCalmWas = false, shSave = null, shOv = null, shCtx = null, shGhost = null, balls = [], shPid = null;
-  var SPEED = 2.2, GRAV = 0.9, BOUNCE = 0.5, LIFE = 0.6, PUSH = 0.7, DECAY = 4, CHAIN_MAX = 6, SWIPE = 0.04, CD = 0.35;
+  var SPEED = 2.2, GRAV = 0.9, BOUNCE = 0.5, LIFE = 0.6, PUSH = 0.55, DECAY = 4.5, CHAIN_MAX = 6, SWIPE = 0.04, CD = 0.35;
   function shEnd() {
     SH = null; labTick = null; shGhost = null; shPid = null; balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
     if (shSave) { AIMW = shSave.aimw; sv.hs = shSave.hs; sv.sk = shSave.sk; sv.ib = shSave.ib; if (shSave.calm === null) root.removeAttribute('data-calm'); else root.setAttribute('data-calm', shSave.calm); shSave = null; }
@@ -160,21 +162,22 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     var len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = Math.min(-0.05, dy / len), n = Math.hypot(ux, uy), V = SPEED * H;
     var sh = { ty: effType(), s0: bsize(oy), x0: ox, y0: oy, xE: ox, yE: oy, pEnd: 0.5, t: 0, T: 1e9, arc: 0, spin: (Math.random() < 0.5 ? -1 : 1) * 14, ph: 0, cheer: false, soft: false };
     shots.push(sh);
-    balls.push({ x: ox, y: oy, vx: ux / n * V, vy: uy / n * V, hit: [], life: null, hits: 0, chain: 0, sh: sh, pts: [] });
+    balls.push({ x: ox, y: oy, vx: ux / n * V, vy: uy / n * V, hit: [], life: null, hits: 0, chain: 0, ko: 0, sh: sh, pts: [] });
   }
   throwAt = function () {
+    if (SH && SH.on && SH.puzzle && SH.left <= 0) return;   /* out of pineapples: nothing fires, nothing is lost */
     var n = shots.length; shThrow.apply(null, arguments);
     if (SH && SH.on && shots.length > n) {
-      var sh = shots.pop(); SH.th++; SH.t.push(Math.round(performance.now() - SH.t0));
+      var sh = shots.pop(); SH.th++; SH.t.push(Math.round(performance.now() - SH.t0)); if (SH.puzzle) { SH.left--; SH.lastShot = S.t; }
       if (S.fx.zip <= 0 && S.cd > CD) { S.cd = CD; S.cdMax = CD; }
       spawnBall(arguments[0], arguments[1], arguments[2], arguments[3]);
     }
   };
-  hitPenguin = function (pg, x, y) { if (SH && SH.on) SH.hit++; return shHit(pg, x, y); };
+  hitPenguin = function (pg, x, y) { if (SH && SH.on) SH.hit++; var r = shHit(pg, x, y); if (SH && SH.on && pg.st === 'hit' && !pg.kd) { pg.kd = 1; SH.ko++; } return r; };
   function tumble(pg, vx, vy, ball) {   /* knock a penguin back up its lane (and sideways), in lane units */
     pg.kp = vy / (gy - hy) * PUSH; pg.kx = vx / (FW * sc(pg.p)) * PUSH; pg.kb = ball;
   }
-  function lastOne() { var i, n = Math.max(0, S.toSpawn - S.spawned); for (i = 0; i < penguins.length; i++) if (penguins[i].st === 'walk') n++; return n === 0; }
+  function lastOne() { var i, n = Math.max(0, S.toSpawn - S.spawned); if (SH && SH.puzzle && SH.gi < SH.groups.length) return false; for (i = 0; i < penguins.length; i++) if (penguins[i].st === 'walk') n++; return n === 0; }
   var shSlow = false;
   function slowmo() { if (shSlow || calm) return; shSlow = true; var was = timeScale; timeScale = 0.35; setTimeout(function () { timeScale = was; shSlow = false; }, 500); }
   function ballStep(b, dt) {
@@ -188,7 +191,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
         if (d < c.s * 0.42 + rb) {
           b.hit.push(pg); b.hits++; sp = Math.hypot(b.vx, b.vy);
           hitPenguin(pg, c.x, c.y - c.s * 0.2);
-          if (pg.st === 'hit') tumble(pg, b.vx, b.vy, b); else { pg.pop = 1; pg.p = Math.max(0.03, pg.p - 0.03); }
+          if (pg.st === 'hit') { b.ko++; tumble(pg, b.vx, b.vy, b); } else { pg.pop = 1; pg.p = Math.max(0.03, pg.p - 0.03); }
           nx = b.x - c.x; ny = b.y - c.y; d = Math.hypot(nx, ny) || 1; nx /= d; ny /= d; dot = b.vx * nx + b.vy * ny;
           if (dot < 0) { b.vx = (b.vx - 2 * dot * nx) * BOUNCE; b.vy = (b.vy - 2 * dot * ny) * BOUNCE; }
           burst(c.x, c.y, 10, SNOW_COL); if (b.life === null) b.life = LIFE;
@@ -207,14 +210,14 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       pg = penguins[i]; if (pg.kp === undefined) continue;
       if (pg.st !== 'hit') { pg.kp = undefined; continue; }
       pg.p = Math.max(0.03, Math.min(0.95, pg.p + pg.kp * dt)); pg.xn = Math.max(-1.1, Math.min(1.1, pg.xn + pg.kx * dt)); pg.kp *= f; pg.kx *= f;
-      sp = Math.hypot(pg.kp * (gy - hy), pg.kx * FW * sc(pg.p)); if (sp < H * 0.2) { pg.kp = undefined; continue; }
+      sp = Math.hypot(pg.kp * (gy - hy), pg.kx * FW * sc(pg.p)); if (sp < H * 0.3) { pg.kp = undefined; continue; }
       b = pg.kb; if (!b || b.chain >= CHAIN_MAX) continue;
       c1 = penCenter(pg);
       for (j = 0; j < penguins.length; j++) {
         q = penguins[j]; if (q === pg || q.st !== 'walk' || (q.knAt && S.t - q.knAt < 0.6)) continue;
-        c2 = penCenter(q); if (Math.hypot(c1.x - c2.x, c1.y - c2.y) < (c1.s + c2.s) * 0.42) {
+        c2 = penCenter(q); if (Math.hypot(c1.x - c2.x, c1.y - c2.y) < (c1.s + c2.s) * 0.36) {
           q.knAt = S.t; b.chain++; hitPenguin(q, c2.x, c2.y - c2.s * 0.2);
-          if (q.st === 'hit') { q.kp = pg.kp * 0.6; q.kx = pg.kx * 0.6; q.kb = b; } else { q.pop = 1; }
+          if (q.st === 'hit') { b.ko++; q.kp = pg.kp * 0.5; q.kx = pg.kx * 0.5; q.kb = b; } else { q.pop = 1; }
           popText(c2.x, c2.y - c2.s * 0.75, 'x' + (b.chain + 1) + '!', '#d4540a', 1); shakeAdd(0.08);
           if (lastOne()) slowmo();
           if (b.chain >= CHAIN_MAX) break;
@@ -222,13 +225,30 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       }
     }
   }
+  function puzzleStep(dt) {
+    var i, n = 0, g, c, k, t;
+    S.spawnT = 1e9; S.cheer = 100;   /* the game's own spawner is parked; nothing in this round can cost you anything */
+    for (i = 0; i < penguins.length; i++) if (penguins[i].st === 'walk') n++;
+    if (SH.gi < SH.groups.length && (SH.nextT === null ? S.t - SH.s0 > 1 : (S.t - SH.nextT > 3 && (n <= 1 || S.t - SH.nextT > 14)))) {
+      g = SH.groups[SH.gi++]; c = (SH.gi % 2 ? -1 : 1) * (0.12 + Math.random() * 0.3); SH.nextT = S.t;
+      for (k = 0; k < g; k++) {
+        t = c + ((k % 3) - 1) * 0.085 + (Math.random() - 0.5) * 0.02;
+        penguins.push({ id: ++S.id, kind: 'rh', xn: Math.max(-0.9, Math.min(0.9, t)), x0: t, p: 0.06 + Math.floor(k / 3) * 0.04, v: 0.045, st: 'walk', t: 0, mood: 'happy', ph: Math.random() * 6, av: 0, base: 0.045, hp: 1, ev: 0, side: Math.random() < 0.5 ? -1 : 1, hat: false, puff: 0, a: 1, gear: rollGear() });
+        S.spawned++; n++;
+      }
+    }
+    SH.walk = n;
+    if (SH.gi >= SH.groups.length && n === 0 && S.t - SH.s0 > 2) { S.toSpawn += 1000; SH.done = true; }
+    else if (SH.left <= 0 && balls.length === 0 && S.t - SH.lastShot > 3) { S.toSpawn += 1000; SH.done = true; }
+  }
   update = function (dt) {
+    if (SH && SH.on && SH.puzzle && !SH.done) puzzleStep(dt);
     shUpdate(dt);
     if (!(SH && SH.on)) return;
     var i, b;
     for (i = balls.length - 1; i >= 0; i--) {
       b = balls[i];
-      if (ballStep(b, dt)) { b.sh.dead = true; if (b.chain > 0) SH.chain++; if (b.y > hy) burst(b.x, Math.min(b.y, H * 0.95), 5, PINE_COL); shGhost = { pts: b.pts, t0: performance.now() }; balls.splice(i, 1); }
+      if (ballStep(b, dt)) { b.sh.dead = true; if (b.chain > 0) SH.chain++; if (SH.puzzle && b.ko >= 4) { SH.best = Math.max(SH.best, b.ko); popText(Math.max(W * 0.3, Math.min(W * 0.7, b.x)), Math.max(H * 0.3, b.y), 'x' + b.ko + '! ' + (b.ko >= 6 ? 'Perfect!' : 'Great spot!'), '#d4540a', 1); shakeAdd(0.15); } if (b.y > hy) burst(b.x, Math.min(b.y, H * 0.95), 5, PINE_COL); shGhost = { pts: b.pts, t0: performance.now() }; balls.splice(i, 1); }
     }
     tumbleStep(dt);
   };
@@ -250,6 +270,13 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       shSize(); shCtx.clearRect(0, 0, W, H);
       balls.forEach(function (b) { var n = b.pts.length, g = shCtx, i; for (i = Math.max(1, n - 5); i < n; i++) { g.beginPath(); g.moveTo(b.pts[i - 1].x, b.pts[i - 1].y); g.lineTo(b.pts[i].x, b.pts[i].y); g.lineWidth = Math.max(2, bsize(b.pts[i].y) * 0.35 * (i - n + 6) / 5); g.lineCap = 'round'; g.strokeStyle = 'rgba(255,247,227,' + (0.15 + 0.12 * (i - n + 6)) + ')'; g.stroke(); } });
       if (shGhost) { var a = 1 - (performance.now() - shGhost.t0) / 1000; if (a > 0) dots(shGhost.pts, a * 0.5); else shGhost = null; }
+      if (SH.puzzle) {   /* the pineapples left this stage: a row of icons and a number */
+        var g2 = shCtx, tot = SH.total, i2, r2 = Math.min(W / (tot * 2.6), H * 0.016), x2 = W / 2 - (tot - 1) * r2 * 1.25, y2 = H * 0.205;
+        g2.save(); g2.fillStyle = 'rgba(255,247,227,.85)'; g2.fillRect(W / 2 - tot * r2 * 1.25 - r2 * 5, y2 - r2 * 1.6, tot * r2 * 2.5 + r2 * 10, r2 * 3.2);
+        for (i2 = 0; i2 < tot; i2++) { g2.beginPath(); g2.arc(x2 + i2 * r2 * 2.5, y2, r2, 0, 6.2832); g2.globalAlpha = i2 < SH.left ? 1 : 0.25; g2.fillStyle = '#f8bd1c'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#7a3a05'; g2.stroke(); }
+        g2.globalAlpha = 1; g2.fillStyle = '#7a3a05'; g2.font = '800 ' + Math.round(r2 * 2.2) + 'px sans-serif'; g2.textAlign = 'left'; g2.fillText('x ' + SH.left, W / 2 + tot * r2 * 1.25 + r2 * 0.4, y2 + r2 * 0.8);
+        g2.restore();
+      }
     } else if (shOv) shCtx.clearRect(0, 0, W, H);
     requestAnimationFrame(shFrame);
   }
@@ -328,6 +355,41 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     intro();
   }
   window.__shoot = shoot;
+  function puzzle(mode) {
+    var groups = [4, 5, 6], total = 15, left0 = Math.ceil(total * 0.8) + 3;
+    SH = { on: false }; shFeelOn();
+    var nm = mode === 'tap' ? 'Tap to fire' : 'Swipe to fire';
+    shCard('Where to hit: huddles (' + nm + ')', 'Penguins walk down in tight huddles, one huddle at a time, slowly. You have ' + left0 + ' pineapples for the whole stage. Hit the spot that knocks the most penguins into each other: the edge of a huddle at an angle sends them down like bowling pins; dead center drops only a few. Pineapples you do not use are a bonus. Nothing here can hurt you: if you run out, the stage just ends.',
+      'Start', go, 'Stop test', function () { shEnd(); gBodyReset(); toTitle(); });
+    function go() {
+      hideCard(); gBodyReset(); balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
+      SH = { on: false, mode: mode, puzzle: true, total: left0, left: left0, groups: groups, gi: 0, nextT: null, ko: 0, best: 0, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0, lastShot: 0, done: false };
+      shGhost = null; shPid = null;
+      startFrom({ stage: 1, wave: 1, golden: 0, cheer: 100 });
+      var tries = 0;
+      (function wait() {
+        if (!(S && !S.over && !gameEl.hidden && running && S.stage === 1)) { if (++tries > 200) { shEnd(); shCard('Where to hit', 'The stage did not start. Close and try again.', 'Close', function () { gBodyReset(); toTitle(); }); return; } setTimeout(wait, 50); return; }
+        S.toSpawn = total; S.spawned = 0; S.spawnT = 1e9;
+        SH.on = true; SH.t0 = performance.now(); SH.s0 = S.t; requestAnimationFrame(shFrame);
+        labTick = function () { if (SH.done || S.over || S.t - SH.s0 > 150) { labTick = null; SH.on = false; SH.sec = Math.round(S.t - SH.s0); after(); } };
+      }());
+    }
+    function after() {
+      var r = SH; SH = { on: false }; shPid = null; balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
+      if (!gameEl.hidden && S && !S.over) pause();
+      shCard('Huddles done', 'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + '; unused ' + r.left + ' (bonus). Best shot knocked ' + r.best + '.\nWas it fun?', 'Yes', function () { r.fun = 'yes'; easy(r); }, 'A bit', function () { r.fun = 'a bit'; easy(r); }, 'No', function () { r.fun = 'no'; easy(r); });
+    }
+    function easy(r) { shCard('Huddles', 'Was it clear where to hit?', 'Clear', function () { r.easy = 'yes'; fin(r); }, 'Not clear', function () { r.easy = 'no'; fin(r); }); }
+    function fin(r) {
+      var L = ['Pineapple Defense where-to-hit test: huddles, ' + nm + ' (tester build)',
+        'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + ', unused ' + r.left + '. Best single shot knocked ' + r.best + '. Shots that chained ' + r.chain + '. Time ' + r.sec + ' s. Fun: ' + r.fun + '. Clear where to hit: ' + r.easy + '.',
+        'Run: Stage 1 scene, 3 huddles of 4, 5 and 6 penguins walking slowly, ' + left0 + ' pineapples, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
+      var txt = L.concat(devInfo()).join('\n'); shEnd();
+      shCard('Where to hit: result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
+      var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
+    }
+  }
+  window.__puzzle = puzzle; window.__shS = function () { return SH; };
   window.__shT = function () { var r = cv.getBoundingClientRect(); return targets().map(function (g) { var c = penCenter(g); return { x: r.left + c.x * r.width / W, y: r.top + c.y * r.height / H, vy: g.v * slowK }; }); };   /* QA: where the penguins are, in page pixels */
   var bLab = $('bLab');
   if (bLab) bLab.addEventListener('click', function () {
