@@ -148,6 +148,14 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
      of a wave, and a faint ghost of the last shot. No aim lock, no aim assist, no sound, nothing punishing. Two 60 s rounds, random order, Fun? Easy?, then a copy-paste report. Nothing is saved or sent. */
   var SH = null, shCalmWas = false, shSave = null, shOv = null, shCtx = null, shGhost = null, balls = [], shPid = null;
   var SPEED = 2.2, GRAV = 0.9, BOUNCE = 0.5, LIFE = 0.6, PUSH = 0.55, DECAY = 4.5, CHAIN_MAX = 6, SWIPE = 0.04, CD = 0.35;
+  /* Pineapple types (tester): each shot in the puzzle round comes from a fixed queue shown in the counter row. */
+  var DEFS = {
+    classic: { name: 'Classic', speed: 2.2, grav: 0.9, bounce: 0.5, life: 0.6, push: 0.55, rb: 0.32, size: 1, img: 'pa', col: '#f8bd1c', blast: 0 },
+    bounce: { name: 'Bouncer', speed: 2.2, grav: 0.5, bounce: 0.97, life: 1.3, push: 0.5, rb: 0.32, size: 1, img: 'pa', col: '#35c2b6', blast: 0 },
+    blast: { name: 'Blaster', speed: 1.9, grav: 0.9, bounce: 0.2, life: 0.25, push: 0.75, rb: 0.36, size: 1.25, img: 'pl', col: '#e2570a', blast: 1.7 },
+    heavy: { name: 'Heavy', speed: 1.3, grav: 1.1, bounce: 0.85, life: 1.0, push: 1.1, rb: 0.52, size: 1.45, img: 'pm', col: '#8a5a2b', blast: 0 },
+    dart: { name: 'Dart', speed: 3.8, grav: 0.15, bounce: 0.25, life: 0.4, push: 0.35, rb: 0.22, size: 0.75, img: 'pa', col: '#ffffff', blast: 0 }
+  };
   function shEnd() {
     SH = null; labTick = null; shGhost = null; shPid = null; balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
     if (shSave) { AIMW = shSave.aimw; sv.hs = shSave.hs; sv.sk = shSave.sk; sv.ib = shSave.ib; if (shSave.calm === null) root.removeAttribute('data-calm'); else root.setAttribute('data-calm', shSave.calm); shSave = null; }
@@ -159,11 +167,11 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
   }
   var shThrow = throwAt, shHit = hitPenguin, shUpdate = update;
   function bsize(y) { var p = Math.max(0.05, Math.min(1, (y - hy) / (gy - hy))), ty = effType(); return Math.min(slingGeom().ps * 0.92 * ty.size, psz(p) * 0.62 * ty.size); }
-  function spawnBall(ox, oy, dx, dy) {
-    var len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = Math.min(-0.05, dy / len), n = Math.hypot(ux, uy), V = SPEED * H;
-    var sh = { ty: effType(), s0: bsize(oy), x0: ox, y0: oy, xE: ox, yE: oy, pEnd: 0.5, t: 0, T: 1e9, arc: 0, spin: (Math.random() < 0.5 ? -1 : 1) * 14, ph: 0, cheer: false, soft: false };
+  function spawnBall(ox, oy, dx, dy, type) {
+    var def = DEFS[type] || DEFS.classic, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = Math.min(-0.05, dy / len), n = Math.hypot(ux, uy), V = def.speed * H, ty0 = effType();
+    var sh = { ty: Object.assign({}, ty0, { img: def.img, size: ty0.size * def.size }), s0: bsize(oy) * def.size, x0: ox, y0: oy, xE: ox, yE: oy, pEnd: 0.5, t: 0, T: 1e9, arc: 0, spin: (Math.random() < 0.5 ? -1 : 1) * 14, ph: 0, cheer: false, soft: false };
     shots.push(sh);
-    balls.push({ x: ox, y: oy, vx: ux / n * V, vy: uy / n * V, hit: [], life: null, hits: 0, chain: 0, ko: 0, sh: sh, pts: [] });
+    balls.push({ x: ox, y: oy, vx: ux / n * V, vy: uy / n * V, hit: [], life: null, hits: 0, chain: 0, ko: 0, sh: sh, pts: [], def: def, type: type || 'classic' });
   }
   throwAt = function () {
     if (SH && SH.on && SH.puzzle && SH.left <= 0) return;   /* out of pineapples: nothing fires, nothing is lost */
@@ -171,20 +179,22 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     if (SH && SH.on && shots.length > n) {
       var sh = shots.pop(); SH.th++; SH.t.push(Math.round(performance.now() - SH.t0)); if (SH.puzzle) { SH.left--; SH.lastShot = S.t; }
       if (S.fx.zip <= 0 && S.cd > CD) { S.cd = CD; S.cdMax = CD; }
-      spawnBall(arguments[0], arguments[1], arguments[2], arguments[3]);
+      var ty = SH.puzzle ? SH.queue[SH.used++] || 'classic' : 'classic';
+      if (SH.puzzle) { SH.by[ty] = SH.by[ty] || { n: 0, ko: 0 }; SH.by[ty].n++; }
+      spawnBall(arguments[0], arguments[1], arguments[2], arguments[3], ty);
     }
   };
   hitPenguin = function (pg, x, y) { if (SH && SH.on) SH.hit++; var r = shHit(pg, x, y); if (SH && SH.on && pg.st === 'hit' && !pg.kd) { pg.kd = 1; SH.ko++; } return r; };
-  function tumble(pg, vx, vy, ball) {   /* knock a penguin back up its lane (and sideways), in lane units */
-    pg.kp = vy / (gy - hy) * PUSH; pg.kx = vx / (FW * sc(pg.p)) * PUSH; pg.kb = ball;
+  function tumble(pg, vx, vy, ball, push) {   /* knock a penguin back up its lane (and sideways), in lane units */
+    push = push || PUSH; pg.kp = vy / (gy - hy) * push; pg.kx = vx / (FW * sc(pg.p)) * push; pg.kb = ball;
   }
   function lastOne() { var i, n = Math.max(0, S.toSpawn - S.spawned); if (SH && SH.puzzle && SH.gi < SH.groups.length) return false; for (i = 0; i < penguins.length; i++) if (penguins[i].st === 'walk') n++; return n === 0; }
   var shSlow = false;
   function slowmo() { if (shSlow || calm) return; shSlow = true; var was = timeScale; timeScale = 0.35; setTimeout(function () { timeScale = was; shSlow = false; }, 500); }
   function ballStep(b, dt) {
-    var k, h = dt / 2, i, pg, c, px0, py0, d, dx, dy, t, rb, nx, ny, dot, sp;
+    var k, h = dt / 2, i, pg, c, px0, py0, d, dx, dy, t, rb, nx, ny, dot, sp, df = b.def, q, c2, ex, ey, el;
     for (k = 0; k < 2; k++) {
-      px0 = b.x; py0 = b.y; b.vy += GRAV * H * h; b.x += b.vx * h; b.y += b.vy * h; rb = bsize(b.y) * 0.32;
+      px0 = b.x; py0 = b.y; b.vy += df.grav * H * h; b.x += b.vx * h; b.y += b.vy * h; rb = bsize(b.y) * df.size * df.rb;
       for (i = 0; i < penguins.length; i++) {
         pg = penguins[i]; if (pg.st !== 'walk' || b.hit.indexOf(pg) >= 0) continue;
         c = penCenter(pg); dx = b.x - px0; dy = b.y - py0; t = (dx * dx + dy * dy) ? Math.max(0, Math.min(1, ((c.x - px0) * dx + (c.y - py0) * dy) / (dx * dx + dy * dy))) : 0;
@@ -192,16 +202,26 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
         if (d < c.s * 0.42 + rb) {
           b.hit.push(pg); b.hits++; sp = Math.hypot(b.vx, b.vy);
           hitPenguin(pg, c.x, c.y - c.s * 0.2);
-          if (pg.st === 'hit') { b.ko++; tumble(pg, b.vx, b.vy, b); } else { pg.pop = 1; pg.p = Math.max(0.03, pg.p - 0.03); }
+          if (pg.st === 'hit') { b.ko++; tumble(pg, b.vx, b.vy, b, df.push); } else { pg.pop = 1; pg.p = Math.max(0.03, pg.p - 0.03); }
+          if (df.blast) {   /* Blaster: everything close to the impact is knocked outward */
+            for (el = 0; el < penguins.length; el++) {
+              q = penguins[el]; if (q === pg || q.st !== 'walk') continue; c2 = penCenter(q);
+              if (Math.hypot(c2.x - c.x, c2.y - c.y) < c.s * df.blast) {
+                ex = c2.x - c.x; ey = c2.y - c.y; d = Math.hypot(ex, ey) || 1; b.hit.push(q); hitPenguin(q, c2.x, c2.y - c2.s * 0.2);
+                if (q.st === 'hit') { b.ko++; tumble(q, ex / d * sp * 0.6, ey / d * sp * 0.6 - sp * 0.15, b, df.push); } else { q.pop = 1; }
+              }
+            }
+            burst(c.x, c.y, 18, PINE_COL); shakeAdd(0.25); popText(c.x, c.y - c.s * 0.9, 'Boom!', '#d4540a', 1);
+          }
           nx = b.x - c.x; ny = b.y - c.y; d = Math.hypot(nx, ny) || 1; nx /= d; ny /= d; dot = b.vx * nx + b.vy * ny;
-          if (dot < 0) { b.vx = (b.vx - 2 * dot * nx) * BOUNCE; b.vy = (b.vy - 2 * dot * ny) * BOUNCE; }
-          burst(c.x, c.y, 10, SNOW_COL); if (b.life === null) b.life = LIFE;
+          if (dot < 0) { b.vx = (b.vx - 2 * dot * nx) * df.bounce; b.vy = (b.vy - 2 * dot * ny) * df.bounce; }
+          burst(c.x, c.y, 10, SNOW_COL); if (b.life === null) b.life = df.life;
           if (lastOne()) slowmo();
         }
       }
       if (b.life !== null) b.life -= h;
     }
-    b.sh.x0 = b.sh.xE = b.x; b.sh.y0 = b.sh.yE = b.y; b.sh.s0 = bsize(b.y); b.sh.pEnd = Math.max(0.05, Math.min(1, (b.y - hy) / (gy - hy)));
+    b.sh.x0 = b.sh.xE = b.x; b.sh.y0 = b.sh.yE = b.y; b.sh.s0 = bsize(b.y) * df.size; b.sh.pEnd = Math.max(0.05, Math.min(1, (b.y - hy) / (gy - hy)));
     if (b.pts.length < 40) b.pts.push({ x: b.x, y: b.y });
     return (b.life !== null && b.life <= 0) || b.y < hy - H * 0.12 || b.y > H * 1.05 || b.x < -W * 0.1 || b.x > W * 1.1;
   }
@@ -233,8 +253,8 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     if (SH.gi < SH.groups.length && (SH.nextT === null ? S.t - SH.s0 > 1 : (S.t - SH.nextT > 3 && (n <= 1 || S.t - SH.nextT > 14)))) {
       g = SH.groups[SH.gi++]; c = (SH.gi % 2 ? -1 : 1) * (0.12 + Math.random() * 0.3); SH.nextT = S.t;
       for (k = 0; k < g; k++) {
-        t = c + ((k % 3) - 1) * 0.085 + (Math.random() - 0.5) * 0.02;
-        penguins.push({ id: ++S.id, kind: 'rh', xn: Math.max(-0.9, Math.min(0.9, t)), x0: t, p: 0.06 + Math.floor(k / 3) * 0.04, v: 0.045, st: 'walk', t: 0, mood: 'happy', ph: Math.random() * 6, av: 0, base: 0.045, hp: 1, ev: 0, side: Math.random() < 0.5 ? -1 : 1, hat: false, puff: 0, a: 1, gear: rollGear() });
+        t = c + ((k % 3) - 1) * 0.075 + (Math.random() - 0.5) * 0.02;
+        penguins.push({ id: ++S.id, kind: 'rh', xn: Math.max(-0.9, Math.min(0.9, t)), x0: t, p: 0.06 + Math.floor(k / 3) * 0.035, v: 0.045, st: 'walk', t: 0, mood: 'happy', ph: Math.random() * 6, av: 0, base: 0.045, hp: Math.random() < 0.4 ? 2 : 1, ev: 0, side: Math.random() < 0.5 ? -1 : 1, hat: false, puff: 0, a: 1, gear: rollGear() });
         S.spawned++; n++;
       }
     }
@@ -249,7 +269,8 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     var i, b;
     for (i = balls.length - 1; i >= 0; i--) {
       b = balls[i];
-      if (ballStep(b, dt)) { b.sh.dead = true; if (b.chain > 0) SH.chain++; if (SH.puzzle && b.ko >= 4) { SH.best = Math.max(SH.best, b.ko); popText(Math.max(W * 0.3, Math.min(W * 0.7, b.x)), Math.max(H * 0.3, b.y), 'x' + b.ko + '! ' + (b.ko >= 6 ? 'Perfect!' : 'Great spot!'), '#d4540a', 1); shakeAdd(0.15); } if (b.y > hy) burst(b.x, Math.min(b.y, H * 0.95), 5, PINE_COL); shGhost = { pts: b.pts, t0: performance.now() }; balls.splice(i, 1); }
+      if (ballStep(b, dt)) { b.sh.dead = true; if (b.chain > 0) SH.chain++; if (SH.puzzle) { var by = SH.by[b.type]; if (by) by.ko += b.ko; }
+      if (SH.puzzle && b.ko >= 4) { SH.best = Math.max(SH.best, b.ko); popText(Math.max(W * 0.3, Math.min(W * 0.7, b.x)), Math.max(H * 0.3, b.y), 'x' + b.ko + '! ' + (b.ko >= 6 ? 'Perfect!' : 'Great spot!'), '#d4540a', 1); shakeAdd(0.15); } if (b.y > hy) burst(b.x, Math.min(b.y, H * 0.95), 5, PINE_COL); shGhost = { pts: b.pts, t0: performance.now() }; balls.splice(i, 1); }
     }
     tumbleStep(dt);
   };
@@ -269,13 +290,13 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     if (!shOv && !(SH && SH.on)) return;
     if (SH && SH.on) {
       shSize(); shCtx.clearRect(0, 0, W, H);
-      balls.forEach(function (b) { var n = b.pts.length, g = shCtx, i; for (i = Math.max(1, n - 5); i < n; i++) { g.beginPath(); g.moveTo(b.pts[i - 1].x, b.pts[i - 1].y); g.lineTo(b.pts[i].x, b.pts[i].y); g.lineWidth = Math.max(2, bsize(b.pts[i].y) * 0.35 * (i - n + 6) / 5); g.lineCap = 'round'; g.strokeStyle = 'rgba(255,247,227,' + (0.15 + 0.12 * (i - n + 6)) + ')'; g.stroke(); } });
+      balls.forEach(function (b) { var n = b.pts.length, g = shCtx, i; for (i = Math.max(1, n - 5); i < n; i++) { g.beginPath(); g.moveTo(b.pts[i - 1].x, b.pts[i - 1].y); g.lineTo(b.pts[i].x, b.pts[i].y); g.lineWidth = Math.max(2, bsize(b.pts[i].y) * 0.35 * (i - n + 6) / 5); g.lineCap = 'round'; g.strokeStyle = b.def.col; g.globalAlpha = 0.25 + 0.12 * (i - n + 6); g.stroke(); g.globalAlpha = 1; } });
       if (shGhost) { var a = 1 - (performance.now() - shGhost.t0) / 1000; if (a > 0) dots(shGhost.pts, a * 0.5); else shGhost = null; }
       if (SH.puzzle) {   /* the pineapples left this stage: a row of icons and a number */
         var g2 = shCtx, tot = SH.total, i2, r2 = Math.min(W / (tot * 2.6), H * 0.016), x2 = W / 2 - (tot - 1) * r2 * 1.25, y2 = H * 0.205;
         g2.save(); g2.fillStyle = 'rgba(255,247,227,.85)'; g2.fillRect(W / 2 - tot * r2 * 1.25 - r2 * 5, y2 - r2 * 1.6, tot * r2 * 2.5 + r2 * 10, r2 * 3.2);
-        for (i2 = 0; i2 < tot; i2++) { g2.beginPath(); g2.arc(x2 + i2 * r2 * 2.5, y2, r2, 0, 6.2832); g2.globalAlpha = i2 < SH.left ? 1 : 0.25; g2.fillStyle = '#f8bd1c'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#7a3a05'; g2.stroke(); }
-        g2.globalAlpha = 1; g2.fillStyle = '#7a3a05'; g2.font = '800 ' + Math.round(r2 * 2.2) + 'px sans-serif'; g2.textAlign = 'left'; g2.fillText('x ' + SH.left, W / 2 + tot * r2 * 1.25 + r2 * 0.4, y2 + r2 * 0.8);
+        for (i2 = 0; i2 < tot; i2++) { g2.beginPath(); g2.arc(x2 + i2 * r2 * 2.5, y2, r2, 0, 6.2832); g2.globalAlpha = i2 >= SH.used ? 1 : 0.25; g2.fillStyle = DEFS[SH.queue[i2]].col; g2.fill(); g2.lineWidth = i2 === SH.used ? 3.5 : 1.5; g2.strokeStyle = '#7a3a05'; g2.stroke(); }
+        g2.globalAlpha = 1; g2.fillStyle = '#7a3a05'; g2.font = '800 ' + Math.round(r2 * 2.2) + 'px sans-serif'; g2.textAlign = 'left'; g2.fillText('x ' + SH.left, W / 2 + tot * r2 * 1.25 + r2 * 0.4, y2 + r2 * 0.8); if (SH.left > 0) { g2.textAlign = 'center'; g2.font = '800 ' + Math.round(r2 * 1.7) + 'px sans-serif'; g2.fillText('Next: ' + DEFS[SH.queue[SH.used]].name, W / 2, y2 + r2 * 3.4); }
         g2.restore();
       }
     } else if (shOv) shCtx.clearRect(0, 0, W, H);
@@ -357,14 +378,14 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
   }
   window.__shoot = shoot;
   function puzzle(mode) {
-    var groups = [4, 5, 6], total = 15, left0 = Math.ceil(total * 0.8) + 3;
+    var groups = [5, 6, 7], total = 18, queue = ['classic', 'bounce', 'blast', 'classic', 'heavy', 'bounce', 'blast', 'heavy', 'dart'], left0 = queue.length;
     SH = { on: false }; shFeelOn();
     var nm = mode === 'tap' ? 'Tap to fire' : 'Swipe to fire';
-    shCard('Where to hit: huddles (' + nm + ')', 'Penguins walk down in tight huddles, one huddle at a time, slowly. You have ' + left0 + ' pineapples for the whole stage. Hit the spot that knocks the most penguins into each other: the edge of a huddle at an angle sends them down like bowling pins; dead center drops only a few. Pineapples you do not use are a bonus. Nothing here can hurt you: if you run out, the stage just ends.',
+    shCard('Where to hit: huddles (' + nm + ')', 'Penguins walk down in tight huddles, one huddle at a time, slowly. You have ' + left0 + ' pineapples for the whole stage, in a set order shown at the top: Classic (yellow), Bouncer (teal, ricochets into a second penguin), Blaster (orange, knocks everything near the hit), Heavy (brown, slow and strong) and Dart (white, very fast and light). Some penguins are tough and need two hits. Use each type where it counts. Unused pineapples are a bonus. Nothing here can hurt you: if you run out, the stage just ends.',
       'Start', go, 'Stop test', function () { shEnd(); gBodyReset(); toTitle(); });
     function go() {
       hideCard(); gBodyReset(); balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
-      SH = { on: false, mode: mode, puzzle: true, total: left0, left: left0, groups: groups, gi: 0, nextT: null, ko: 0, best: 0, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0, lastShot: 0, done: false };
+      SH = { on: false, mode: mode, puzzle: true, queue: queue, used: 0, by: {}, total: left0, left: left0, groups: groups, gi: 0, nextT: null, ko: 0, best: 0, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0, lastShot: 0, done: false };
       shGhost = null; shPid = null;
       startFrom({ stage: 1, wave: 1, golden: 0, cheer: 100 });
       var tries = 0;
@@ -384,7 +405,8 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     function fin(r) {
       var L = ['Pineapple Defense where-to-hit test: huddles, ' + nm + ' (tester build)',
         'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + ', unused ' + r.left + '. Best single shot knocked ' + r.best + '. Shots that chained ' + r.chain + '. Time ' + r.sec + ' s. Fun: ' + r.fun + '. Clear where to hit: ' + r.easy + '.',
-        'Run: Stage 1 scene, 3 huddles of 4, 5 and 6 penguins walking slowly, ' + left0 + ' pineapples, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
+        'By type (shots, knocked out): ' + Object.keys(DEFS).map(function (k) { var b = r.by[k]; return DEFS[k].name + ' ' + (b ? b.n + ', ' + b.ko : 'none'); }).join('; ') + '.',
+        'Run: Stage 1 scene, 3 huddles of 5, 6 and 7 penguins (about 4 in 10 need two hits) walking slowly, ' + left0 + ' pineapples in a set order of 5 types, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
       var txt = L.concat(devInfo()).join('\n'); shEnd();
       shCard('Where to hit: result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
