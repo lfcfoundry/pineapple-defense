@@ -1,3 +1,3 @@
 # Shooting test (tester build)
 
-The real Pineapple Defense game in its Test Lab build. Open the page, tap Test Lab, then "Drag vs press-and-slide (2 min)". Two 60 second rounds on Stage 2 (drag and let go, and press, slide, let go; both rebuilt after the Royal Smash research), Easy or Hard after each, then a Copy results button. Nothing is sent or saved outside this tester's own save slot. Copyright (c) 2026 LFC Foundry. MIT License.
+The real Pineapple Defense game in its Test Lab build. Open the page, tap Test Lab, then "Tap vs swipe cannon (2 min)". Two 60 second rounds on Stage 2 (Tap to fire and Swipe to fire, the Royal Smash style physics cannon: mechanics and feel only), Fun and Easy or Hard after each, then a Copy results button. Nothing is sent or saved outside this tester's own save slot. Copyright (c) 2026 LFC Foundry. MIT License.
