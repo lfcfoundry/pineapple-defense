@@ -26,7 +26,7 @@
     }
     lines = ['Pineapple Defense Device check', 'Version: ' + (ver ? ver[1] : '?') + (/LAB/.test(document.querySelector('.legal').textContent) ? ' (tester build)' : ''), 'Result: ' + word + '. ' + why];
     if (word !== 'Could not check') lines.push('Frames a second: ' + r1(n * 1000 / sum) + (med > floor ? ' (much slower than a normal screen; typical spacing ' + r1(med) + ' ms)' : ' (the screen seems to run at about ' + hz + ' Hz)'), 'Frame time: typical ' + r1(med) + ' ms, slowest 5 percent over ' + r1(pct(sg, 0.95)) + ' ms, slowest 1 percent over ' + r1(pct(sg, 0.99)) + ' ms, worst ' + r1(sg[n - 1]) + ' ms', 'Frames more than twice the typical time: ' + slow + ' of ' + n, 'Hitches: ' + dm.verdict(), 'The game\'s own work per frame: average ' + r1(ws / n) + ' ms, slowest 5 percent over ' + r1(pct(sw, 0.95)) + ' ms', 'Picture quality: ' + (qmax === 0 ? 'stayed at full' : 'dropped to level ' + qmax + ' of 2 (canvas step ' + dmax + ' of 4)'));
-    lines.push('Run: Stage 2 wave 3 played by the throwing helper, ' + r1(run / 1000) + ' s measured after a ' + r1(warm / 1000) + ' s warm-up' + (ended ? ' (' + ended + ')' : ''), 'Start: the game finished starting after ' + BOOT_MS + ' ms');
+    lines.push('Run: Stage ' + (S ? S.stage : 2) + ' wave ' + (S ? S.wave : 3) + ' played by the throwing helper, ' + r1(run / 1000) + ' s measured after a ' + r1(warm / 1000) + ' s warm-up' + (ended ? ' (' + ended + ')' : ''), 'Start: the game finished starting after ' + BOOT_MS + ' ms');
     return lines.concat(devInfo()).join('\n');
   }
   function deviceCheck(opts, done) {
@@ -55,10 +55,10 @@
       if (qLevel > qmax) qmax = qLevel; if (dprStep > dmax) dmax = dprStep;
       if (now - t1 >= run) finish(); else if (S && S.over) { ended = 'the scene ended early'; finish(); }
     }
-    devStart({ stage: 2, wave: 2, golden: 0, cheer: 100 });
+    devStart({ stage: opts.stage || 2, wave: opts.wave || 2, golden: 0, cheer: 100 });
     document.body.appendChild(bar); bar.textContent = 'Device check starting.';
     (function wait() {
-      if (!(S && !S.over && !gameEl.hidden && running && S.stage === 2)) { if (++tries > 200) { labBot = false; if (bar.parentNode) bar.parentNode.removeChild(bar); if (done) done('Could not check: the stage did not start.'); return; } setTimeout(wait, 50); return; }
+      if (!(S && !S.over && !gameEl.hidden && running && S.stage === (opts.stage || 2))) { if (++tries > 200) { labBot = false; if (bar.parentNode) bar.parentNode.removeChild(bar); if (done) done('Could not check: the stage did not start.'); return; } setTimeout(wait, 50); return; }
       labBot = true; labTick = tick;
     }());
   }
