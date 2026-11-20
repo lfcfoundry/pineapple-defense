@@ -22,7 +22,7 @@
 <label>Intent <select id="intent"><option>unknown</option><option>launch</option><option>cancel</option></select></label><label>Event code <select id="code"><option>unknown</option><option>accepted</option><option>early</option><option>invalid-gesture</option><option>wrong-actor</option><option>wrong-endpoint</option><option>accidental</option><option>cancel</option></select></label><label>Event index <input id="eventIndex" type="number" min="0" placeholder="from event log"></label>
 <textarea id="annotation" aria-label="Local observation"> </textarea><button id="annotationSave">Record local annotation</button><p class="small">Unknown intent stays unknown. Intentional cancels are separate. Four automatic boops never pass recovery/access. Rates and gates require the validated procedure and manual coding; raw exports are not a certified study result.</p>
 </details>
-<details><summary>Local export and device record</summary><label>Device / OS / browser <input id="device" type="text" placeholder="Record actual device before testing"></label><label><input id="consent" type="checkbox">Consent to this anonymous local export</label><button id="export">Download metrics JSON</button><p id="exportStatus" role="status">Notes exist only in this page’s memory until explicitly exported. Reloading loses them.</p></details>
+<details open><summary>Local export and device record</summary><label>Device / OS / browser <input id="device" type="text" placeholder="Record actual device before testing"></label><label><input id="consent" type="checkbox">Consent to this anonymous local export</label><button id="export">Download metrics JSON</button><button id="copyRes">Copy results</button><p id="exportStatus" role="status">Notes exist only in this page’s memory until explicitly exported. Reloading loses them.</p></details>
 </section><footer>Copyright © 2026 LFC Foundry · MIT License · Forged by LFC Foundry. Source pin 4356ead15a5eb61693f33497515f0212cf01dd77. Original game is untouched.</footer>
 <script type="module">
 // Module: even-dt.mjs
@@ -907,6 +907,12 @@ $('export').onclick=()=>{
  if(!$('consent').checked){$('exportStatus').textContent='Local export requires consent. Nothing has been stored or sent.';return;}
  const data={format:'pineapple-experiment-r3-1',source:SOURCE,created:new Date().toISOString(),device:$('device').value,userAgent:navigator.userAgent,protocol,slot,trialRoles:[...trialLabels.entries()],events:e.events,notes,qualification:'Browser/human gates not automatically certified'};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pineapple-experiment-r3.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);$('exportStatus').textContent='Exported locally; no network or campaign save.';
+};
+$('copyRes').onclick=()=>{
+ const data={format:'pineapple-experiment-r3-1',source:SOURCE,created:new Date().toISOString(),device:$('device').value,userAgent:navigator.userAgent,protocol,slot,trialRoles:[...trialLabels.entries()],events:e.events,notes};
+ const text=JSON.stringify(data,null,1);let ok=false;
+ const fallback=()=>{const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0';document.body.append(t);t.select();try{ok=document.execCommand('copy');}catch(_){}t.remove();$('exportStatus').textContent=ok?'Copied '+text.length+' characters. Paste them into the chat.':'Copy was blocked by the browser. Use Download metrics JSON instead.';};
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>{$('exportStatus').textContent='Copied '+text.length+' characters. Paste them into the chat.';},fallback);}else fallback();
 };
 questions.forEach((q,i)=>{const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.id='q'+i;label.append(box,' Unprompted pass: '+q);$('questions').append(label);});
 newTrial(true);requestAnimationFrame(tick);
