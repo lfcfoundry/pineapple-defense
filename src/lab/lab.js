@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><div class="row"><button class="btn" data-a="fg" type="button">Fish and gulls check (20 s)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -128,6 +128,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       else if (a === 'upg') { sv.au = 1; sv.ar = 3; sv.ap = 2; sv.lm = 3; kit.save(sv); say('Auto Slingshot, Faster Fling, Better Pineapples and the Lime Launcher maxed.'); }
       else if (a === 'rst') { o = kit.validate({}); for (k in o) sv[k] = o[k]; kit.save(sv); updateContinue(); say('Save reset.'); }
       else if (a === 'dev') deviceCheck();
+      else if (a === 'fg') fishGullCheck();
       else if (a === 'shoot') labGo(shoot);
       else if (a === 'pzt') labGo(function () { puzzle('tap'); });
       else if (a === 'pzs') labGo(function () { puzzle('flick'); });
@@ -391,6 +392,21 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
   }
   window.__puzzle = puzzle; window.__shS = function () { return SH; };
   window.__shT = function () { var r = cv.getBoundingClientRect(); return targets().map(function (g) { var c = penCenter(g); return { x: r.left + c.x * r.width / W, y: r.top + c.y * r.height / H, vy: g.v * slowK }; }); };   /* QA: where the penguins are, in page pixels */
+  /* Fish and gulls check (tester only): the same 20 s Device check on Stage 2 wave 3, but a gull-and-fish drop is forced all the time, so the drawing cost of the fish, hanky and gull shows up in the frame numbers.
+     Compare with the plain Device check on the same phone: the difference is what fish and gulls cost. */
+  function fishGullCheck() {
+    var oldGu = sv.gu, tm = setInterval(function () { if (S && !S.over && !gameEl.hidden && S.fishT > 0) S.fishT = 0; }, 400);
+    sv.gu = 3;
+    deviceCheck({}, function (txt) {
+      clearInterval(tm); sv.gu = oldGu;
+      var out = 'Fish and gulls check: a fish with a handkerchief and a gull were forced on screen almost all the time (every frame was drawing them).\n' + txt;
+      if (!gameEl.hidden) { titleEl.hidden = true; gameEl.hidden = false; }
+      showCard('Fish and gulls check', out, 'Copy report', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
+      var body = $('gBody'), b1 = $('gBtn1');
+      body.style.cssText = 'white-space:pre-wrap;text-align:left;font-size:.75rem;line-height:1.35;user-select:text;-webkit-user-select:text;word-break:break-word';
+      b1.onclick = function () { copyText(out, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
+    });
+  }
   var bLab = $('bLab');
   if (bLab) bLab.addEventListener('click', function () {
     $('cardBody').replaceChildren(panel()); $('cardTitle').textContent = 'Test Lab'; $('cw').hidden = false; root.setAttribute('data-dlg', '1'); $('cardOk').focus();
