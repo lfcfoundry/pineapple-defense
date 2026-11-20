@@ -144,14 +144,14 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
      no hidden aim lock, a short hit pause, a small shake, and a chain (a knocked-out penguin bumps its neighbors). No aim assist, no sound, nothing punishing.
      Style A "Drag and let go": drag from the bottom part of the screen; direction = the drag, distance = the drag LENGTH. Style B "Press, slide, let go": the ring sits above the finger.
      Two 60 s rounds in the real game, random order, then Fun? and Easy? and a copy-paste report. Nothing is saved or sent. */
-  var SH = null, shSave = null, shOv = null, shCtx = null, shAim = null, shGhost = null, shChain = 0, shIn = false;
+  var SH = null, shCalmWas = false, shSave = null, shOv = null, shCtx = null, shAim = null, shGhost = null, shChain = 0, shIn = false;
   var FLIGHT = 0.55, MINL = 0.06, MAXL = 0.30, OFFY = 0.14;
   function shEnd() {
     SH = null; labTick = null; shAim = null; shGhost = null;
-    if (shSave) { AIMW = shSave.aimw; sv.hs = shSave.hs; sv.sk = shSave.sk; shSave = null; }
+    if (shSave) { AIMW = shSave.aimw; sv.hs = shSave.hs; sv.sk = shSave.sk; if (shSave.calm === null) root.removeAttribute('data-calm'); else root.setAttribute('data-calm', shSave.calm); shSave = null; }
     if (shOv) { shOv.remove(); shOv = null; shCtx = null; }
   }
-  function shFeelOn() { if (!shSave) { shSave = { aimw: AIMW, hs: sv.hs, sk: sv.sk }; } AIMW = 0; sv.hs = 1; sv.sk = 3; }   /* no lock-on; hit pause on; small shake on */
+  function shFeelOn() { if (!shSave) { shSave = { aimw: AIMW, hs: sv.hs, sk: sv.sk, calm: root.getAttribute('data-calm') }; shCalmWas = shSave.calm === '1'; } AIMW = 0; sv.hs = 1; sv.sk = 3; root.setAttribute('data-calm', '0'); }   /* Calm mode turns hit pause and shake off, so it is off for the test and put back after */   /* no lock-on; hit pause on; small shake on */
   var shThrow = throwAt, shHit = hitPenguin;
   function pathFor(ox, oy, dx, dy, pEnd, ty) {
     var yE = py(pEnd) - psz(pEnd) * 0.3, tt = (yE - oy) / dy, xE = ox + dx * tt;
@@ -289,7 +289,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
         var ts = r.t, gaps = [], j; for (j = 1; j < ts.length; j++) gaps.push(ts[j] - ts[j - 1]);
         L.push('Round ' + (k + 1) + ': ' + name(r.mode) + '. ' + r.sec + ' s. Throws ' + r.th + ', hits ' + r.hit + ' (' + (r.th ? Math.round(r.hit * 100 / r.th) : 0) + ' per 100 throws), chains ' + r.chain + '. Fun: ' + r.fun + '. Easy to hit what I aimed at: ' + r.easy + '.' + (gaps.length ? ' Median gap between throws ' + Math.round(gaps.sort(function (a, b) { return a - b; })[gaps.length >> 1]) + ' ms.' : ''));
       });
-      L.push('Run: Stage 2 wave 2, real game. Feel kit on: true path and landing ring, ghost of the last throw, faster flight, no aim lock, hit pause, small shake, chains. Hits count every pineapple, including helpers and chains.');
+      L.push('Run: Stage 2 wave 2, real game. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Feel kit on: true path and landing ring, ghost of the last throw, faster flight, no aim lock, hit pause, small shake, chains. Hits count every pineapple, including helpers and chains.');
       var txt = L.concat(devInfo()).join('\n'); shEnd();
       shCard('Shooting test result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
