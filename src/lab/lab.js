@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Flick vs point control (2 min)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -128,6 +128,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       else if (a === 'upg') { sv.au = 1; sv.ar = 3; sv.ap = 2; sv.lm = 3; kit.save(sv); say('Auto Slingshot, Faster Fling, Better Pineapples and the Lime Launcher maxed.'); }
       else if (a === 'rst') { o = kit.validate({}); for (k in o) sv[k] = o[k]; kit.save(sv); updateContinue(); say('Save reset.'); }
       else if (a === 'dev') deviceCheck();
+      else if (a === 'shoot') labGo(shoot);
       else if (a === 'flash') { say('Checking Stage 2, wave 3 (0%)'); flashCheck(say); }
       else if (a === 'tap1') say(tapTime());
       else if (a === 'cb') { var nm = cbSet((cbI + 1) % CB.length); e.target.textContent = 'Color view: ' + nm; say('Showing: ' + nm + (cbI ? '. Tap again for the next view.' : '.')); }
@@ -137,6 +138,70 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     });
     return d;
   }
+
+  /* Shooting test (tester only): plays the REAL game twice for 60 s each, once with today's flick and once with point control (press where it should land, move to correct, lift to throw),
+     in random order. Counts throws and hits, asks two plain questions after each round, and ends with a plain-text report to copy. Nothing is saved or sent. */
+  var SH = null;
+  function shEnd() { SH = null; labTick = null; }
+  var shThrow = throwAt, shHit = hitPenguin;
+  throwAt = function () { var n = shots.length; shThrow.apply(null, arguments); if (SH && SH.on && shots.length > n) { SH.th++; SH.t.push(Math.round(performance.now() - SH.t0)); } };
+  hitPenguin = function () { if (SH && SH.on) SH.hit++; return shHit.apply(null, arguments); };
+  var shDown = null;
+  window.addEventListener('pointerdown', function (e) { if (SH && SH.on && SH.mode === 'point' && e.target === cv && S && !S.over && !S.paused) { shDown = e.pointerId; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  window.addEventListener('pointerup', function (e) {
+    if (!(SH && SH.on && SH.mode === 'point' && shDown === e.pointerId)) return;
+    shDown = null; e.stopImmediatePropagation();
+    var p = rel(e), o = pouchPos(); if (p.y < o.y - H * 0.05) throwAt(o.x, o.y, p.x - o.x, p.y - o.y, 1.5, { x: p.x, y: p.y });
+  }, true);
+  function shCard(title, body, b1, f1, b2, f2) { if (gameEl.hidden) { titleEl.hidden = true; gameEl.hidden = false; resize(); } showCard(title, body, b1, f1, b2, f2); $('gBody').style.cssText = 'white-space:pre-wrap;text-align:left;user-select:text;-webkit-user-select:text;word-break:break-word'; }
+  function shoot() {
+    var order = Math.random() < 0.5 ? ['flick', 'point'] : ['point', 'flick'], res = [], i = 0, RUN = 60;
+    SH = { on: false };
+    function name(m) { return m === 'flick' ? 'Flick (today)' : 'Point control'; }
+    function how(m) { return m === 'flick' ? 'Swipe up from the slingshot toward a penguin, as you always do.' : 'Press where you want the pineapple to land, slide to fix the spot, then lift your finger to throw. A plain tap works too.'; }
+    function intro() {
+      var m = order[i];
+      shCard('Round ' + (i + 1) + ' of 2: ' + name(m), how(m) + '\nIt lasts 60 seconds. Keep this tab in front.', 'Start', go, 'Stop test', function () { shEnd(); gBodyReset(); toTitle(); });
+    }
+    function go() {
+      var m = order[i]; hideCard(); gBodyReset();
+      SH = { on: false, mode: m, th: 0, hit: 0, t: [], t0: 0, s0: 0 };
+      startFrom({ stage: 2, wave: 1, golden: 0, cheer: 100 });
+      var tries = 0, bar = document.createElement('div');
+      bar.style.cssText = 'position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:60;max-width:92vw;padding:.4em .9em;border-radius:999px;background:rgba(255,247,227,.96);color:#4a2b0f;font:800 14px/1.2 var(--display);box-shadow:0 2px 8px rgba(0,0,0,.25)';
+      document.body.appendChild(bar);
+      (function wait() {
+        if (!(S && !S.over && !gameEl.hidden && running && S.stage === 2)) { if (++tries > 200) { bar.remove(); shEnd(); shCard('Shooting test', 'The stage did not start. Close and try again.', 'Close', function () { gBodyReset(); toTitle(); }); return; } setTimeout(wait, 50); return; }
+        SH.on = true; SH.t0 = performance.now(); SH.s0 = S.t;
+        labTick = function () {
+          var e = S.t - SH.s0; bar.textContent = name(m) + ': ' + Math.max(0, Math.ceil(RUN - e)) + ' s left. Throws ' + SH.th;
+          if (e >= RUN || S.over) { labTick = null; SH.on = false; SH.sec = Math.round(e); bar.remove(); after(); }
+        };
+      }());
+    }
+    function after() {
+      var r = SH; res.push(r); SH = { on: false };
+      if (!gameEl.hidden && S && !S.over) pause();
+      shCard('Round ' + (i + 1) + ' done: ' + name(r.mode), 'Throws: ' + r.th + '. Hits: ' + r.hit + '. Was it easy to hit what you aimed at?', 'Easy', function () { r.easy = 'yes'; next(); }, 'Hard', function () { r.easy = 'no'; next(); });
+    }
+    function next() { hideCard(); gBodyReset(); i++; if (i < 2) intro(); else pick(); }
+    function pick() {
+      shCard('Which felt better?', 'First round was ' + name(order[0]) + '. Second round was ' + name(order[1]) + '.', 'First', function () { fin('first'); }, 'Second', function () { fin('second'); });
+    }
+    function fin(w) {
+      var best = res[w === 'first' ? 0 : 1], L = ['Pineapple Defense shooting test (tester build)', 'Preferred: ' + name(best.mode) + ' (' + w + ' round)'];
+      res.forEach(function (r, k) {
+        var ts = r.t, gaps = [], j; for (j = 1; j < ts.length; j++) gaps.push(ts[j] - ts[j - 1]);
+        L.push('Round ' + (k + 1) + ': ' + name(r.mode) + '. ' + r.sec + ' s. Throws ' + r.th + ', hits ' + r.hit + ' (' + (r.th ? Math.round(r.hit * 100 / r.th) : 0) + ' per 100 throws). Easy to hit what I aimed at: ' + r.easy + '.' + (gaps.length ? ' Median gap between throws ' + Math.round(gaps.sort(function (a, b) { return a - b; })[gaps.length >> 1]) + ' ms.' : ''));
+      });
+      L.push('Run: Stage 2 wave 2, real game, helpers off unless this save owns them. Hits count every pineapple, including helpers.');
+      var txt = L.concat(devInfo()).join('\n'); shEnd();
+      shCard('Shooting test result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
+      var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
+    }
+    intro();
+  }
+  window.__shoot = shoot;
   var bLab = $('bLab');
   if (bLab) bLab.addEventListener('click', function () {
     $('cardBody').replaceChildren(panel()); $('cardTitle').textContent = 'Test Lab'; $('cw').hidden = false; root.setAttribute('data-dlg', '1'); $('cardOk').focus();
