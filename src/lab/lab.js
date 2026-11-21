@@ -109,7 +109,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       '<h3>Give</h3><div class="row"><button class="btn" data-a="b10" type="button">+10 bank</button><button class="btn" data-a="b100" type="button">+100 bank</button><button class="btn" data-a="tro" type="button">All trophies</button><button class="btn" data-a="upg" type="button">All upgrades</button><button class="btn" data-a="rst" type="button">Reset save</button></div>' +
       '<div class="row"><button class="btn" data-a="pz" type="button">Zippy</button><button class="btn" data-a="pm" type="button">Mega</button><button class="btn" data-a="ph" type="button">Cheer up</button><button class="btn" data-a="pf" type="button">Toasty</button><button class="btn" data-a="nt" type="button">Next trophy</button></div>' +
       '<h3>Checks</h3><div class="row"><button class="btn" data-a="dev" type="button">Device check (20 s)</button><button class="btn" data-a="flash" type="button">Flash check</button><button class="btn" data-a="tap1" type="button">First tap time</button></div>' +
-      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><div class="row"><button class="btn" data-a="fg" type="button">Fish and gulls check (20 s)</button><button class="btn" data-a="cs" type="button">Everything-at-once speed check (60 s)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
+      '<h3>Shooting test</h3><div class="row"><button class="btn" data-a="shoot" type="button">Tap vs swipe cannon (2 min)</button></div><div class="row"><button class="btn" data-a="pzt" type="button">Where to hit: huddles, tap (1 min)</button><button class="btn" data-a="pzs" type="button">Where to hit: huddles, swipe</button></div><div class="row"><button class="btn" data-a="pkt" type="button">Where to hit: stacks, tap (1 min)</button><button class="btn" data-a="pks" type="button">Where to hit: stacks, swipe</button></div><div class="row"><button class="btn" data-a="fg" type="button">Fish and gulls check (20 s)</button><button class="btn" data-a="cs" type="button">Everything-at-once speed check (60 s)</button></div><h3>Color view</h3><div class="row"><button class="btn" data-a="cb" type="button">Color view: ' + CB[cbI][0] + '</button></div>' +
       '<div class="note">Power-ups and trophies appear on the table while a stage is running (open this from the pause card).</div><h3>Tuning</h3>';
     SL.forEach(function (s) { h += '<label class="sl" title="' + s[5] + '"><span>' + s[1] + '</span><input type="range" data-k="' + s[0] + '" min="' + s[2] + '" max="' + s[3] + '" step="' + s[4] + '"><output></output></label>'; });
     h += '<div class="row"><button class="btn" data-a="def" type="button">Reset tuning</button></div><div class="msg" aria-live="polite"></div>';
@@ -133,6 +133,8 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
       else if (a === 'shoot') labGo(shoot);
       else if (a === 'pzt') labGo(function () { puzzle('tap'); });
       else if (a === 'pzs') labGo(function () { puzzle('flick'); });
+      else if (a === 'pkt') labGo(function () { puzzle('tap', 'stack'); });
+      else if (a === 'pks') labGo(function () { puzzle('flick', 'stack'); });
       else if (a === 'flash') { say('Checking Stage 2, wave 3 (0%)'); flashCheck(say); }
       else if (a === 'tap1') say(tapTime());
       else if (a === 'cb') { var nm = cbSet((cbI + 1) % CB.length); e.target.textContent = 'Color view: ' + nm; say('Showing: ' + nm + (cbI ? '. Tap again for the next view.' : '.')); }
@@ -253,9 +255,10 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     for (i = 0; i < penguins.length; i++) if (penguins[i].st === 'walk') n++;
     if (SH.gi < SH.groups.length && (SH.nextT === null ? S.t - SH.s0 > 1 : (S.t - SH.nextT > 3 && (n <= 1 || S.t - SH.nextT > 14)))) {
       g = SH.groups[SH.gi++]; c = (SH.gi % 2 ? -1 : 1) * (0.12 + Math.random() * 0.3); SH.nextT = S.t;
+      var stk = SH.kind === 'stack', rows = Math.ceil(g / 2);
       for (k = 0; k < g; k++) {
-        t = c + ((k % 3) - 1) * 0.075 + (Math.random() - 0.5) * 0.02;
-        penguins.push({ id: ++S.id, kind: 'rh', xn: Math.max(-0.9, Math.min(0.9, t)), x0: t, p: 0.06 + Math.floor(k / 3) * 0.035, v: 0.045, st: 'walk', t: 0, mood: 'happy', ph: Math.random() * 6, av: 0, base: 0.045, hp: Math.random() < 0.4 ? 2 : 1, ev: 0, side: Math.random() < 0.5 ? -1 : 1, hat: false, puff: 0, a: 1, gear: rollGear() });
+        t = stk ? c + ((k % 2) - 0.5) * 0.1 + (Math.random() - 0.5) * 0.012 : c + ((k % 3) - 1) * 0.075 + (Math.random() - 0.5) * 0.02;
+        penguins.push({ id: ++S.id, kind: 'rh', xn: Math.max(-0.9, Math.min(0.9, t)), x0: t, p: 0.06 + (stk ? Math.floor(k / 2) * 0.05 : Math.floor(k / 3) * 0.035), v: 0.045, st: 'walk', t: 0, mood: 'happy', ph: Math.random() * 6, av: 0, base: 0.045, hp: stk ? (Math.floor(k / 2) >= rows - 2 || Math.random() < 0.25 ? 2 : 1) : Math.random() < 0.4 ? 2 : 1, ev: 0, side: Math.random() < 0.5 ? -1 : 1, hat: false, puff: 0, a: 1, gear: rollGear() });
         S.spawned++; n++;
       }
     }
@@ -378,20 +381,21 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     intro();
   }
   window.__shoot = shoot;
-  function puzzle(mode) {
-    var groups = [5, 6, 7], total = 18, queue = ['classic', 'bounce', 'blast', 'classic', 'heavy', 'bounce', 'blast', 'heavy', 'dart'], left0 = queue.length;
+  function puzzle(mode, kind) {
+    var stack = kind === 'stack', ST = stack ? 2 : 1, wd = stack ? 'stacks' : 'huddles', Wd = stack ? 'Stacks' : 'Huddles';
+    var groups = stack ? [6, 8, 10] : [5, 6, 7], total = stack ? 24 : 18, queue = stack ? ['classic', 'bounce', 'blast', 'heavy', 'dart', 'bounce', 'blast', 'classic'] : ['classic', 'bounce', 'blast', 'classic', 'heavy', 'bounce', 'blast', 'heavy', 'dart'], left0 = queue.length;
     SH = { on: false }; shFeelOn();
     var nm = mode === 'tap' ? 'Tap to fire' : 'Swipe to fire';
-    shCard('Where to hit: huddles (' + nm + ')', 'Penguins walk down in tight huddles, one huddle at a time, slowly. You have ' + left0 + ' pineapples for the whole stage, in a set order shown at the top: Classic (yellow), Bouncer (teal, ricochets into a second penguin), Blaster (orange, knocks everything near the hit), Heavy (brown, slow and strong) and Dart (white, very fast and light). Some penguins are tough and need two hits. Use each type where it counts. Unused pineapples are a bonus. Nothing here can hurt you: if you run out, the stage just ends.',
+    shCard('Where to hit: ' + wd + ' (' + nm + ')', (stack ? 'Penguins walk down in tall stacks two wide and 3 to 5 deep, one stack at a time, slowly. The front rows are tough. A hit near the front pushes the ones behind it, so choose where the chain starts.' : 'Penguins walk down in tight huddles, one huddle at a time, slowly.') + ' You have ' + left0 + ' pineapples for the whole stage, in a set order shown at the top: Classic (yellow), Bouncer (teal, ricochets into a second penguin), Blaster (orange, knocks everything near the hit), Heavy (brown, slow and strong) and Dart (white, very fast and light). Some penguins are tough and need two hits. Use each type where it counts. Unused pineapples are a bonus. Nothing here can hurt you: if you run out, the stage just ends.',
       'Start', go, 'Stop test', function () { shEnd(); gBodyReset(); toTitle(); });
     function go() {
       hideCard(); gBodyReset(); balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
-      SH = { on: false, mode: mode, puzzle: true, queue: queue, used: 0, by: {}, total: left0, left: left0, groups: groups, gi: 0, nextT: null, ko: 0, best: 0, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0, lastShot: 0, done: false };
+      SH = { on: false, mode: mode, kind: kind, puzzle: true, queue: queue, used: 0, by: {}, total: left0, left: left0, groups: groups, gi: 0, nextT: null, ko: 0, best: 0, th: 0, hit: 0, chain: 0, t: [], t0: 0, s0: 0, lastShot: 0, done: false };
       shGhost = null; shPid = null;
-      startFrom({ stage: 1, wave: 1, golden: 0, cheer: 100 });
+      startFrom({ stage: ST, wave: 1, golden: 0, cheer: 100 });
       var tries = 0;
       (function wait() {
-        if (!(S && !S.over && !gameEl.hidden && running && S.stage === 1)) { if (++tries > 200) { shEnd(); shCard('Where to hit', 'The stage did not start. Close and try again.', 'Close', function () { gBodyReset(); toTitle(); }); return; } setTimeout(wait, 50); return; }
+        if (!(S && !S.over && !gameEl.hidden && running && S.stage === ST)) { if (++tries > 200) { shEnd(); shCard('Where to hit', 'The stage did not start. Close and try again.', 'Close', function () { gBodyReset(); toTitle(); }); return; } setTimeout(wait, 50); return; }
         S.toSpawn = total; S.spawned = 0; S.spawnT = 1e9;
         SH.on = true; SH.t0 = performance.now(); SH.s0 = S.t; requestAnimationFrame(shFrame);
         labTick = function () { if (SH.done || S.over || S.t - SH.s0 > 150) { labTick = null; SH.on = false; SH.sec = Math.round(S.t - SH.s0); after(); } };
@@ -400,14 +404,14 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     function after() {
       var r = SH; SH = { on: false }; shPid = null; balls.forEach(function (b) { b.sh.dead = true; }); balls = [];
       if (!gameEl.hidden && S && !S.over) pause();
-      shCard('Huddles done', 'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + '; unused ' + r.left + ' (bonus). Best shot knocked ' + r.best + '.\nWas it fun?', 'Yes', function () { r.fun = 'yes'; easy(r); }, 'A bit', function () { r.fun = 'a bit'; easy(r); }, 'No', function () { r.fun = 'no'; easy(r); });
+      shCard(Wd + ' done', 'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + '; unused ' + r.left + ' (bonus). Best shot knocked ' + r.best + '.\nWas it fun?', 'Yes', function () { r.fun = 'yes'; easy(r); }, 'A bit', function () { r.fun = 'a bit'; easy(r); }, 'No', function () { r.fun = 'no'; easy(r); });
     }
-    function easy(r) { shCard('Huddles', 'Was it clear where to hit?', 'Clear', function () { r.easy = 'yes'; fin(r); }, 'Not clear', function () { r.easy = 'no'; fin(r); }); }
+    function easy(r) { shCard(Wd, 'Was it clear where to hit?', 'Clear', function () { r.easy = 'yes'; fin(r); }, 'Not clear', function () { r.easy = 'no'; fin(r); }); }
     function fin(r) {
-      var L = ['Pineapple Defense where-to-hit test: huddles, ' + nm + ' (tester build)',
+      var L = ['Pineapple Defense where-to-hit test: ' + wd + ', ' + nm + ' (tester build)',
         'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + ', unused ' + r.left + '. Best single shot knocked ' + r.best + '. Shots that chained ' + r.chain + '. Time ' + r.sec + ' s. Fun: ' + r.fun + '. Clear where to hit: ' + r.easy + '.',
         'By type (shots, knocked out): ' + Object.keys(DEFS).map(function (k) { var b = r.by[k]; return DEFS[k].name + ' ' + (b ? b.n + ', ' + b.ko : 'none'); }).join('; ') + '.',
-        'Run: Stage 1 scene, 3 huddles of 5, 6 and 7 penguins (about 4 in 10 need two hits) walking slowly, ' + left0 + ' pineapples in a set order of 5 types, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
+        'Run: Stage ' + ST + ' scene, 3 ' + wd + ' of ' + groups.join(', ') + ' penguins (' + (stack ? 'front rows and about 1 in 4 behind them need two hits' : 'about 4 in 10 need two hits') + ') walking slowly, ' + left0 + ' pineapples in a set order of 5 types, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
       var txt = L.concat(devInfo()).join('\n'); shEnd();
       shCard('Where to hit: result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
