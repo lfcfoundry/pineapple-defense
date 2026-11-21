@@ -84,38 +84,30 @@ These are the standing rules from v1: no sounds, no aim assist, no pinch zoom, n
   - Any stage can be replayed for more stars.
 - No lives, no waiting, no retry wall.
 
-## 9. What happens to the old systems (proposed; each needs an OK)
+## 9. What happens to the old systems (owner decisions, 2026.11.20)
 
 | Old system | Proposed in v2 | Why |
 |---|---|---|
-| Cheer meter (penguins boop the stand) | Keep as the "danger" picture only. A penguin that reaches the stand bounces off and is out of the wave. Nothing is lost. | Keeps the defense story without punishing |
+| Cheer meter (penguins boop the stand) | **Removed** (owner). No meter and no reaching the stand. | Owner decision |
 | Losing a wave | Removed (the stage just continues) | Matches "stage ends anyway" |
 | Unlimited ammo with cooldown | Replaced by the stage count. The cooldown stays at about 0.35 s. | Decided |
-| Auto Slingshot (the only helper in normal stages) | Becomes a shop upgrade that adds free extra pineapples per stage | A helper throwing would break the puzzle |
-| Lime Launcher (helper in Champion fights only) | Keep for Champion fights | Bosses aren't the puzzle waves |
+| Auto Slingshot and the other helpers | **Removed** (owner). No helper throws, and no extra-pineapple shop upgrades. | Owner decision |
+| Lime Launcher (helper in Champion fights only) | Removed with the other helpers unless the owner says to keep it (open) | Falls under the helper decision |
 | Air Raid | Keep as one bonus raid per stage that doesn't use your pineapples | Fun big moment |
 | Paper Umbrellas, Gull Pals, Toasty, Zippy, Cheer up, and the "Mega!" power-up (every throw splashes for 8 s) | Keep. Zippy and Mega! affect the pineapples you fire while they're active | Still fit |
-| Shop and Golden Pineapples | Keep. New items: +1 pineapple per stage (3 tiers), start with a Bouncer | Rewards play without making it pay-to-win |
+| Shop and Golden Pineapples | Keep. New items: start with a Bouncer, a one-use snowball shield (no extra-pineapple upgrades) | Rewards play without making it pay-to-win |
 | Combos (Double ... LEGENDARY) | Merge into the chain counter | One system, not two |
 | Runs (+10 % speed per run) | Keep | Replay value |
 | Champions | Keep. Each Champion fight gives its own pocket of pineapples (proposed 10 + 2 per stage), and his shield and dodge become the puzzle | Bosses stay special |
 | Old flick, AIMW lock-on, lobbed arc | Removed | Decided (no aim assist) |
 
-## 10. Open questions for picture cards (in this order)
+### Snowballs (owner idea, 2026.11.20)
 
-Already waiting in the Pineapple Defense thread:
-1. Wider play area.
-2. Slingshot redesign.
-3. Remove the lock-on (recommended: yes).
-4. Hit pause and shake on by default (recommended: yes).
+At higher difficulties (stages 3 to 5 and Champion fights) some penguins throw snowballs at the cannon. Defense is either shooting the snowball down (costs 1 pineapple) or a one-use shield from the shop. A hit only freezes the cannon for 1.5 s; nothing else is lost.
 
-New from this draft:
+## 10. Questions for picture cards (all answered 2026.11.20)
 
-5. Pineapple lineup: a set order per stage (recommended) or choose freely each shot.
-6. Cheer meter: keep as a picture only (recommended), or remove.
-7. Helpers become extra-pineapple upgrades (recommended), or are removed.
-8. Star rules as in section 8 (recommended), or a simpler "cleared / not cleared".
-9. Champion fights get their own pineapple pocket (recommended), or share the stage count.
+Answers: 1 wider play area, all on screen (7 lanes). 2 pineapple cannon replaces the slingshot (barrel turns to the tap, no aim help). 3 lock-on removed. 4 hit pause and small shake on by default (Calm turns them off). 5 pineapple order set per stage. 6 cheer meter removed. 7 helpers removed. 8 stars 1 to 3 plus bonus (half cleared 1, all 2, all with 3 or more left 3; each unused pineapple pays 5 Golden Pineapples). 9 Champion fights get their own pocket (about 10 plus 2 per stage). 10 snowballs: shoot down or use a shield.
 
 ## 11. Build order (proposed)
 
