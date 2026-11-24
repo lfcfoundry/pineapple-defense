@@ -1,0 +1,47 @@
+{
+  "runtime": "v26.13.1",
+  "platform": "Linux aarch64",
+  "verification": "Node automated verification only; no browser or human playtest",
+  "artifactSHA256": "37d7e7b57742e9f252fb9fd9ead9b04694f505b79693cd0089769895e61f9dec",
+  "results": [
+    {
+      "command": [
+        "python",
+        "-I",
+        "planning/redesign/prototype-r3/check-provenance.py"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 0.1587,
+      "cpuSeconds": 0.1521,
+      "stdout": "PASS: all 20 pinned function bodies retained; no campaign persistence bootstrap.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "planning/redesign/prototype-r3/tests.mjs"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 1.9559,
+      "cpuSeconds": 2.4856,
+      "stdout": "\u2714 initial geometry 320x568 A (40.136068ms)\n\u2714 initial geometry 320x568 B (21.247599ms)\n\u2714 initial geometry 360x640 A (22.842692ms)\n\u2714 initial geometry 360x640 B (18.542847ms)\n\u2714 initial geometry 412x732 A (20.503703ms)\n\u2714 initial geometry 412x732 B (20.382569ms)\n\u2714 initial geometry 640x360 A (18.752441ms)\n\u2714 initial geometry 640x360 B (20.687825ms)\n\u2714 F0 retains source corridor, speed-independent acquired prediction (43.374511ms)\n\u2714 F0 no-target speed branch remains opposite near/far range (22.232097ms)\n\u2714 F0 vanished selected target keeps authentic 0.4 s soft miss continuation (20.328125ms)\n\u2714 F0 original gesture thresholds reject stationary release (19.139445ms)\n\u2714 F0 preserves buttonless mouse hover throw and 350ms lock (20.976806ms)\n\u2714 F0 last segment determines direction independently of full-gesture guide (20.941732ms)\n\u2714 N0 stationary, correct-back, outside-back and owner-only cancellation (27.188517ms)\n\u2714 N1 stationary, correct-back, outside-back and owner-only cancellation (27.297404ms)\n\u2714 N pointer release during reload clears aim and cannot buffer (21.821086ms)\n\u2714 N keyboard initialization, fixed repeat, retention and cancel (21.458049ms)\n\u2714 N0 and N1 share exactly identical endpoint/flight/cooldown behavior (38.219157ms)\n\u2714 N0 has inert support; N1 release at frame end, no backwards sweep (41.098592ms)\n\u2714 source ordinary endpoint hit takes priority over support (18.89913ms)\n\u2714 source transit ignores visual overlaps and normal impacts retire (19.901937ms)\n\u2714 cart continuous contacts, stop retirement and zero new reaction timer 30 Hz (24.310181ms)\n\u2714 cart continuous contacts, stop retirement and zero new reaction timer 60 Hz (25.975138ms)\n\u2714 cart continuous contacts, stop retirement and zero new reaction timer 120 Hz (21.329834ms)\n\u2714 quadratic contact oracle including crossing with disjoint endpoints (22.910441ms)\n\u2714 cart exact stop contact wins, parked cart cannot trigger later (19.017822ms)\n\u2714 whole-fixture resets reproduce same state and streams; thr retained only in block (24.676432ms)\n\u2714 countdown fixed 3s, no pre-GO firing; excluded pause freezes all clocks (21.353515ms)\n\u2714 passive all-boop completion is never clean success; outcome locks shots (22.833293ms)\n\u2714 authentic two-miss recovery trace F0 320x568 (24.760376ms)\n\u2714 authentic two-miss recovery trace N0 320x568 (27.77653ms)\n\u2714 authentic two-miss recovery trace F0 360x640 (18.920044ms)\n\u2714 authentic two-miss recovery trace N0 360x640 (18.595988ms)\n\u2714 authentic two-miss recovery trace F0 412x732 (18.743408ms)\n\u2714 authentic two-miss recovery trace N0 412x732 (19.382406ms)\n\u2714 authentic two-miss recovery trace F0 640x360 (19.519653ms)\n\u2714 authentic two-miss recovery trace N0 640x360 (19.663777ms)\n\u2714 study primary comparison precedes any N1, counterbalanced in each age group (2.482869ms)\n\u2714 rates exclude cancellation and unknown intent, p95 nearest rank (0.759969ms)\n\u2714 F0 pause retains source drag until original pointerup consumes it (19.432169ms)\n\u2714 N capture cancellation, wrong pointer and keyboard Fire readiness are safe (19.592203ms)\n\u2714 cart hit reaction starts at zero frame-end timer; subsequent frame advances it (20.214803ms)\n\u2714 cart parked trigger cannot collect a walker arriving after stop (26.085083ms)\n\u2714 N source neutral sling state and raw endpoint invariance under target movement (18.516439ms)\n\u2714 engine enforces legal N area on Fire, including DOM adaptation callers (18.57316ms)\n\u2714 resize interruption cannot resume against obsolete geometry (18.885945ms)\n\u2139 tests 47\n\u2139 suites 0\n\u2139 pass 47\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 1580.037598\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "planning/redesign/prototype-r3/tests-app.mjs"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 1.5178,
+      "cpuSeconds": 2.1622,
+      "stdout": "PASS: bundled app boot, all 12 condition/viewport render paths, touch release/capture loss, internal focus\u2192Fire, blur exclusion and pre-GO press gating.\nNode DOM/Canvas double only; no pixels, browser events, device performance or human usability verified.\nPASS: actual guided UI blocks, mandatory F0/N0 independent-point lock, two B transfer attempts, optional replay choice, odd-ID recovery and completion.\n",
+      "stderr": ""
+    }
+  ],
+  "syntax": "all mjs and combined inline module pass",
+  "browserExecution": false,
+  "physicalDeviceInputs": false,
+  "gameFrameRateMeasured": false
+}
