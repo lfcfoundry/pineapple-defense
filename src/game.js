@@ -1565,6 +1565,22 @@ function drawBits() {
   }
   ctx.globalAlpha = 1;
 }
+/* score pops: the outlined text is drawn once into a small canvas (at 2x, so scaling it down stays sharp) and then stamped; Firefox spends most of its drawing time on live outlined text */
+var popCache = {}, popCacheN = 0;
+function popSprite(txt, col, fs) {
+  var key = txt + '|' + col + '|' + fs, e = popCache[key], c, g, w, h, K2 = 2;
+  if (e !== undefined) return e;
+  if (popCacheN > 200) { popCache = {}; popCacheN = 0; }
+  popCacheN++;
+  c = document.createElement('canvas'); g = c.getContext('2d');
+  g.font = '800 ' + fs * K2 + 'px "Bricolage Grotesque",sans-serif';
+  w = Math.ceil(g.measureText(txt).width + fs * 0.6 * K2); h = Math.ceil(fs * 1.5 * K2);
+  if (!(w > 0) || w > 2048) { popCache[key] = null; return null; }
+  c.width = w; c.height = h; g = c.getContext('2d');
+  g.font = '800 ' + fs * K2 + 'px "Bricolage Grotesque",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.lineWidth = fs * 0.2 * K2; g.strokeStyle = '#fff7e3'; g.strokeText(txt, w / 2, h / 2); g.fillStyle = col; g.fillText(txt, w / 2, h / 2);
+  return (popCache[key] = { c: c, w: w / K2, h: h / K2 });
+}
 function drawParticles() {
   var i, b, p, u, sc2, yy;
   for (i = 0; i < rings.length; i++) {
@@ -1578,7 +1594,9 @@ function drawParticles() {
     p = pops[i]; u = p.t / p.ttl; sc2 = u < 0.18 ? 0.3 + 1.2 * (u / 0.18) : u < 0.42 ? 1.5 - 0.5 * ((u - 0.18) / 0.24) : 1 - (u - 0.42) * 0.25;
     yy = p.y - (calm ? 20 : 90) * Math.min(1, u * 1.3);
     ctx.save(); ctx.globalAlpha = u > 0.6 ? 1 - (u - 0.6) / 0.4 : 1; ctx.translate(p.x, yy); ctx.rotate(p.rot * (1 - u)); ctx.scale(sc2 * (1 + p.big * 0.35), sc2 * (1 + p.big * 0.35));
-    ctx.lineWidth = fs * 0.2; ctx.strokeStyle = '#fff7e3'; ctx.strokeText(p.txt, 0, 0); ctx.fillStyle = p.col; ctx.fillText(p.txt, 0, 0);
+    var spr = popSprite(p.txt, p.col, fs);
+    if (spr) ctx.drawImage(spr.c, -spr.w / 2, -spr.h / 2, spr.w, spr.h);
+    else { ctx.lineWidth = fs * 0.2; ctx.strokeStyle = '#fff7e3'; ctx.strokeText(p.txt, 0, 0); ctx.fillStyle = p.col; ctx.fillText(p.txt, 0, 0); }
     ctx.restore();
   }
   for (i = 0; i < flys.length; i++) {
