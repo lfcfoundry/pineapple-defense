@@ -150,7 +150,7 @@ def oldsaves(br):
     for fx in sorted(glob.glob(os.path.join(ROOT, 'tools/fixtures/save-*.json'))):
         d = json.load(open(fx)); q = br.new_page(viewport={'width': 500, 'height': 827}); errs = []
         q.on('pageerror', lambda e: errs.append(str(e)))
-        q.add_init_script('localStorage.setItem(%s,%s);window.__fixRaw=%s' % (json.dumps(d['storageKey']), json.dumps(d['raw']), json.dumps(d['raw'])))
+        q.add_init_script('localStorage.setItem(%s,%s);window.__fixRaw=%s' % (json.dumps('pd-lab-save' if lab else d['storageKey']), json.dumps(d['raw']), json.dumps(d['raw'])))
         q.goto(url); q.wait_for_function('window.__pd')
         bad = q.evaluate(OLDSAVE_JS) + ['page error: ' + e for e in errs]
         q.close(); out.append((os.path.basename(fx), bad))

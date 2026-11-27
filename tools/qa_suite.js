@@ -13,6 +13,7 @@ const wait0 = ms => new Promise(r => setTimeout(r, ms));
    Longer waits are real time on purpose (game speed, the wake lock timer, nothing-happens checks) and stay as they were. */
 const wait = ms => ms > 100 ? wait0(ms) : Promise.race([new Promise(r => requestAnimationFrame(() => r())), wait0(ms)]);
 const $ = id => document.getElementById(id);
+const SAVE_KEY = /LAB/.test((document.querySelector('.legal') || {}).textContent || '') ? 'pd-lab-save' : 'pd-save';   /* the tester build keeps its own save */
 const cardUp = () => !$('gcw').hidden;
 const card = () => ({ t: $('gTitle').textContent, b1: $('gBtn1').textContent, b2: $('gBtn2').textContent, b3: $('gBtn3').hidden ? '' : $('gBtn3').textContent, body: $('gBody').textContent });
 async function wf(fn, ms) { const t0 = Date.now(); while (Date.now() - t0 < (ms || 3000)) { if (fn()) return true; await wait0(8); } return false; }
@@ -486,7 +487,7 @@ await T('context loss: the game pauses on a lost picture and offers a reload', a
 });
 
 await T('second tab: a twin copy plays without saving and can take over', async () => {
-  const sv = P.sv(), raw = () => localStorage.getItem('pd-save');
+  const sv = P.sv(), raw = () => localStorage.getItem(SAVE_KEY);
   document.getElementById('game').hidden = true; document.getElementById('title').hidden = false; $('bSet').click(); await wait(30);
   sv.hc = 0; $('cmHc').click(); const r1 = raw(); P.twinTest(true); await wait(30);   /* title screen first: the card has two big buttons */
   if (!$('twUse') || !$('twLook') || $('cardTitle').textContent !== 'Open in another tab') throw new Error('no twin card on the title screen');
@@ -722,7 +723,7 @@ await T('run end card: save, reset, confirm', async () => {
   /* save and go to title: the card closes, the title shows, the progress is kept and Continue is ready */
   await go(5, 0, true); sv.bank = 321; P.win(); await wait(50); $('gBtn2').click(); await wait(50);
   if (cardUp() || document.getElementById('title').hidden || !document.getElementById('game').hidden) throw new Error('did not return to the title screen'); if (sv.bank !== 321) throw new Error('save lost credits');
-  if (JSON.parse(localStorage.getItem('pd-save')).bank !== 321) throw new Error('the credits were not written to the saved game');
+  if (JSON.parse(localStorage.getItem(SAVE_KEY)).bank !== 321) throw new Error('the credits were not written to the saved game');
   document.getElementById('title').hidden = true; document.getElementById('game').hidden = false;
   await go(5, 0, true); P.win(); await wait(50); const bank0 = sv.bank; if (!$('gBtn3').classList.contains('quiet')) throw new Error('Reset is not drawn as the small quiet link');
   $('gBtn3').click(); await wait(30); const hb = $('gBtn2'), down = () => hb.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 7, button: 0, bubbles: true })), up = () => hb.dispatchEvent(new PointerEvent('pointerup', { pointerId: 7, bubbles: true }));
