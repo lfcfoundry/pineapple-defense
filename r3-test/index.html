@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2726%27%3E%F0%9F%8D%8D%3C/text%3E%3C/svg%3E"><title>Pineapple Defense · isolated R3 experiment</title>
+<html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2726%27%3E%F0%9F%8D%8D%3C/text%3E%3C/svg%3E"><title>Pineapple Defense · isolated R3 experiment</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f6f3e7;color:#173f4f;font:16px system-ui,sans-serif}header,section,footer{max-width:760px;margin:auto;padding:12px}header{background:#173f4f;color:#fff}h1{font-size:22px;margin:4px 0}h2{font-size:18px;margin:8px 0}p{margin:8px 0}button,select,input,textarea{font:inherit}button,select{min-height:48px;padding:8px;border:1px solid #527e83;border-radius:7px;background:#fffdf3;color:#173f4f}button:disabled{opacity:.5}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,canvas:focus-visible{outline:3px solid #a93f24;outline-offset:2px}.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.small{font-size:13px}#interaction{width:fit-content;max-width:100%;margin:auto}canvas{display:block;touch-action:none;max-width:100vw;background:#c8e7dd}#interaction .row{padding:6px}label{display:inline-flex;gap:6px;align-items:center;margin:4px 0}input[type=checkbox]{width:20px;height:20px}textarea{width:100%;min-height:70px}input[type=text]{max-width:100%;min-height:40px}details{margin:12px 0}#questions label{display:flex}#status{font-weight:bold}#instruction{min-height:56px}#ratings{padding:10px;background:#e4ede8}button.primary{background:#f7c94d}footer{font-size:12px;border-top:1px solid #aac2bc}[hidden]{display:none!important}.wide{width:100%}
 </style>
-<header><h1>🍍 Pineapple Defense · R3 experiment</h1><p class="small">Isolated prototype · no campaign saves · no network · not validated by players</p></header>
+<header><h1>🍍 Pineapple Defense · R3 experiment</h1><p class="small">Isolated prototype · no campaign saves · no network · not validated by players</p><p class="small" id="coreLine" role="status"></p></header>
 <section aria-label="Experiment setup">
 <div class="row"><label>Condition <select id="condition"><option>F0</option><option selected>N0</option><option>N1</option></select></label><label>Preset <select id="preset"><option>A</option><option>B</option></select></label><label>Board <select id="viewport"><option>320x568</option><option selected>360x640</option><option>412x732</option><option>640x360</option></select></label></div>
 <p class="small">F0: original flick and hover. N0: point, correct, release; cart locked. N1: identical point control; support releases cart. On narrow screens the board fits the available width; exported dimensions are authoritative.</p>
@@ -914,3 +914,56 @@ newTrial(true);requestAnimationFrame(tick);
 window.pineappleExperiment={get engine(){return e},get input(){return input},reset:newTrial,get notes(){return notes},get protocol(){return protocol},get serial(){return serial}};
 
 </script></html>
+<script>
+/*! core-plan 0.1.0 (draft for JS-modules). Sizes worker pools from the device, and keeps a "last run" line.
+ * MIT, Copyright (c) 2026 LFC Foundry. ES5, no network, no build step. Safe to inline in a single-file tester.
+ * navigator.hardwareConcurrency counts LOGICAL threads. On most laptops and desktops with 8 or more threads,
+ * about half are real cores, so the plan assumes half. Memory (navigator.deviceMemory, GB, capped at 8 by browsers,
+ * missing in Firefox and Safari) limits the helper count too.
+ */
+(function (root) {
+  'use strict';
+  function num(x, d) { x = +x; return x > 0 && isFinite(x) ? x : d; }
+  function detect(nav) {
+    nav = nav || (typeof navigator === 'object' ? navigator : {});
+    var logical = Math.floor(num(nav.hardwareConcurrency, 4)), mem = num(nav.deviceMemory, 0);
+    var cores = logical >= 8 ? Math.ceil(logical / 2) : logical;   // assume hyper-threading from 8 threads up
+    return { logical: logical, cores: cores, memGB: mem || null, memKnown: !!mem };
+  }
+  // opts: workerMB (memory one helper needs, default 256), maxWorkers (default 8), keepFree (cores left for the page, default 1),
+  //       maxDuck (DuckDB threads cap, default 4), env (detect() result, for tests)
+  function plan(opts) {
+    opts = opts || {};
+    var d = opts.env || detect(), workerMB = num(opts.workerMB, 256), maxW = Math.floor(num(opts.maxWorkers, 8)), keep = opts.keepFree === 0 ? 0 : Math.floor(num(opts.keepFree, 1));
+    var memGB = d.memGB || 4;                                  // unknown memory: assume 4 GB (safe on phones)
+    var byMem = Math.max(1, Math.floor(memGB * 1024 * 0.5 / workerMB)); // use at most half of the reported memory
+    var byCores = Math.max(1, d.cores - keep);
+    var workers = Math.max(1, Math.min(byCores, byMem, maxW));
+    var duck = Math.max(1, Math.min(workers, Math.floor(num(opts.maxDuck, 4))));
+    var why = workers === byMem && byMem < byCores ? 'limited by memory' : workers === maxW && maxW < byCores ? 'capped at ' + maxW : 'cores minus ' + keep;
+    return {
+      logical: d.logical, cores: d.cores, memGB: d.memGB, memKnown: d.memKnown,
+      workers: workers, duckThreads: duck, why: why,
+      // sizes to sweep in a "how many helpers" test: 1, 2, 4, ... never above the plan
+      sweep: (function () { var s = [], k = 1; while (k < workers) { s.push(k); k *= 2; } s.push(workers); return s; })(),
+      label: 'This device reports ' + d.logical + ' threads (about ' + d.cores + ' real cores assumed)' + (d.memGB ? ' and ' + d.memGB + ' GB' : ', memory not reported') + '. Plan: ' + workers + ' helper' + (workers > 1 ? 's' : '') + ', ' + duck + ' DuckDB thread' + (duck > 1 ? 's' : '') + ' (' + why + ').'
+    };
+  }
+  // Last-run line: call step('name') BEFORE each risky step and done() after the run. After a crash and reload,
+  // previous() tells which step was running. Uses sessionStorage only (cleared with the tab), never localStorage.
+  var KEY = 'lfc-core-plan-last-run';
+  function store(v) { try { if (v === undefined) return sessionStorage.getItem(KEY); if (v === null) sessionStorage.removeItem(KEY); else sessionStorage.setItem(KEY, v); } catch (e) {} return null; }
+  var lastRun = {
+    previous: function () { var v = store(); if (!v) return ''; try { var o = JSON.parse(v); return o.done ? '' : 'Last run did not finish. It stopped during: ' + o.step + ' (' + o.at + ').'; } catch (e) { return ''; } },
+    step: function (name) { store(JSON.stringify({ step: String(name), at: new Date().toLocaleTimeString(), done: false })); },
+    done: function () { store(JSON.stringify({ step: 'finished', at: new Date().toLocaleTimeString(), done: true })); },
+    clear: function () { store(null); }
+  };
+  var api = { detect: detect, plan: plan, lastRun: lastRun, version: '0.1.0' };
+  if (typeof module === 'object' && module.exports) module.exports = api; else root.LfcCorePlan = api;
+})(typeof self !== 'undefined' ? self : this);
+
+(function(){var P=LfcCorePlan,el=document.getElementById("coreLine"),prev=P.lastRun.previous(),lab=P.plan({maxWorkers:3}).label.replace(/, \d+ DuckDB threads?/,"");
+el.textContent=lab+(prev?" "+prev:"");window.__coreLine=lab;P.lastRun.step("opened the page");window.addEventListener("pagehide",P.lastRun.done);
+["reset","block","pause","fire","cancel"].forEach(function(id){var b=document.getElementById(id);if(b)b.addEventListener("click",function(){P.lastRun.step(b.textContent.trim()+" ("+(document.getElementById("condition")||{}).value+" "+(document.getElementById("preset")||{}).value+")")},true)});}());
+</script>

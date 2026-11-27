@@ -24,7 +24,7 @@
       word = med > floor ? 'Slow' : p95 <= med * 1.5 && h.count <= 1 && qmax === 0 ? 'Smooth' : p95 <= med * 2.5 && slowShare < 0.05 && h.count <= 4 ? 'Mostly smooth' : 'Choppy';
       why = word === 'Smooth' ? 'Frames arrived evenly and picture quality stayed at full.' : (word === 'Slow' ? 'Frames arrive about ' + r1(1000 / med) + ' a second, well under the 40 or more the game aims for' + (sv.bv ? ' even with battery saver on' : '') + '. ' : '') + (wp > med * 0.6 ? 'The game\'s own update and drawing took most of each frame here, so the game is the slow part on this device.' : 'The game\'s own code was quick (95 percent of frames took ' + r1(wp) + ' ms), so the slow part is the browser, the graphics driver or power saving.') + (qmax > 0 ? ' The game also lowered its picture quality to keep up.' : '');
     }
-    lines = ['Pineapple Defense Device check', 'Version: ' + (ver ? ver[1] : '?') + (/LAB/.test(document.querySelector('.legal').textContent) ? ' (tester build)' : ''), 'Result: ' + word + '. ' + why];
+    lines = [cpLine(), 'Pineapple Defense Device check', 'Version: ' + (ver ? ver[1] : '?') + (/LAB/.test(document.querySelector('.legal').textContent) ? ' (tester build)' : ''), 'Result: ' + word + '. ' + why];
     if (word !== 'Could not check') lines.push('Frames a second: ' + r1(n * 1000 / sum) + (med > floor ? ' (much slower than a normal screen; typical spacing ' + r1(med) + ' ms)' : ' (the screen seems to run at about ' + hz + ' Hz)'), 'Frame time: typical ' + r1(med) + ' ms, slowest 5 percent over ' + r1(pct(sg, 0.95)) + ' ms, slowest 1 percent over ' + r1(pct(sg, 0.99)) + ' ms, worst ' + r1(sg[n - 1]) + ' ms', 'Frames more than twice the typical time: ' + slow + ' of ' + n, 'Hitches: ' + dm.verdict(), 'The game\'s own work per frame: average ' + r1(ws / n) + ' ms, slowest 5 percent over ' + r1(pct(sw, 0.95)) + ' ms', 'Picture quality: ' + (qmax === 0 ? 'stayed at full' : 'dropped to level ' + qmax + ' of 2 (canvas step ' + dmax + ' of 4)'));
     lines.push('Run: Stage ' + (S ? S.stage : 2) + ' wave ' + (S ? S.wave : 3) + ' played by the throwing helper, ' + r1(run / 1000) + ' s measured after a ' + r1(warm / 1000) + ' s warm-up' + (ended ? ' (' + ended + ')' : ''), 'Start: the game finished starting after ' + BOOT_MS + ' ms');
     return lines.concat(devInfo()).join('\n');
@@ -37,6 +37,7 @@
     function finish() {
       labTick = null; labBot = false; if (bar.parentNode) bar.parentNode.removeChild(bar);
       var txt = devReport(gaps, works, dm, qmax, dmax, hid, warm, run, ended);
+      LfcCorePlan.lastRun.done();
       if (done) { done(txt); return; }
       showCard('Device check', txt, 'Copy report', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var body = $('gBody'), b1 = $('gBtn1');

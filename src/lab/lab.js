@@ -16,6 +16,10 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     else if (k === 'wall') SK_WALL = v; else if (k === 'din') SK_DIN = v; else if (k === 'cup') { labCup = v; SK_HOLES.forEach(function (h, i) { h.r = LAB_R[i] * v; }); }
   }
   function cur(k) { return k === 'spd' ? timeScale : k === 'aim' ? SK_AIM : k === 'g' ? SK_G : k === 'kz' ? SK_KZ : k === 'inc' ? SK_INC : k === 'rb' ? SK_RB : k === 'balls' ? SK_BALLS : k === 'rim' ? SK_RIM : k === 'wall' ? SK_WALL : k === 'din' ? SK_DIN : labCup; }
+  /* core-plan: the device line shown at the top of the page and first in every Copy results, and the "last run" line kept in sessionStorage */
+  var cpLabel = cpLine();
+  function cpDone() { LfcCorePlan.lastRun.done(); }
+  window.addEventListener('pagehide', cpDone);
   function labClose() { if (!$('cw').hidden) { $('cw').hidden = true; root.removeAttribute('data-dlg'); } if (!$('gcw').hidden) hideCard(); }
   function labGo(fn) { labClose(); if (!gameEl.hidden) toTitle(); fn(); }
   function startFrom(from) { titleEl.hidden = true; gameEl.hidden = false; loadAssets().then(function () { resize(); startStage(from); run(); }); }
@@ -121,6 +125,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
     d.addEventListener('click', function (e) {
       var a = e.target.getAttribute && e.target.getAttribute('data-a'), live = !gameEl.hidden && !K && S && !S.over, i, k, o;
       if (!a) return;
+      if (/^(roll|dev|flash|tap1|shoot|pzt|pzs|pkt|pks|fg|cs)$/.test(a)) LfcCorePlan.lastRun.step(e.target.textContent);   /* if the page dies mid-test, the next load says which test it was */
       if (a === 'roll') labGo(startSkee);
       else if (a === 'stage') { var n = +d.querySelector('#labW').value; labGo(function () { startFrom({ stage: +d.querySelector('#labS').value, wave: n >= 9 ? NWAVES : n - 1, golden: 0, cheer: 100 }); }); }
       else if (a === 'b10' || a === 'b100') { sv.bank = Math.min(999999, sv.bank + (a === 'b10' ? 10 : 100)); kit.save(sv); say('Bank: ' + sv.bank); }
@@ -374,7 +379,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
         L.push('Round ' + (k + 1) + ': ' + name(r.mode) + '. ' + r.sec + ' s. Shots ' + r.th + ', hits ' + r.hit + ' (' + (r.th ? Math.round(r.hit * 100 / r.th) : 0) + ' per 100 shots), shots that chained ' + r.chain + '. Fun: ' + r.fun + '. Easy to hit what I aimed at: ' + r.easy + '.' + (gaps.length ? ' Median gap between shots ' + Math.round(gaps.sort(function (a, b) { return a - b; })[gaps.length >> 1]) + ' ms.' : ''));
       });
       L.push('Run: Stage 2 wave 2, real game. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on: fires on touch, fast flat shot, hits anything on its path, push back and bounce, chains up to 6, hit pause, small shake, slow motion on the last penguin, ghost of the last shot, no aim lock. Hits count every pineapple and chain link.');
-      var txt = L.concat(devInfo()).join('\n'); shEnd();
+      var txt = [cpLabel].concat(L, devInfo()).join('\n'); shEnd(); cpDone();
       shCard('Shooting test result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
     }
@@ -412,7 +417,7 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
         'Knocked out ' + r.ko + ' of ' + total + '. Pineapples used ' + (left0 - r.left) + ' of ' + left0 + ', unused ' + r.left + '. Best single shot knocked ' + r.best + '. Shots that chained ' + r.chain + '. Time ' + r.sec + ' s. Fun: ' + r.fun + '. Clear where to hit: ' + r.easy + '.',
         'By type (shots, knocked out): ' + Object.keys(DEFS).map(function (k) { var b = r.by[k]; return DEFS[k].name + ' ' + (b ? b.n + ', ' + b.ko : 'none'); }).join('; ') + '.',
         'Run: Stage ' + ST + ' scene, 3 ' + wd + ' of ' + groups.join(', ') + ' penguins (' + (stack ? 'front rows and about 1 in 4 behind them need two hits' : 'about 4 in 10 need two hits') + ') walking slowly, ' + left0 + ' pineapples in a set order of 5 types, no penalty for running out. Calm was ' + (shCalmWas ? 'on before the test and was switched off for it' : 'off') + '. Cannon kit on.'];
-      var txt = L.concat(devInfo()).join('\n'); shEnd();
+      var txt = [cpLabel].concat(L, devInfo()).join('\n'); shEnd(); cpDone();
       shCard('Where to hit: result', txt, 'Copy results', function () {}, 'Close', function () { gBodyReset(); toTitle(); });
       var b1 = $('gBtn1'); b1.onclick = function () { copyText(txt, function (ok) { b1.textContent = ok ? 'Copied. Paste it in the chat.' : 'Select the text above and copy it'; }); };
     }
@@ -469,4 +474,10 @@ var LAB0 = { aim: SK_AIM, g: SK_G, kz: SK_KZ, inc: SK_INC, rb: SK_RB, balls: SK_
   $('gBtn2').parentNode.insertBefore(gLab, $('gBtn2'));
   gLab.addEventListener('click', function () { $('gTitle').textContent = 'Test Lab'; body.hidden = true; gLab.hidden = true; box = panel(); body.parentNode.insertBefore(box, body.nextSibling); });
   new MutationObserver(function () { if (gcw.hidden && box) { box.remove(); box = null; body.hidden = false; gLab.hidden = false; } }).observe(gcw, { attributes: true, attributeFilter: ['hidden'] });
+  /* top of the page: this device's thread count and memory, and (if the last load died mid-test) the test that was running */
+  var cpTop = document.createElement('div'), cpPrev = LfcCorePlan.lastRun.previous();
+  cpTop.id = 'labTop'; cpTop.setAttribute('role', 'status'); cpTop.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:70;padding:.35em .7em;font:700 12px/1.3 system-ui,sans-serif;color:#173f4f;background:rgba(255,247,227,.96);border-bottom:2px solid #b79a63;pointer-events:none';
+  cpTop.textContent = 'Tester build. ' + cpLabel + (cpPrev ? ' ' + cpPrev : '');
+  document.body.appendChild(cpTop);
+  LfcCorePlan.lastRun.step('opened the page');
 }());

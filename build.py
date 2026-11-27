@@ -37,6 +37,7 @@ def game_js():
     g = (S / "game.js").read_text(encoding="utf-8")
     if LAB:
         g = g.replace("key: 'pd-save'", "key: 'pd-lab-save'").replace("'pd-open'", "'pd-lab-open'")  # the tester keeps its own save (and its own one-tab lock)
+    g = g.replace("/*{{CORE_PLAN}}*/", (S / "coreplan.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{STAGES_JS}}*/", (S / "stages.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{EVOLVE_JS}}*/", (S / "evolve.js").read_text(encoding="utf-8"))
     g = g.replace("/*{{GEAR_JS}}*/", (S / "gear.js").read_text(encoding="utf-8"))
@@ -97,6 +98,7 @@ def main():
         t = t.replace(k, v)
     t = t.replace("<!--{{LAB_BTN}}-->", '<div class="row"><button class="btn" id="bLab" type="button">Test Lab</button></div>' if LAB else "")
     t = t.replace("{{VERSION}}", ver + (" LAB" if LAB else ""))
+    if LAB: t = t.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex,nofollow">', 1)   # the tester page is unlisted: keep it out of search
     assert "{{" not in re.sub(r"\$\{\{", "", t.replace("{{VERSION}}", "")) or True
     out = R / "dist" / "lab" / "index.html" if LAB else R / "play" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
